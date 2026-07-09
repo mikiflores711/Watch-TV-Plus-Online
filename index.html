@@ -81,6 +81,16 @@ body{overflow-x:hidden;}
 .warning-tag{background:rgba(248,113,113,.16);color:#fecaca;}
 .adult-notice{margin:0 0 10px 0;padding:10px 12px;border-radius:12px;border:1px solid rgba(248,113,113,.25);background:rgba(127,29,29,.18);color:#fecaca;font-size:12px;line-height:1.35;}
 .empty{text-align:center;color:var(--soft);padding:18px 12px;border:1px dashed rgba(255,255,255,.08);border-radius:12px;line-height:1.45;}
+
+.native-player-panel{height:100%;width:100%;display:grid;place-items:center;background:radial-gradient(circle at top,#172033,#020617 70%);padding:20px;text-align:center;}
+.native-player-box{max-width:520px;border:1px solid rgba(255,255,255,.1);border-radius:18px;background:rgba(15,23,42,.72);padding:18px;box-shadow:0 14px 35px rgba(0,0,0,.35);}
+.native-player-box h3{font-size:20px;margin-bottom:8px;}
+.native-player-box p{font-size:13px;color:var(--soft);line-height:1.45;margin-bottom:12px;}
+.native-open-btn{height:42px;border:none;border-radius:999px;background:#1d4ed8;color:#fff;font-weight:900;padding:0 16px;cursor:pointer;margin:4px;}
+.native-web-btn{height:42px;border:1px solid rgba(255,255,255,.12);border-radius:999px;background:#0b1220;color:#dbeafe;font-weight:900;padding:0 16px;cursor:pointer;margin:4px;}
+.native-mode-btn.active{background:#065f46;color:#d1fae5;border-color:rgba(52,211,153,.45);}
+.native-mode-btn.web{background:#1e293b;color:#dbeafe;}
+
 @media (max-width:1100px){.layout{grid-template-columns:1fr}.player-card{top:calc(env(safe-area-inset-top) + 8px)}.channel-list{max-height:none;}.sidebar{min-height:60vh;}}
 @media (max-width:768px){.app{padding:10px}.header{align-items:flex-start}.brand h1{font-size:18px}.watching-box{top:10px;left:10px;width:calc(100% - 20px);padding:10px 12px}.watching-title{font-size:15px}.controls-wrap{left:8px;right:8px;bottom:8px}.controls-bar{padding:8px;gap:8px}.right-tools{margin-left:0}.filters{grid-template-columns:1fr}.player-footer h2{font-size:17px}.volume-wrap{min-width:auto}.slider{width:68px}.channel-item{padding:9px}.favorite-btn{width:34px;height:34px;flex-basis:34px}.channel-logo{width:42px;height:42px;flex-basis:42px}}
 </style>
@@ -137,6 +147,7 @@ body{overflow-x:hidden;}
           <select id="typeFilter" class="filter-select"><option value="all">Todo</option><option value="video">TV</option><option value="audio">Radio</option></select>
         </div>
         <div class="action-row">
+          <button class="reload-btn native-mode-btn" id="nativeModeBtn">Modo: Web</button>
           <button class="reload-btn" id="reloadBtn">Recargar canales</button>
           <div class="small-help" id="sectionInfo">Usa la estrella izquierda para guardar favoritos.</div>
         </div>
@@ -151,6 +162,9 @@ body{overflow-x:hidden;}
 <script>
 const PROXY_BASE = "https://hls-proxy-tv-plus.mikimc-business.workers.dev/proxy?url=";
 const USE_PROXY_FOR_ALL = true;
+const APP_NATIVE_KEY = "watch_tv_plus_native_player_v1";
+const FORCE_NATIVE_FROM_URL = new URLSearchParams(location.search).get("native") === "1";
+const FORCE_WEB_FROM_URL = new URLSearchParams(location.search).get("native") === "0";
 const FAVORITES_KEY = "watch_tv_plus_favorites_v2";
 const ADULT_UNLOCK_KEY = "watch_tv_plus_adult_unlocked_v2";
 const MAX_RENDER_DEFAULT = 900;
@@ -185,6 +199,7 @@ const categoryFilter = document.getElementById("categoryFilter");
 const typeFilter = document.getElementById("typeFilter");
 const channelList = document.getElementById("channelList");
 const reloadBtn = document.getElementById("reloadBtn");
+const nativeModeBtn = document.getElementById("nativeModeBtn");
 const adultNotice = document.getElementById("adultNotice");
 const sectionTabs = document.getElementById("sectionTabs");
 const sectionInfo = document.getElementById("sectionInfo");
@@ -198,10 +213,12 @@ let favoriteUrls = loadFavoriteUrls();
 let adultUnlocked = localStorage.getItem(ADULT_UNLOCK_KEY) === "1";
 let allChannels = [];
 let channelsBySection = {};
+let nativeMode = getInitialNativeMode();
 
 async function init(){
   buildTabs();
   bindEvents();
+  updateNativeModeUI();
   showPlayerUI();
   await loadAllPlaylists();
 }
@@ -225,6 +242,7 @@ function bindEvents(){
   fullBtn.addEventListener("click", toggleFullscreen);
   pipBtn.addEventListener("click", togglePiP);
   reloadBtn.addEventListener("click", loadAllPlaylists);
+  nativeModeBtn.addEventListener("click", toggleNativeMode);
   searchInput.addEventListener("input", renderChannels);
   categoryFilter.addEventListener("change", renderChannels);
   typeFilter.addEventListener("change", renderChannels);
@@ -277,7 +295,11 @@ async function loadAllPlaylists(){
 
   if(!currentChannel){
     const first = getSectionChannels(false)[0] || allChannels[0];
-    if(first) loadChannel(first);
+    if(first && !nativeMode) {
+      loadChannel(first);
+    } else if(first) {
+      showNativeReadyState(first);
+    }
   }
 }
 
@@ -393,10 +415,16 @@ function loadChannel(channel){
   currentChannel = channel;
   currentUrl = channel.url;
   mainTitle.textContent = channel.name;
-  mainInfo.textContent = `${channel.sectionLabel} · ${channel.category} · Cargando señal original...`;
   topCategory.textContent = channel.sectionLabel.toUpperCase();
   topTitle.textContent = channel.name;
   renderChannels();
+
+  if(nativeMode){
+    openNativePlayer(channel, true);
+    return;
+  }
+
+  mainInfo.textContent = `${channel.sectionLabel} · ${channel.category} · Cargando señal original...`;
   destroyPlayer();
 
   const streamUrl = getPlayableUrl(channel);
@@ -435,14 +463,109 @@ function loadChannel(channel){
       onReady: function(){ mainInfo.textContent = `${channel.sectionLabel} · ${channel.category} · Listo`; syncVideoEvents(); },
       onPlay: function(){ updatePlayState(); mainInfo.textContent = `${channel.sectionLabel} · Reproduciendo señal original`; },
       onPause: updatePlayState,
-      onError: function(error){ console.log("Clappr error:", error); mainInfo.textContent = "No se pudo reproducir esta señal original. Prueba otro canal o revisa el verificador."; }
+      onError: function(error){ console.log("Clappr error:", error); mainInfo.textContent = "No se pudo reproducir esta señal original. Prueba modo ExoPlayer/AppCreator24 o revisa el verificador."; }
     }
   });
   showPlayerUI();
   setTimeout(updatePlayState, 700);
 }
 
+function getInitialNativeMode(){
+  if(FORCE_NATIVE_FROM_URL){
+    localStorage.setItem(APP_NATIVE_KEY, "1");
+    return true;
+  }
+  if(FORCE_WEB_FROM_URL){
+    localStorage.setItem(APP_NATIVE_KEY, "0");
+    return false;
+  }
+  const saved = localStorage.getItem(APP_NATIVE_KEY);
+  if(saved === "1") return true;
+  if(saved === "0") return false;
+  return isLikelyAppWebView();
+}
+
+function isLikelyAppWebView(){
+  const ua = navigator.userAgent || "";
+  return ua.includes("; wv") || ua.includes("Version/4.0") || ua.toLowerCase().includes("appcreator");
+}
+
+function toggleNativeMode(){
+  nativeMode = !nativeMode;
+  localStorage.setItem(APP_NATIVE_KEY, nativeMode ? "1" : "0");
+  updateNativeModeUI();
+  renderChannels();
+  if(nativeMode){
+    if(currentChannel) showNativeReadyState(currentChannel);
+    else mainInfo.textContent = "Modo ExoPlayer activado. Toca un canal para abrirlo con el reproductor nativo de AppCreator24.";
+  } else {
+    if(currentChannel) loadChannel(currentChannel);
+    else mainInfo.textContent = "Modo Web activado. Toca un canal para reproducir con el reproductor HTML.";
+  }
+}
+
+function updateNativeModeUI(){
+  nativeModeBtn.textContent = nativeMode ? "Modo: ExoPlayer" : "Modo: Web";
+  nativeModeBtn.classList.toggle("active", nativeMode);
+  nativeModeBtn.classList.toggle("web", !nativeMode);
+  proxyStatus.textContent = nativeMode ? "EXOPLAYER" : "PROXY";
+}
+
+function showNativeReadyState(channel){
+  currentChannel = channel;
+  currentUrl = channel.url;
+  mainTitle.textContent = channel.name;
+  topCategory.textContent = channel.sectionLabel.toUpperCase();
+  topTitle.textContent = channel.name;
+  proxyStatus.textContent = "EXOPLAYER";
+  destroyPlayer();
+  renderNativePanel(channel, false);
+  mainInfo.textContent = "Modo ExoPlayer activado. Toca el canal o el botón azul para abrir el reproductor nativo.";
+}
+
+function renderNativePanel(channel, opening){
+  const playerBox = document.getElementById("player");
+  const safeName = escapeHtml(channel.name);
+  const safeSection = escapeHtml(channel.sectionLabel);
+  playerBox.innerHTML = `
+    <div class="native-player-panel">
+      <div class="native-player-box">
+        <h3>${opening ? "Abriendo ExoPlayer..." : "Reproductor nativo"}</h3>
+        <p><b>${safeName}</b><br>${safeSection} · ${escapeHtml(channel.category)}<br>En AppCreator24 se abrirá con ExoPlayer usando el enlace original del canal.</p>
+        <button class="native-open-btn" id="nativeOpenBtn">Abrir con ExoPlayer</button>
+        <button class="native-web-btn" id="nativeWebBtn">Usar reproductor Web</button>
+      </div>
+    </div>`;
+  const openBtn = document.getElementById("nativeOpenBtn");
+  const webBtn = document.getElementById("nativeWebBtn");
+  if(openBtn) openBtn.addEventListener("click", () => openNativeUrl(channel));
+  if(webBtn) webBtn.addEventListener("click", () => { nativeMode = false; localStorage.setItem(APP_NATIVE_KEY, "0"); updateNativeModeUI(); loadChannel(channel); });
+}
+
+function openNativePlayer(channel, autoOpen){
+  mainInfo.textContent = `${channel.sectionLabel} · Abriendo señal original con ExoPlayer...`;
+  proxyStatus.textContent = "EXOPLAYER";
+  destroyPlayer();
+  renderNativePanel(channel, true);
+  showPlayerUI();
+  if(autoOpen){
+    setTimeout(() => openNativeUrl(channel), 180);
+  }
+}
+
+function openNativeUrl(channel){
+  mainInfo.textContent = `${channel.sectionLabel} · Enviando enlace original al reproductor nativo...`;
+  const a = document.createElement("a");
+  a.href = channel.url;
+  a.target = "_self";
+  a.rel = "noopener";
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => a.remove(), 500);
+}
+
 function shouldUseProxy(channel){
+  if(nativeMode) return false;
   if(USE_PROXY_FOR_ALL) return true;
   if(channel.url.startsWith("http://") && location.protocol === "https:") return true;
   if(channel.url.includes("jmp2.uk/plu-")) return true;
@@ -548,7 +671,7 @@ function createChannelItem(ch){
         <span class="mini-tag">${ch.type === "audio" ? "RADIO" : "TV"}</span>
         ${adultTag}
         ${ch.note ? `<span class="mini-tag warning-tag">${escapeHtml(ch.note)}</span>` : ""}
-        ${shouldUseProxy(ch) ? `<span class="mini-tag">PROXY</span>` : ""}
+        ${nativeMode ? `<span class="mini-tag">EXOPLAYER</span>` : (shouldUseProxy(ch) ? `<span class="mini-tag">PROXY</span>` : "")}
         ${refTag}${uaTag}
       </div>
     </div>`;
