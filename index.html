@@ -41,6 +41,54 @@ body{
   padding:16px;
 }
 
+.header{
+  margin-bottom:14px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  flex-wrap:wrap;
+}
+
+.brand{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.brand-logo{
+  width:42px;
+  height:42px;
+  border-radius:13px;
+  background:linear-gradient(135deg,#1e293b,#0f172a);
+  border:1px solid var(--line);
+  display:grid;
+  place-items:center;
+  font-weight:900;
+  color:#dbeafe;
+}
+
+.brand h1{
+  font-size:20px;
+  line-height:1.1;
+}
+
+.brand p{
+  color:var(--soft);
+  font-size:12px;
+  margin-top:3px;
+}
+
+.count-pill{
+  border:1px solid var(--line);
+  background:#0d1522;
+  border-radius:999px;
+  padding:9px 12px;
+  color:#dbeafe;
+  font-weight:800;
+  font-size:12px;
+}
+
 .layout{
   display:grid;
   grid-template-columns:minmax(0,1fr) 350px;
@@ -292,6 +340,23 @@ body{
   margin-top:10px;
 }
 
+.action-row{
+  margin-top:10px;
+  display:grid;
+  grid-template-columns:1fr;
+}
+
+.reload-btn{
+  height:42px;
+  border:none;
+  border-radius:12px;
+  background:#12213a;
+  color:#fff;
+  font-weight:800;
+  cursor:pointer;
+  border:1px solid rgba(126,164,255,.15);
+}
+
 .channel-list{
   display:grid;
   gap:10px;
@@ -439,6 +504,17 @@ body{
 
 <div class="app">
 
+  <header class="header">
+    <div class="brand">
+      <div class="brand-logo">TV</div>
+      <div>
+        <h1>Watch TV Plus</h1>
+        <p>Reproductor IPTV con Clappr + Proxy HLS</p>
+      </div>
+    </div>
+    <div class="count-pill" id="countPill">Cargando lista...</div>
+  </header>
+
   <div class="layout">
 
     <section class="player-card">
@@ -470,7 +546,7 @@ body{
 
               <div class="right-tools">
                 <div class="pill live"><span class="live-dot"></span> DIRECTO</div>
-                <button class="pill" id="proxyStatus">DIRECTO</button>
+                <button class="pill" id="proxyStatus">PROXY</button>
                 <button class="ctrl-btn small" id="pipBtn">▣</button>
                 <button class="ctrl-btn small" id="fullBtn">⤢</button>
               </div>
@@ -483,7 +559,7 @@ body{
 
       <div class="player-footer">
         <h2 id="mainTitle">Selecciona un canal</h2>
-        <p id="mainInfo">Elige un canal de la lista para iniciar la reproducción.</p>
+        <p id="mainInfo">Cargando lista de canales...</p>
       </div>
     </section>
 
@@ -503,10 +579,16 @@ body{
             <option value="audio">Radio</option>
           </select>
         </div>
+
+        <div class="action-row">
+          <button class="reload-btn" id="reloadBtn">Recargar canales</button>
+        </div>
       </div>
 
       <div class="side-card">
-        <div class="channel-list" id="channelList"></div>
+        <div class="channel-list" id="channelList">
+          <div class="empty">Cargando canales...</div>
+        </div>
       </div>
 
     </aside>
@@ -516,270 +598,8 @@ body{
 
 <script>
 const PROXY_BASE = "https://hls-proxy-tv-plus.mikimc-business.workers.dev/proxy?url=";
-
-const CHANNELS = [
-  {
-    name: "Acapulco Shore Pluto TV",
-    quality: "AUTO",
-    category: "Reality",
-    type: "video",
-    note: "Proxy HLS",
-    useProxy: true,
-    url: "https://jmp2.uk/plu-61a52615cbef2500072876e2.m3u8"
-  },
-  {
-    name: "8NTV",
-    quality: "1080p",
-    category: "Regional",
-    type: "video",
-    note: "Proxy HLS",
-    useProxy: true,
-    url: "https://60417ddeaf0d9.streamlock.net/ntv/videontv/playlist.m3u8"
-  },
-  {
-    name: "15TV",
-    quality: "AUTO",
-    category: "Regional",
-    type: "video",
-    note: "",
-    useProxy: true,
-    url: "https://servilive.com:3380/live/v3n6thy7glive.m3u8"
-  },
-  {
-    name: "A+",
-    quality: "1080p",
-    category: "General",
-    type: "video",
-    note: "HTTP / Proxy",
-    useProxy: true,
-    url: "http://45.189.62.33:8002/play/a0oc/index.m3u8"
-  },
-  {
-    name: "ADN 40",
-    quality: "1080p",
-    category: "Noticias",
-    type: "video",
-    note: "HTTP / Proxy",
-    useProxy: true,
-    url: "http://45.189.62.33:8002/play/a0ob/index.m3u8"
-  },
-  {
-    name: "ADN 40",
-    quality: "720p",
-    category: "Noticias",
-    type: "video",
-    note: "",
-    useProxy: false,
-    url: "https://mdstrm.com/live-stream-playlist/60b578b060947317de7b57ac.m3u8"
-  },
-  {
-    name: "ADN Noticias",
-    quality: "720p",
-    category: "Noticias",
-    type: "video",
-    note: "Proxy HLS",
-    useProxy: true,
-    url: "https://jmp2.uk/plu-646ccd3681844c000974d6f4.m3u8"
-  },
-  {
-    name: "Alcance TV",
-    quality: "720p",
-    category: "General",
-    type: "video",
-    note: "",
-    useProxy: true,
-    url: "https://5bf8041cb3fed.streamlock.net/AlcanceTV/AlcanceTV/playlist.m3u8"
-  },
-  {
-    name: "AMX Noticias",
-    quality: "720p",
-    category: "Noticias",
-    type: "video",
-    note: "No 24/7",
-    useProxy: true,
-    url: "https://5e50264bd6766.streamlock.net/mexiquense2/videomexiquense2/playlist.m3u8"
-  },
-  {
-    name: "AMC Latin America",
-    quality: "1080p",
-    category: "Cine y Series",
-    type: "video",
-    note: "",
-    useProxy: false,
-    url: "http://177.234.249.178:8888/AMC/index.m3u8"
-  },
-  {
-    name: "AMC Reality",
-    quality: "1080p",
-    category: "Reality",
-    type: "video",
-    note: "",
-    useProxy: true,
-    url: "https://c9672376.wurl.com/master/f36d25e7e52f1ba8d7e56eb859c636563214f541/U2Ftc3VuZy1nYl9BTUNSZWFsaXR5X0hMUw/playlist.m3u8"
-  },
-  {
-    name: "Así Sucede Guanajuato",
-    quality: "720p",
-    category: "Regional",
-    type: "video",
-    note: "No 24/7",
-    useProxy: true,
-    url: "https://stream.oursnetworktv.com/latin/encoder13/playlist.m3u8"
-  },
-  {
-    name: "Adrenalina Pura TV",
-    quality: "720p",
-    category: "Deportes",
-    type: "video",
-    note: "Proxy HLS",
-    useProxy: true,
-    url: "https://jmp2.uk/plu-61b793ccf571b80007b7a610.m3u8"
-  },
-  {
-    name: "Archivos Extraterrestres",
-    quality: "AUTO",
-    category: "Documental",
-    type: "video",
-    note: "Proxy HLS",
-    useProxy: true,
-    url: "https://jmp2.uk/plu-645d1abbe1979c0008779d5a.m3u8"
-  },
-  {
-    name: "Archivos Forenses",
-    quality: "AUTO",
-    category: "Documental",
-    type: "video",
-    note: "Proxy HLS",
-    useProxy: true,
-    url: "https://jmp2.uk/plu-5efb8c19b2678b000780d032.m3u8"
-  },
-  {
-    name: "Avatar: La Leyenda de Aang",
-    quality: "AUTO",
-    category: "Infantil",
-    type: "video",
-    note: "Proxy HLS",
-    useProxy: true,
-    url: "https://jmp2.uk/plu-6759ee82bd523200083b4f0f.m3u8"
-  },
-  {
-    name: "Azteca Deportes Premium",
-    quality: "720p",
-    category: "Deportes",
-    type: "video",
-    note: "Proxy HLS",
-    useProxy: true,
-    url: "https://jmp2.uk/plu-65cf60d166eec80008724e6f.m3u8"
-  },
-  {
-    name: "Azteca Internacional",
-    quality: "720p",
-    category: "General",
-    type: "video",
-    note: "Proxy HLS",
-    useProxy: true,
-    url: "https://jmp2.uk/plu-646cce4d1593940008a33f09.m3u8"
-  },
-  {
-    name: "Azteca Internacional",
-    quality: "1080p",
-    category: "General",
-    type: "video",
-    note: "",
-    useProxy: true,
-    url: "https://azt-mun.otteravision.com/azt/mun/mun.m3u8"
-  },
-  {
-    name: "Azteca Uno",
-    quality: "720p",
-    category: "General",
-    type: "video",
-    note: "Proxy HLS",
-    useProxy: true,
-    url: "https://jmp2.uk/plu-646ccc7a2858cb0008127367.m3u8"
-  },
-  {
-    name: "Azteca Uno",
-    quality: "1080p",
-    category: "General",
-    type: "video",
-    note: "HTTP / Proxy",
-    useProxy: true,
-    url: "http://45.189.62.33:8002/play/a0cc/index.m3u8"
-  },
-  {
-    name: "Azteca 7",
-    quality: "720p",
-    category: "General",
-    type: "video",
-    note: "HTTP / Proxy",
-    useProxy: true,
-    url: "http://177.245.131.133:8080/AZTECA7/index.m3u8"
-  },
-  {
-    name: "Azteca 7",
-    quality: "1080p",
-    category: "General",
-    type: "video",
-    note: "HTTP / Proxy",
-    useProxy: true,
-    url: "http://45.189.62.33:8002/play/a0fm/index.m3u8"
-  },
-  {
-    name: "Baby Shark TV",
-    quality: "AUTO",
-    category: "Infantil",
-    type: "video",
-    note: "Proxy HLS",
-    useProxy: true,
-    url: "https://jmp2.uk/plu-619d5e6a093e7c0007489211.m3u8"
-  },
-  {
-    name: "Babyfirst",
-    quality: "AUTO",
-    category: "Infantil",
-    type: "video",
-    note: "Proxy HLS",
-    useProxy: true,
-    url: "https://jmp2.uk/plu-5ebac49ce4dc8b00078b23bc.m3u8"
-  },
-  {
-    name: "Bob Esponja Pantalones Cuadrados",
-    quality: "720p",
-    category: "Infantil",
-    type: "video",
-    note: "Proxy HLS",
-    useProxy: true,
-    url: "https://jmp2.uk/plu-6254598f5083f800076d8563.m3u8"
-  },
-  {
-    name: "Boruto: Naruto Next Generations",
-    quality: "AUTO",
-    category: "Anime",
-    type: "video",
-    note: "Proxy HLS",
-    useProxy: true,
-    url: "https://jmp2.uk/plu-656f37f257fe4a000884dfee.m3u8"
-  },
-  {
-    name: "Bromas Gags Just for Laughs",
-    quality: "720p",
-    category: "Comedia",
-    type: "video",
-    note: "Proxy HLS",
-    useProxy: true,
-    url: "https://jmp2.uk/plu-678029c654f43dad4b5c1ec0.m3u8"
-  },
-  {
-    name: "Canal 5 TV Cozumel",
-    quality: "1080p",
-    category: "Regional",
-    type: "video",
-    note: "",
-    useProxy: true,
-    url: "https://video0.rogohosting.com:19360/tvcozumel/tvcozumel.m3u8"
-  }
-];
+const CHANNELS_M3U = "./channels.m3u";
+const USE_PROXY_FOR_ALL = true;
 
 const playerStage = document.getElementById("playerStage");
 const playBtn = document.getElementById("playBtn");
@@ -795,27 +615,24 @@ const topCategory = document.getElementById("topCategory");
 const topTitle = document.getElementById("topTitle");
 const mainTitle = document.getElementById("mainTitle");
 const mainInfo = document.getElementById("mainInfo");
+const countPill = document.getElementById("countPill");
 
 const searchInput = document.getElementById("searchInput");
 const categoryFilter = document.getElementById("categoryFilter");
 const typeFilter = document.getElementById("typeFilter");
 const channelList = document.getElementById("channelList");
+const reloadBtn = document.getElementById("reloadBtn");
 
 let player = null;
 let currentChannel = null;
 let currentUrl = "";
 let hideTimer = null;
+let CHANNELS = [];
 
-function init(){
-  buildCategories();
-  renderChannels();
+async function init(){
   bindEvents();
-
-  setTimeout(() => {
-    loadChannel(CHANNELS[0]);
-  }, 300);
-
   showPlayerUI();
+  await loadM3UChannels();
 }
 
 function bindEvents(){
@@ -824,6 +641,7 @@ function bindEvents(){
   volumeBar.addEventListener("input", onVolumeChange);
   fullBtn.addEventListener("click", toggleFullscreen);
   pipBtn.addEventListener("click", togglePiP);
+  reloadBtn.addEventListener("click", loadM3UChannels);
 
   searchInput.addEventListener("input", renderChannels);
   categoryFilter.addEventListener("change", renderChannels);
@@ -842,12 +660,214 @@ function bindEvents(){
   });
 }
 
+async function loadM3UChannels(){
+  countPill.textContent = "Cargando lista...";
+  mainInfo.textContent = "Cargando channels.m3u...";
+  channelList.innerHTML = `<div class="empty">Cargando canales...</div>`;
+
+  try{
+    const response = await fetch(CHANNELS_M3U + "?v=" + Date.now(), {
+      cache: "no-store"
+    });
+
+    if(!response.ok){
+      throw new Error("No se pudo cargar channels.m3u");
+    }
+
+    const text = await response.text();
+    CHANNELS = parseM3U(text);
+
+    if(!CHANNELS.length){
+      throw new Error("La lista M3U no tiene canales válidos");
+    }
+
+    buildCategories();
+    renderChannels();
+
+    countPill.textContent = CHANNELS.length + " canales";
+    mainInfo.textContent = "Elige un canal de la lista para iniciar la reproducción.";
+
+    if(!currentChannel){
+      loadChannel(CHANNELS[0]);
+    }
+
+  }catch(error){
+    console.error(error);
+    countPill.textContent = "Error";
+    channelList.innerHTML = `
+      <div class="empty">
+        No se pudo cargar channels.m3u.<br><br>
+        Sube el archivo <b>channels.m3u</b> al mismo repositorio de GitHub, junto a index.html.
+      </div>
+    `;
+    mainInfo.textContent = "No se pudo cargar la lista de canales.";
+  }
+}
+
+function parseM3U(text){
+  const lines = text.replace(/\r/g, "").split("\n");
+  const channels = [];
+
+  let current = null;
+  let pendingReferrer = "";
+  let pendingUserAgent = "";
+
+  for(const rawLine of lines){
+    const line = rawLine.trim();
+
+    if(!line) continue;
+
+    if(line.startsWith("#EXTVLCOPT:http-referrer=")){
+      pendingReferrer = line.replace("#EXTVLCOPT:http-referrer=", "").trim();
+      continue;
+    }
+
+    if(line.startsWith("#EXTVLCOPT:http-user-agent=")){
+      pendingUserAgent = line.replace("#EXTVLCOPT:http-user-agent=", "").trim();
+      continue;
+    }
+
+    if(line.startsWith("#EXTINF")){
+      const attrs = getAttributes(line);
+      const rawName = line.includes(",") ? line.substring(line.indexOf(",") + 1).trim() : "Canal sin nombre";
+      const parsed = parseChannelName(rawName);
+
+      current = {
+        id: attrs["tvg-id"] || "",
+        rawName,
+        name: parsed.name,
+        quality: parsed.quality,
+        note: parsed.note,
+        category: attrs["group-title"] || guessCategory(rawName, attrs["tvg-id"] || ""),
+        type: "video",
+        url: "",
+        referrer: pendingReferrer,
+        userAgent: pendingUserAgent
+      };
+
+      continue;
+    }
+
+    if(current && (line.startsWith("http://") || line.startsWith("https://"))){
+      current.url = line;
+      current.type = guessType(current);
+      channels.push(current);
+
+      current = null;
+      pendingReferrer = "";
+      pendingUserAgent = "";
+    }
+  }
+
+  return removeDuplicateChannels(channels);
+}
+
+function getAttributes(line){
+  const attrs = {};
+  const regex = /([\w-]+)="([^"]*)"/g;
+  let match;
+
+  while((match = regex.exec(line)) !== null){
+    attrs[match[1]] = match[2];
+  }
+
+  return attrs;
+}
+
+function parseChannelName(rawName){
+  let name = String(rawName || "Canal sin nombre").trim();
+  let quality = "AUTO";
+  let note = "";
+
+  const noteMatches = [...name.matchAll(/\[([^\]]+)\]/g)].map(m => m[1]);
+  if(noteMatches.length){
+    note = noteMatches.join(" / ");
+    name = name.replace(/\s*\[[^\]]+\]/g, "").trim();
+  }
+
+  const qualityMatch = name.match(/\(([^)]*(?:p|HD|SD|4K)[^)]*)\)/i);
+  if(qualityMatch){
+    quality = qualityMatch[1].trim();
+    name = name.replace(/\s*\([^)]*(?:p|HD|SD|4K)[^)]*\)/i, "").trim();
+  }
+
+  return {
+    name: name || rawName,
+    quality,
+    note
+  };
+}
+
+function guessCategory(name, id){
+  const text = (name + " " + id).toLowerCase();
+
+  if(text.includes("noticias") || text.includes("adn") || text.includes("milenio") || text.includes("telefórmula") || text.includes("teleformula") || text.includes("cbs") || text.includes("euronews") || text.includes("c4 en alerta")){
+    return "Noticias";
+  }
+
+  if(text.includes("deportes") || text.includes("tudn") || text.includes("sports") || text.includes("claro sports") || text.includes("fifa") || text.includes("lucha") || text.includes("pfl") || text.includes("dazn") || text.includes("red bull")){
+    return "Deportes";
+  }
+
+  if(text.includes("naruto") || text.includes("anime") || text.includes("avatar") || text.includes("boruto") || text.includes("one piece") || text.includes("hunter x hunter") || text.includes("death note") || text.includes("inuyasha") || text.includes("jojo")){
+    return "Anime";
+  }
+
+  if(text.includes("baby") || text.includes("nick") || text.includes("bob esponja") || text.includes("rugrats") || text.includes("padrinos") || text.includes("pitufos") || text.includes("infantil") || text.includes("kids") || text.includes("junior")){
+    return "Infantil";
+  }
+
+  if(text.includes("mtv") || text.includes("telehit") || text.includes("exa") || text.includes("karaoke") || text.includes("concert") || text.includes("stingray") || text.includes("teleritmo") || text.includes("jaripeo") || text.includes("música") || text.includes("musica")){
+    return "Música";
+  }
+
+  if(text.includes("cine") || text.includes("pelicula") || text.includes("película") || text.includes("golden") || text.includes("sony") || text.includes("amc") || text.includes("runtime") || text.includes("popcorn") || text.includes("tlnovelas") || text.includes("novelas") || text.includes("national geographic") || text.includes("series")){
+    return "Cine y Series";
+  }
+
+  if(text.includes("pluto") || text.includes("fast") || text.includes(".us@latam") || text.includes(".us@sd")){
+    return "Pluto / FAST";
+  }
+
+  if(text.includes(".mx") || text.includes("canal") || text.includes("tv") || text.includes("xe") || text.includes("xh")){
+    return "México / Regional";
+  }
+
+  return "General";
+}
+
+function guessType(channel){
+  const text = (channel.name + " " + channel.id).toLowerCase();
+
+  if(text.includes("radio") || text.includes("rne")){
+    return "audio";
+  }
+
+  return "video";
+}
+
+function removeDuplicateChannels(list){
+  const seen = new Set();
+  const clean = [];
+
+  for(const channel of list){
+    const key = channel.url.trim();
+
+    if(!key || seen.has(key)) continue;
+
+    seen.add(key);
+    clean.push(channel);
+  }
+
+  return clean;
+}
+
 function loadChannel(channel){
   currentChannel = channel;
   currentUrl = channel.url;
 
   mainTitle.textContent = channel.name;
-  mainInfo.textContent = `${channel.category} · ${channel.quality} · Cargando señal...`;
+  mainInfo.textContent = `${channel.category} · ${channel.quality} · Cargando señal original...`;
   topCategory.textContent = channel.category.toUpperCase();
   topTitle.textContent = channel.name;
 
@@ -861,7 +881,7 @@ function loadChannel(channel){
 
   const pluginsList = [];
 
-  if (window.HlsjsPlayback) {
+  if(window.HlsjsPlayback){
     pluginsList.push(window.HlsjsPlayback);
   }
 
@@ -888,12 +908,18 @@ function loadChannel(channel){
         lowLatencyMode: true,
         liveSyncDurationCount: 3,
         maxBufferLength: 24,
-        manifestLoadingMaxRetry: 6,
-        manifestLoadingRetryDelay: 1000,
-        levelLoadingMaxRetry: 6,
-        fragLoadingMaxRetry: 6,
-        keyLoadingMaxRetry: 6,
-        keyLoadingRetryDelay: 1000
+
+        manifestLoadingMaxRetry: 8,
+        manifestLoadingRetryDelay: 1200,
+
+        levelLoadingMaxRetry: 8,
+        levelLoadingRetryDelay: 1200,
+
+        fragLoadingMaxRetry: 8,
+        fragLoadingRetryDelay: 1200,
+
+        keyLoadingMaxRetry: 8,
+        keyLoadingRetryDelay: 1200
       }
     },
 
@@ -902,16 +928,19 @@ function loadChannel(channel){
         mainInfo.textContent = `${channel.category} · Listo`;
         syncVideoEvents();
       },
+
       onPlay: function(){
         updatePlayState();
-        mainInfo.textContent = `${channel.category} · Reproduciendo en vivo`;
+        mainInfo.textContent = `${channel.category} · Reproduciendo señal original`;
       },
+
       onPause: function(){
         updatePlayState();
       },
+
       onError: function(error){
         console.log("Clappr error:", error);
-        mainInfo.textContent = "No se pudo reproducir. Puede ser señal caída, bloqueo del canal o geobloqueo.";
+        mainInfo.textContent = "No se pudo reproducir esta señal original. Prueba otro canal.";
       }
     }
   });
@@ -921,18 +950,29 @@ function loadChannel(channel){
 }
 
 function shouldUseProxy(channel){
-  if (channel.useProxy) return true;
-  if (channel.url.startsWith("http://") && location.protocol === "https:") return true;
-  if (channel.url.includes("jmp2.uk/plu-")) return true;
+  if(USE_PROXY_FOR_ALL) return true;
+  if(channel.url.startsWith("http://") && location.protocol === "https:") return true;
+  if(channel.url.includes("jmp2.uk/plu-")) return true;
+  if(channel.referrer || channel.userAgent) return true;
   return false;
 }
 
 function getPlayableUrl(channel){
-  if (shouldUseProxy(channel)) {
-    return PROXY_BASE + encodeURIComponent(channel.url);
+  if(!shouldUseProxy(channel)){
+    return channel.url;
   }
 
-  return channel.url;
+  let url = PROXY_BASE + encodeURIComponent(channel.url);
+
+  if(channel.referrer){
+    url += "&ref=" + encodeURIComponent(channel.referrer);
+  }
+
+  if(channel.userAgent){
+    url += "&ua=" + encodeURIComponent(channel.userAgent);
+  }
+
+  return url;
 }
 
 function destroyPlayer(){
@@ -959,7 +999,7 @@ function syncVideoEvents(){
 
   video.addEventListener("playing", () => {
     if(currentChannel){
-      mainInfo.textContent = `${currentChannel.category} · Reproduciendo en vivo`;
+      mainInfo.textContent = `${currentChannel.category} · Reproduciendo señal original`;
     }
   });
 
@@ -1103,12 +1143,17 @@ function hidePlayerUI(delay = 0){
 function buildCategories(){
   const categories = [...new Set(CHANNELS.map(ch => ch.category))].sort();
 
+  const currentValue = categoryFilter.value || "all";
+  categoryFilter.innerHTML = `<option value="all">Todas las categorías</option>`;
+
   categories.forEach(cat => {
     const option = document.createElement("option");
     option.value = cat;
     option.textContent = cat;
     categoryFilter.appendChild(option);
   });
+
+  categoryFilter.value = categories.includes(currentValue) ? currentValue : "all";
 }
 
 function renderChannels(){
@@ -1117,9 +1162,14 @@ function renderChannels(){
   const type = typeFilter.value;
 
   const filtered = CHANNELS.filter(ch => {
-    const okSearch = ch.name.toLowerCase().includes(search);
+    const okSearch =
+      ch.name.toLowerCase().includes(search) ||
+      ch.rawName.toLowerCase().includes(search) ||
+      ch.id.toLowerCase().includes(search);
+
     const okCat = category === "all" || ch.category === category;
     const okType = type === "all" || ch.type === type;
+
     return okSearch && okCat && okType;
   });
 
@@ -1138,6 +1188,9 @@ function renderChannels(){
       item.classList.add("active");
     }
 
+    const refTag = ch.referrer ? `<span class="mini-tag">REF</span>` : "";
+    const uaTag = ch.userAgent ? `<span class="mini-tag">UA</span>` : "";
+
     item.innerHTML = `
       <div class="channel-logo">${getInitials(ch.name)}</div>
       <div class="channel-text">
@@ -1148,6 +1201,8 @@ function renderChannels(){
           <span class="mini-tag">${ch.type === "audio" ? "RADIO" : "TV"}</span>
           ${ch.note ? `<span class="mini-tag warning-tag">${escapeHtml(ch.note)}</span>` : ""}
           ${shouldUseProxy(ch) ? `<span class="mini-tag">PROXY</span>` : ""}
+          ${refTag}
+          ${uaTag}
         </div>
       </div>
     `;
@@ -1158,7 +1213,7 @@ function renderChannels(){
 }
 
 function getInitials(name){
-  return name
+  return String(name || "TV")
     .split(" ")
     .filter(Boolean)
     .slice(0,2)
