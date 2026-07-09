@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Watch TV Plus - Verificador de canales</title>
+<style>
+:root{
+  --bg:#05070b;
+  --panel:#0e1624;
+  --panel2:#121e30;
+  --text:#f8fafc;
+  --muted:#94a3b8;
+  --line:rgba(255,255,255,.09);
+  --ok:#22c55e;
+  --bad:#ef4444;
+  --warn:#f59e0b;
+  --blue:#60a5fa;
+}
+*{box-sizing:border-box;margin:0;padding:0;font-family:Arial,Helvetica,sans-serif}
+body{background:linear-gradient(180deg,#0b1020,#000);color:var(--text);min-height:100vh;padding:16px}
+.app{max-width:1300px;margin:0 auto}
+.header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+h1{font-size:22px}p{color:var(--muted);font-size:13px;line-height:1.45}.card{background:rgba(14,22,36,.92);border:1px solid var(--line);border-radius:18px;padding:14px;margin-bottom:12px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+.controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:12px}
+button,input,select{border:none;outline:none;border-radius:12px;padding:11px 13px;background:#12213a;color:#fff;font-weight:700}
+button{cursor:pointer;border:1px solid rgba(96,165,250,.25)}button.primary{background:#2563eb}button.ok{background:#15803d}button.danger{background:#991b1b}button:disabled{opacity:.5;cursor:not-allowed}
+input,select{font-weight:500;border:1px solid var(--line);background:#07101f;min-width:190px}.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:12px}.stat{background:#07101f;border:1px solid var(--line);border-radius:14px;padding:12px;text-align:center}.stat strong{display:block;font-size:22px}.stat span{color:var(--muted);font-size:12px}.bar{height:10px;background:#07101f;border:1px solid var(--line);border-radius:999px;overflow:hidden;margin-top:12px}.bar-fill{height:100%;width:0%;background:linear-gradient(90deg,#2563eb,#22c55e);transition:.2s}
+.table-wrap{overflow:auto;border-radius:16px;border:1px solid var(--line)}table{width:100%;border-collapse:collapse;background:rgba(7,16,31,.72);min-width:900px}th,td{padding:10px 12px;border-bottom:1px solid var(--line);text-align:left;font-size:13px;vertical-align:top}th{position:sticky;top:0;background:#0f1b2d;color:#dbeafe;z-index:2}tr:hover{background:rgba(255,255,255,.025)}.pill{display:inline-flex;align-items:center;gap:6px;padding:5px 8px;border-radius:999px;font-size:11px;font-weight:900;border:1px solid var(--line);white-space:nowrap}.pill.ok{background:rgba(34,197,94,.13);color:#86efac}.pill.bad{background:rgba(239,68,68,.13);color:#fecaca}.pill.pending{background:rgba(245,158,11,.13);color:#fde68a}.pill.checking{background:rgba(96,165,250,.13);color:#bfdbfe}.muted{color:var(--muted)}.url{max-width:360px;word-break:break-all;color:#cbd5e1}.small{font-size:12px;color:var(--muted)}.note{color:#fcd34d}.hidden{display:none!important}@media(max-width:760px){body{padding:10px}.stats{grid-template-columns:repeat(2,1fr)}h1{font-size:18px}.controls{display:grid;grid-template-columns:1fr}button,input,select{width:100%}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div>
+      <h1>Verificador de canales - Watch TV Plus</h1>
+      <p>Revisa cuáles canales cargan el manifest y el primer segmento usando tu Cloudflare Worker.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <p><b>Importante:</b> este verificador confirma si la playlist HLS y un segmento inicial responden. Un canal puede aparecer OK y aun así fallar más tarde por geobloqueo, token vencido o señal intermitente.</p>
+    <div class="controls">
+      <button class="primary" id="loadBtn">Cargar listas M3U</button>
+      <button class="ok" id="checkAllBtn" disabled>Revisar todos</button>
+      <button id="checkVisibleBtn" disabled>Revisar filtrados</button>
+      <button class="danger" id="stopBtn" disabled>Detener</button>
+      <button id="csvBtn" disabled>Descargar CSV</button>
+      <input id="searchInput" placeholder="Buscar canal..." />
+      <select id="statusFilter">
+        <option value="all">Todos los estados</option>
+        <option value="ok">Reproducibles</option>
+        <option value="bad">Fallan</option>
+        <option value="pending">Pendientes</option>
+      </select>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><strong id="totalCount">0</strong><span>Total</span></div>
+      <div class="stat"><strong id="okCount">0</strong><span>OK</span></div>
+      <div class="stat"><strong id="badCount">0</strong><span>Fallan</span></div>
+      <div class="stat"><strong id="pendingCount">0</strong><span>Pendientes</span></div>
+      <div class="stat"><strong id="checkedCount">0</strong><span>Revisados</span></div>
+    </div>
+
+    <div class="bar"><div class="bar-fill" id="progressFill"></div></div>
+    <p class="small" id="statusText">Listo.</p>
+  </div>
+
+  <div class="card">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Estado</th>
+            <th>Canal</th>
+            <th>Categoría</th>
+            <th>Calidad</th>
+            <th>Mensaje</th>
+            <th>URL</th>
+          </tr>
+        </thead>
+        <tbody id="tbody">
+          <tr><td colspan="7" class="muted">Carga la lista para empezar.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+const M3U_FILES = ["./channels.m3u", "./adult.m3u"];
+const CHECK_BASE = "https://hls-proxy-tv-plus.mikimc-business.workers.dev/check?url=";
+const CONCURRENCY = 6;
+
+let channels = [];
+let visibleChannels = [];
+let stopRequested = false;
+let running = false;
+
+const loadBtn = document.getElementById("loadBtn");
+const checkAllBtn = document.getElementById("checkAllBtn");
+const checkVisibleBtn = document.getElementById("checkVisibleBtn");
+const stopBtn = document.getElementById("stopBtn");
+const csvBtn = document.getElementById("csvBtn");
+const searchInput = document.getElementById("searchInput");
+const statusFilter = document.getElementById("statusFilter");
+const tbody = document.getElementById("tbody");
+const statusText = document.getElementById("statusText");
+const progressFill = document.getElementById("progressFill");
+
+loadBtn.addEventListener("click", loadChannels);
+checkAllBtn.addEventListener("click", () => runChecks(channels));
+checkVisibleBtn.addEventListener("click", () => runChecks(visibleChannels));
+stopBtn.addEventListener("click", () => { stopRequested = true; statusText.textContent = "Deteniendo..."; });
+csvBtn.addEventListener("click", downloadCSV);
+searchInput.addEventListener("input", render);
+statusFilter.addEventListener("change", render);
+
+async function loadChannels(){
+  statusText.textContent = "Cargando listas M3U...";
+  tbody.innerHTML = `<tr><td colspan="7" class="muted">Cargando...</td></tr>`;
+
+  try{
+    const texts = [];
+    for(const file of M3U_FILES){
+      const res = await fetch(file + "?v=" + Date.now(), {cache:"no-store"});
+      if(res.ok){
+        texts.push(await res.text());
+      }
+    }
+    if(!texts.length) throw new Error("No se pudieron cargar las listas M3U");
+    channels = parseM3U(texts.join("\n")).map((ch, i) => ({...ch, index:i+1, status:"pending", message:"Pendiente", stage:""}));
+    statusText.textContent = `Lista cargada: ${channels.length} canales.`;
+    checkAllBtn.disabled = false;
+    checkVisibleBtn.disabled = false;
+    csvBtn.disabled = false;
+    render();
+  }catch(e){
+    statusText.textContent = "Error: " + e.message;
+    tbody.innerHTML = `<tr><td colspan="7" class="muted">No se pudieron cargar las listas M3U.</td></tr>`;
+  }
+}
+
+function parseM3U(text){
+  const lines = text.replace(/\r/g, "").split("\n");
+  const list = [];
+  let current = null;
+  let pendingReferrer = "";
+  let pendingUserAgent = "";
+
+  for(const rawLine of lines){
+    const line = rawLine.trim();
+    if(!line) continue;
+
+    if(line.startsWith("#EXTVLCOPT:http-referrer=")){
+      pendingReferrer = line.replace("#EXTVLCOPT:http-referrer=", "").trim();
+      continue;
+    }
+
+    if(line.startsWith("#EXTVLCOPT:http-user-agent=")){
+      pendingUserAgent = line.replace("#EXTVLCOPT:http-user-agent=", "").trim();
+      continue;
+    }
+
+    if(line.startsWith("#EXTINF")){
+      const attrs = getAttributes(line);
+      const rawName = line.includes(",") ? line.substring(line.indexOf(",") + 1).trim() : "Canal sin nombre";
+      const parsed = parseChannelName(rawName);
+      current = {
+        id: attrs["tvg-id"] || "",
+        rawName,
+        name: parsed.name,
+        quality: parsed.quality,
+        note: parsed.note,
+        category: attrs["group-title"] || guessCategory(rawName, attrs["tvg-id"] || ""),
+        type: "video",
+        url: "",
+        referrer: pendingReferrer,
+        userAgent: pendingUserAgent
+      };
+      continue;
+    }
+
+    if(current && (line.startsWith("http://") || line.startsWith("https://"))){
+      current.url = line;
+      list.push(current);
+      current = null;
+      pendingReferrer = "";
+      pendingUserAgent = "";
+    }
+  }
+
+  const seen = new Set();
+  return list.filter(ch => {
+    if(seen.has(ch.url)) return false;
+    seen.add(ch.url);
+    return true;
+  });
+}
+
+function getAttributes(line){
+  const attrs = {};
+  const regex = /([\w-]+)="([^"]*)"/g;
+  let match;
+  while((match = regex.exec(line)) !== null){ attrs[match[1]] = match[2]; }
+  return attrs;
+}
+
+function parseChannelName(rawName){
+  let name = String(rawName || "Canal sin nombre").trim();
+  let quality = "AUTO";
+  let note = "";
+  const noteMatches = [...name.matchAll(/\[([^\]]+)\]/g)].map(m => m[1]);
+  if(noteMatches.length){ note = noteMatches.join(" / "); name = name.replace(/\s*\[[^\]]+\]/g, "").trim(); }
+  const qualityMatch = name.match(/\(([^)]*(?:p|HD|SD|4K)[^)]*)\)/i);
+  if(qualityMatch){ quality = qualityMatch[1].trim(); name = name.replace(/\s*\([^)]*(?:p|HD|SD|4K)[^)]*\)/i, "").trim(); }
+  return {name: name || rawName, quality, note};
+}
+
+function guessCategory(name, id){
+  const text = (name + " " + id).toLowerCase();
+  if(text.includes("noticias") || text.includes("adn") || text.includes("milenio") || text.includes("telefórmula") || text.includes("teleformula") || text.includes("cbs") || text.includes("euronews")) return "Noticias";
+  if(text.includes("deportes") || text.includes("tudn") || text.includes("sports") || text.includes("fifa") || text.includes("lucha") || text.includes("dazn")) return "Deportes";
+  if(text.includes("naruto") || text.includes("anime") || text.includes("avatar") || text.includes("boruto") || text.includes("one piece") || text.includes("hunter")) return "Anime";
+  if(text.includes("baby") || text.includes("nick") || text.includes("bob esponja") || text.includes("kids") || text.includes("junior")) return "Infantil";
+  if(text.includes("mtv") || text.includes("telehit") || text.includes("exa") || text.includes("karaoke") || text.includes("concert") || text.includes("stingray")) return "Música";
+  if(text.includes("cine") || text.includes("pelicula") || text.includes("película") || text.includes("golden") || text.includes("sony") || text.includes("amc") || text.includes("novelas") || text.includes("series")) return "Cine y Series";
+  if(text.includes("pluto") || text.includes(".us@latam") || text.includes(".us@sd")) return "Pluto / FAST";
+  if(text.includes(".mx") || text.includes("canal") || text.includes("tv")) return "México / Regional";
+  return "General";
+}
+
+async function runChecks(list){
+  if(running) return;
+  running = true;
+  stopRequested = false;
+  stopBtn.disabled = false;
+  checkAllBtn.disabled = true;
+  checkVisibleBtn.disabled = true;
+  statusText.textContent = `Revisando ${list.length} canales...`;
+
+  let queue = list.filter(ch => ch.status === "pending" || ch.status === "bad" || ch.status === "ok");
+  let active = 0;
+  let pointer = 0;
+
+  await new Promise(resolve => {
+    const next = () => {
+      if(stopRequested && active === 0) return resolve();
+      while(!stopRequested && active < CONCURRENCY && pointer < queue.length){
+        const ch = queue[pointer++];
+        active++;
+        checkChannel(ch).finally(() => {
+          active--;
+          updateStats();
+          render(false);
+          if(pointer >= queue.length && active === 0) resolve();
+          else next();
+        });
+      }
+      if((stopRequested || pointer >= queue.length) && active === 0) resolve();
+    };
+    next();
+  });
+
+  running = false;
+  stopBtn.disabled = true;
+  checkAllBtn.disabled = false;
+  checkVisibleBtn.disabled = false;
+  statusText.textContent = stopRequested ? "Revisión detenida." : "Revisión terminada.";
+  updateStats();
+  render();
+}
+
+async function checkChannel(ch){
+  ch.status = "checking";
+  ch.message = "Revisando...";
+  render(false);
+
+  try{
+    let url = CHECK_BASE + encodeURIComponent(ch.url);
+    if(ch.referrer) url += "&ref=" + encodeURIComponent(ch.referrer);
+    if(ch.userAgent) url += "&ua=" + encodeURIComponent(ch.userAgent);
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 18000);
+    const res = await fetch(url, {cache:"no-store", signal: controller.signal});
+    clearTimeout(timeout);
+    const data = await res.json();
+
+    ch.status = data.ok ? "ok" : "bad";
+    ch.stage = data.stage || "";
+    ch.message = data.message || (data.ok ? "OK" : "Falló");
+    ch.details = data;
+  }catch(e){
+    ch.status = "bad";
+    ch.stage = "fetch";
+    ch.message = e.name === "AbortError" ? "Tiempo agotado" : e.message;
+  }
+}
+
+function render(doStats = true){
+  const search = searchInput.value.trim().toLowerCase();
+  const status = statusFilter.value;
+
+  visibleChannels = channels.filter(ch => {
+    const matchesSearch = !search || (ch.name + " " + ch.category + " " + ch.url).toLowerCase().includes(search);
+    const matchesStatus = status === "all" || ch.status === status;
+    return matchesSearch && matchesStatus;
+  });
+
+  if(!visibleChannels.length){
+    tbody.innerHTML = `<tr><td colspan="7" class="muted">No hay canales para mostrar.</td></tr>`;
+  }else{
+    tbody.innerHTML = visibleChannels.map(ch => `
+      <tr>
+        <td>${ch.index}</td>
+        <td>${statusPill(ch.status)}</td>
+        <td><b>${escapeHtml(ch.name)}</b>${ch.note ? `<div class="small note">${escapeHtml(ch.note)}</div>` : ""}${ch.referrer ? `<div class="small">REF</div>` : ""}</td>
+        <td>${escapeHtml(ch.category)}</td>
+        <td>${escapeHtml(ch.quality)}</td>
+        <td>${escapeHtml(ch.message)}${ch.stage ? `<div class="small">Etapa: ${escapeHtml(ch.stage)}</div>` : ""}</td>
+        <td class="url">${escapeHtml(ch.url)}</td>
+      </tr>
+    `).join("");
+  }
+
+  if(doStats) updateStats();
+}
+
+function statusPill(status){
+  if(status === "ok") return `<span class="pill ok">OK</span>`;
+  if(status === "bad") return `<span class="pill bad">FALLA</span>`;
+  if(status === "checking") return `<span class="pill checking">REVISANDO</span>`;
+  return `<span class="pill pending">PENDIENTE</span>`;
+}
+
+function updateStats(){
+  const total = channels.length;
+  const ok = channels.filter(c => c.status === "ok").length;
+  const bad = channels.filter(c => c.status === "bad").length;
+  const pending = channels.filter(c => c.status === "pending" || c.status === "checking").length;
+  const checked = ok + bad;
+  document.getElementById("totalCount").textContent = total;
+  document.getElementById("okCount").textContent = ok;
+  document.getElementById("badCount").textContent = bad;
+  document.getElementById("pendingCount").textContent = pending;
+  document.getElementById("checkedCount").textContent = checked;
+  progressFill.style.width = total ? ((checked / total) * 100).toFixed(1) + "%" : "0%";
+}
+
+function downloadCSV(){
+  const header = ["index","status","name","category","quality","message","stage","url"];
+  const rows = channels.map(ch => [ch.index,ch.status,ch.name,ch.category,ch.quality,ch.message,ch.stage,ch.url]);
+  const csv = [header, ...rows].map(row => row.map(cell => `"${String(cell ?? "").replaceAll('"','""')}"`).join(",")).join("\n");
+  const blob = new Blob([csv], {type:"text/csv;charset=utf-8"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "resultado-canales.csv";
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function escapeHtml(text){
+  return String(text || "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+loadChannels();
+</script>
+</body>
+</html>

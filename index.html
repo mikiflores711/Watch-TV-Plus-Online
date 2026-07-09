@@ -96,6 +96,10 @@ body{
 }
 
 .player-card{
+  position:sticky;
+  top:12px;
+  z-index:30;
+  align-self:start;
   background:rgba(255,255,255,.03);
   border:1px solid var(--line);
   border-radius:22px;
@@ -340,6 +344,70 @@ body{
   margin-top:10px;
 }
 
+
+
+.section-tabs{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:8px;
+  margin-bottom:10px;
+}
+
+.tab-btn{
+  min-height:40px;
+  border:none;
+  border-radius:12px;
+  background:#0d1522;
+  color:#dbeafe;
+  font-weight:900;
+  cursor:pointer;
+  border:1px solid var(--line);
+}
+
+.tab-btn.active{
+  background:#1d4ed8;
+  border-color:rgba(147,197,253,.55);
+}
+
+.tab-btn.adult-tab{
+  background:rgba(153,27,27,.35);
+  border-color:rgba(248,113,113,.25);
+}
+
+.tab-btn.adult-tab.active{
+  background:#991b1b;
+}
+
+.favorite-btn{
+  width:34px;
+  height:34px;
+  border:none;
+  border-radius:50%;
+  background:#12213a;
+  color:#94a3b8;
+  font-size:17px;
+  cursor:pointer;
+  flex:0 0 34px;
+  border:1px solid rgba(255,255,255,.08);
+}
+
+.favorite-btn.active{
+  color:#facc15;
+  background:rgba(250,204,21,.14);
+  border-color:rgba(250,204,21,.35);
+}
+
+.adult-notice{
+  margin-bottom:10px;
+  padding:10px 12px;
+  border-radius:12px;
+  background:rgba(153,27,27,.18);
+  border:1px solid rgba(248,113,113,.22);
+  color:#fecaca;
+  font-size:12px;
+  line-height:1.4;
+}
+
 .action-row{
   margin-top:10px;
   display:grid;
@@ -453,6 +521,19 @@ body{
     padding:10px;
   }
 
+  .player-card{
+    position:sticky;
+    top:0;
+    z-index:60;
+    border-radius:0 0 18px 18px;
+    margin:-10px -10px 0;
+    width:calc(100% + 20px);
+  }
+
+  .player-stage{
+    aspect-ratio:16/9;
+  }
+
   .watching-box{
     top:10px;
     left:10px;
@@ -480,6 +561,10 @@ body{
   }
 
   .filters{
+    grid-template-columns:1fr;
+  }
+
+  .section-tabs{
     grid-template-columns:1fr;
   }
 }
@@ -566,6 +651,14 @@ body{
     <aside class="sidebar">
 
       <div class="side-card">
+        <div class="section-tabs">
+          <button class="tab-btn active" data-section="tv">TV</button>
+          <button class="tab-btn" data-section="favorites">Favoritos</button>
+          <button class="tab-btn adult-tab" data-section="adult">Adultos 18+</button>
+        </div>
+
+        <div id="adultNotice" class="adult-notice" style="display:none;">Sección exclusiva para mayores de 18 años. El acceso queda guardado solo en este navegador.</div>
+
         <input id="searchInput" class="search-input" type="text" placeholder="Buscar canal..." />
 
         <div class="filters">
@@ -599,7 +692,10 @@ body{
 <script>
 const PROXY_BASE = "https://hls-proxy-tv-plus.mikimc-business.workers.dev/proxy?url=";
 const CHANNELS_M3U = "./channels.m3u";
+const ADULT_M3U = "./adult.m3u";
 const USE_PROXY_FOR_ALL = true;
+const FAVORITES_KEY = "watch_tv_plus_favorites_v1";
+const ADULT_UNLOCK_KEY = "watch_tv_plus_adult_unlocked_v1";
 
 const playerStage = document.getElementById("playerStage");
 const playBtn = document.getElementById("playBtn");
@@ -622,12 +718,19 @@ const categoryFilter = document.getElementById("categoryFilter");
 const typeFilter = document.getElementById("typeFilter");
 const channelList = document.getElementById("channelList");
 const reloadBtn = document.getElementById("reloadBtn");
+const adultNotice = document.getElementById("adultNotice");
+const sectionButtons = document.querySelectorAll(".tab-btn[data-section]");
 
 let player = null;
 let currentChannel = null;
 let currentUrl = "";
 let hideTimer = null;
 let CHANNELS = [];
+let BASE_CHANNELS = [];
+let ADULT_CHANNELS = [];
+let activeSection = "tv";
+let favoriteUrls = loadFavoriteUrls();
+let adultUnlocked = localStorage.getItem(ADULT_UNLOCK_KEY) === "1";
 
 async function init(){
   bindEvents();
@@ -642,6 +745,10 @@ function bindEvents(){
   fullBtn.addEventListener("click", toggleFullscreen);
   pipBtn.addEventListener("click", togglePiP);
   reloadBtn.addEventListener("click", loadM3UChannels);
+
+  sectionButtons.forEach(btn => {
+    btn.addEventListener("click", () => setSection(btn.dataset.section));
+  });
 
   searchInput.addEventListener("input", renderChannels);
   categoryFilter.addEventListener("change", renderChannels);
@@ -661,34 +768,50 @@ function bindEvents(){
 }
 
 async function loadM3UChannels(){
-  countPill.textContent = "Cargando lista...";
-  mainInfo.textContent = "Cargando channels.m3u...";
+  countPill.textContent = "Cargando listas...";
+  mainInfo.textContent = "Cargando listas M3U...";
   channelList.innerHTML = `<div class="empty">Cargando canales...</div>`;
 
   try{
-    const response = await fetch(CHANNELS_M3U + "?v=" + Date.now(), {
-      cache: "no-store"
-    });
+    const [tvResponse, adultResponse] = await Promise.all([
+      fetch(CHANNELS_M3U + "?v=" + Date.now(), { cache: "no-store" }),
+      fetch(ADULT_M3U + "?v=" + Date.now(), { cache: "no-store" })
+    ]);
 
-    if(!response.ok){
+    if(!tvResponse.ok){
       throw new Error("No se pudo cargar channels.m3u");
     }
 
-    const text = await response.text();
-    CHANNELS = parseM3U(text);
+    const tvText = await tvResponse.text();
+    BASE_CHANNELS = parseM3U(tvText).map(ch => ({...ch, section:"tv", isAdult:false}));
+
+    if(adultResponse.ok){
+      const adultText = await adultResponse.text();
+      ADULT_CHANNELS = parseM3U(adultText).map(ch => ({
+        ...ch,
+        section:"adult",
+        isAdult:true,
+        category:"Adultos 18+",
+        note: ch.note || "18+"
+      }));
+    } else {
+      ADULT_CHANNELS = [];
+    }
+
+    CHANNELS = [...BASE_CHANNELS, ...ADULT_CHANNELS];
 
     if(!CHANNELS.length){
-      throw new Error("La lista M3U no tiene canales válidos");
+      throw new Error("Las listas M3U no tienen canales válidos");
     }
 
     buildCategories();
     renderChannels();
 
-    countPill.textContent = CHANNELS.length + " canales";
+    countPill.textContent = BASE_CHANNELS.length + " TV · " + ADULT_CHANNELS.length + " 18+";
     mainInfo.textContent = "Elige un canal de la lista para iniciar la reproducción.";
 
-    if(!currentChannel){
-      loadChannel(CHANNELS[0]);
+    if(!currentChannel && BASE_CHANNELS.length){
+      loadChannel(BASE_CHANNELS[0]);
     }
 
   }catch(error){
@@ -696,8 +819,8 @@ async function loadM3UChannels(){
     countPill.textContent = "Error";
     channelList.innerHTML = `
       <div class="empty">
-        No se pudo cargar channels.m3u.<br><br>
-        Sube el archivo <b>channels.m3u</b> al mismo repositorio de GitHub, junto a index.html.
+        No se pudieron cargar las listas M3U.<br><br>
+        Sube <b>channels.m3u</b> y <b>adult.m3u</b> junto a index.html.
       </div>
     `;
     mainInfo.textContent = "No se pudo cargar la lista de canales.";
@@ -800,6 +923,10 @@ function parseChannelName(rawName){
 
 function guessCategory(name, id){
   const text = (name + " " + id).toLowerCase();
+
+  if(text.includes("adult") || text.includes("18+")){
+    return "Adultos 18+";
+  }
 
   if(text.includes("noticias") || text.includes("adn") || text.includes("milenio") || text.includes("telefórmula") || text.includes("teleformula") || text.includes("cbs") || text.includes("euronews") || text.includes("c4 en alerta")){
     return "Noticias";
@@ -1141,7 +1268,8 @@ function hidePlayerUI(delay = 0){
 }
 
 function buildCategories(){
-  const categories = [...new Set(CHANNELS.map(ch => ch.category))].sort();
+  const source = getSectionChannels(false);
+  const categories = [...new Set(source.map(ch => ch.category))].sort();
 
   const currentValue = categoryFilter.value || "all";
   categoryFilter.innerHTML = `<option value="all">Todas las categorías</option>`;
@@ -1161,7 +1289,9 @@ function renderChannels(){
   const category = categoryFilter.value;
   const type = typeFilter.value;
 
-  const filtered = CHANNELS.filter(ch => {
+  let source = getSectionChannels(true);
+
+  const filtered = source.filter(ch => {
     const okSearch =
       ch.name.toLowerCase().includes(search) ||
       ch.rawName.toLowerCase().includes(search) ||
@@ -1175,8 +1305,16 @@ function renderChannels(){
 
   channelList.innerHTML = "";
 
+  if(activeSection === "adult" && !adultUnlocked){
+    channelList.innerHTML = `<div class="empty">Sección bloqueada. Presiona <b>Adultos 18+</b> y confirma que eres mayor de edad.</div>`;
+    return;
+  }
+
   if(!filtered.length){
-    channelList.innerHTML = `<div class="empty">No se encontraron canales.</div>`;
+    const msg = activeSection === "favorites"
+      ? "No tienes canales favoritos todavía. Presiona la estrella de un canal para guardarlo aquí."
+      : "No se encontraron canales.";
+    channelList.innerHTML = `<div class="empty">${msg}</div>`;
     return;
   }
 
@@ -1190,6 +1328,8 @@ function renderChannels(){
 
     const refTag = ch.referrer ? `<span class="mini-tag">REF</span>` : "";
     const uaTag = ch.userAgent ? `<span class="mini-tag">UA</span>` : "";
+    const adultTag = ch.isAdult ? `<span class="mini-tag warning-tag">18+</span>` : "";
+    const isFav = isFavorite(ch.url);
 
     item.innerHTML = `
       <div class="channel-logo">${getInitials(ch.name)}</div>
@@ -1199,17 +1339,87 @@ function renderChannels(){
         <div class="tag-row">
           <span class="mini-tag">EN VIVO</span>
           <span class="mini-tag">${ch.type === "audio" ? "RADIO" : "TV"}</span>
+          ${adultTag}
           ${ch.note ? `<span class="mini-tag warning-tag">${escapeHtml(ch.note)}</span>` : ""}
           ${shouldUseProxy(ch) ? `<span class="mini-tag">PROXY</span>` : ""}
           ${refTag}
           ${uaTag}
         </div>
       </div>
+      <button class="favorite-btn ${isFav ? "active" : ""}" title="Agregar a favoritos">${isFav ? "★" : "☆"}</button>
     `;
 
     item.addEventListener("click", () => loadChannel(ch));
+
+    const favBtn = item.querySelector(".favorite-btn");
+    favBtn.addEventListener("click", event => {
+      event.stopPropagation();
+      toggleFavorite(ch.url);
+    });
+
     channelList.appendChild(item);
   });
+}
+
+function getSectionChannels(requireUnlocked = true){
+  if(activeSection === "adult"){
+    if(requireUnlocked && !adultUnlocked) return [];
+    return ADULT_CHANNELS;
+  }
+
+  if(activeSection === "favorites"){
+    return CHANNELS.filter(ch => isFavorite(ch.url));
+  }
+
+  return BASE_CHANNELS;
+}
+
+function setSection(section){
+  if(section === "adult" && !adultUnlocked){
+    const ok = confirm("Esta sección contiene contenido solo para adultos. Confirma que tienes 18 años o más para continuar.");
+    if(!ok) return;
+    adultUnlocked = true;
+    localStorage.setItem(ADULT_UNLOCK_KEY, "1");
+  }
+
+  activeSection = section;
+
+  sectionButtons.forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.section === activeSection);
+  });
+
+  adultNotice.style.display = activeSection === "adult" ? "block" : "none";
+
+  buildCategories();
+  renderChannels();
+}
+
+function loadFavoriteUrls(){
+  try{
+    const saved = JSON.parse(localStorage.getItem(FAVORITES_KEY) || "[]");
+    return new Set(Array.isArray(saved) ? saved : []);
+  }catch(error){
+    return new Set();
+  }
+}
+
+function saveFavoriteUrls(){
+  localStorage.setItem(FAVORITES_KEY, JSON.stringify([...favoriteUrls]));
+}
+
+function isFavorite(url){
+  return favoriteUrls.has(url);
+}
+
+function toggleFavorite(url){
+  if(favoriteUrls.has(url)){
+    favoriteUrls.delete(url);
+  }else{
+    favoriteUrls.add(url);
+  }
+
+  saveFavoriteUrls();
+  renderChannels();
 }
 
 function getInitials(name){
