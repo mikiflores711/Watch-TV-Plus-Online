@@ -3,375 +3,183 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Watch TV Plus - Verificador de canales</title>
+<title>Verificador de Canales - Watch TV Plus</title>
 <style>
-:root{
-  --bg:#05070b;
-  --panel:#0e1624;
-  --panel2:#121e30;
-  --text:#f8fafc;
-  --muted:#94a3b8;
-  --line:rgba(255,255,255,.09);
-  --ok:#22c55e;
-  --bad:#ef4444;
-  --warn:#f59e0b;
-  --blue:#60a5fa;
-}
-*{box-sizing:border-box;margin:0;padding:0;font-family:Arial,Helvetica,sans-serif}
-body{background:linear-gradient(180deg,#0b1020,#000);color:var(--text);min-height:100vh;padding:16px}
-.app{max-width:1300px;margin:0 auto}
-.header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}
-h1{font-size:22px}p{color:var(--muted);font-size:13px;line-height:1.45}.card{background:rgba(14,22,36,.92);border:1px solid var(--line);border-radius:18px;padding:14px;margin-bottom:12px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
-.controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:12px}
-button,input,select{border:none;outline:none;border-radius:12px;padding:11px 13px;background:#12213a;color:#fff;font-weight:700}
-button{cursor:pointer;border:1px solid rgba(96,165,250,.25)}button.primary{background:#2563eb}button.ok{background:#15803d}button.danger{background:#991b1b}button:disabled{opacity:.5;cursor:not-allowed}
-input,select{font-weight:500;border:1px solid var(--line);background:#07101f;min-width:190px}.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:12px}.stat{background:#07101f;border:1px solid var(--line);border-radius:14px;padding:12px;text-align:center}.stat strong{display:block;font-size:22px}.stat span{color:var(--muted);font-size:12px}.bar{height:10px;background:#07101f;border:1px solid var(--line);border-radius:999px;overflow:hidden;margin-top:12px}.bar-fill{height:100%;width:0%;background:linear-gradient(90deg,#2563eb,#22c55e);transition:.2s}
-.table-wrap{overflow:auto;border-radius:16px;border:1px solid var(--line)}table{width:100%;border-collapse:collapse;background:rgba(7,16,31,.72);min-width:900px}th,td{padding:10px 12px;border-bottom:1px solid var(--line);text-align:left;font-size:13px;vertical-align:top}th{position:sticky;top:0;background:#0f1b2d;color:#dbeafe;z-index:2}tr:hover{background:rgba(255,255,255,.025)}.pill{display:inline-flex;align-items:center;gap:6px;padding:5px 8px;border-radius:999px;font-size:11px;font-weight:900;border:1px solid var(--line);white-space:nowrap}.pill.ok{background:rgba(34,197,94,.13);color:#86efac}.pill.bad{background:rgba(239,68,68,.13);color:#fecaca}.pill.pending{background:rgba(245,158,11,.13);color:#fde68a}.pill.checking{background:rgba(96,165,250,.13);color:#bfdbfe}.muted{color:var(--muted)}.url{max-width:360px;word-break:break-all;color:#cbd5e1}.small{font-size:12px;color:var(--muted)}.note{color:#fcd34d}.hidden{display:none!important}@media(max-width:760px){body{padding:10px}.stats{grid-template-columns:repeat(2,1fr)}h1{font-size:18px}.controls{display:grid;grid-template-columns:1fr}button,input,select{width:100%}}
+*{box-sizing:border-box;margin:0;padding:0}body{font-family:Arial,Helvetica,sans-serif;background:#05070b;color:#f8fafc;padding:16px}.wrap{max-width:1200px;margin:auto}header{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:14px}.brand h1{font-size:22px}.brand p{font-size:13px;color:#94a3b8;margin-top:4px}.card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:14px;margin-bottom:12px}.controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.input,select,button{height:42px;border-radius:12px;border:1px solid rgba(255,255,255,.1);background:#0d1522;color:#fff;padding:0 12px;outline:none}button{font-weight:800;cursor:pointer}.primary{background:#1d4ed8}.danger{background:#7f1d1d}.good{color:#86efac}.bad{color:#fca5a5}.wait{color:#fde68a}.muted{color:#94a3b8}.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.stat{background:#0d1522;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:12px}.stat b{font-size:22px;display:block;margin-bottom:4px}table{width:100%;border-collapse:collapse;background:rgba(255,255,255,.03);border-radius:14px;overflow:hidden}th,td{border-bottom:1px solid rgba(255,255,255,.07);padding:10px;text-align:left;font-size:13px;vertical-align:top}th{background:#0d1522;color:#dbeafe;position:sticky;top:0}td.url{max-width:380px;word-break:break-all;color:#93c5fd}.status-pill{display:inline-flex;align-items:center;justify-content:center;border-radius:999px;padding:5px 8px;font-weight:900;font-size:11px;background:#111827}.status-ok{background:rgba(22,101,52,.35);color:#bbf7d0}.status-fail{background:rgba(127,29,29,.35);color:#fecaca}.status-pending{background:rgba(113,63,18,.35);color:#fde68a}@media(max-width:720px){.stats{grid-template-columns:1fr 1fr}table{display:block;overflow:auto}.controls>*{width:100%}}
 </style>
 </head>
 <body>
-<div class="app">
-  <div class="header">
-    <div>
-      <h1>Verificador de canales - Watch TV Plus</h1>
-      <p>Revisa cuáles canales cargan el manifest y el primer segmento usando tu Cloudflare Worker.</p>
-    </div>
-  </div>
+<div class="wrap">
+<header>
+  <div class="brand"><h1>Verificador de Canales</h1><p>Revisa si cada canal abre manifest, llave y primer segmento usando tu Worker.</p></div>
+  <button onclick="location.href='./index.html'">Volver al reproductor</button>
+</header>
 
-  <div class="card">
-    <p><b>Importante:</b> este verificador confirma si la playlist HLS y un segmento inicial responden. Un canal puede aparecer OK y aun así fallar más tarde por geobloqueo, token vencido o señal intermitente.</p>
-    <div class="controls">
-      <button class="primary" id="loadBtn">Cargar listas M3U</button>
-      <button class="ok" id="checkAllBtn" disabled>Revisar todos</button>
-      <button id="checkVisibleBtn" disabled>Revisar filtrados</button>
-      <button class="danger" id="stopBtn" disabled>Detener</button>
-      <button id="csvBtn" disabled>Descargar CSV</button>
-      <input id="searchInput" placeholder="Buscar canal..." />
-      <select id="statusFilter">
-        <option value="all">Todos los estados</option>
-        <option value="ok">Reproducibles</option>
-        <option value="bad">Fallan</option>
-        <option value="pending">Pendientes</option>
-      </select>
-    </div>
-
-    <div class="stats">
-      <div class="stat"><strong id="totalCount">0</strong><span>Total</span></div>
-      <div class="stat"><strong id="okCount">0</strong><span>OK</span></div>
-      <div class="stat"><strong id="badCount">0</strong><span>Fallan</span></div>
-      <div class="stat"><strong id="pendingCount">0</strong><span>Pendientes</span></div>
-      <div class="stat"><strong id="checkedCount">0</strong><span>Revisados</span></div>
-    </div>
-
-    <div class="bar"><div class="bar-fill" id="progressFill"></div></div>
-    <p class="small" id="statusText">Listo.</p>
-  </div>
-
-  <div class="card">
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Estado</th>
-            <th>Canal</th>
-            <th>Categoría</th>
-            <th>Calidad</th>
-            <th>Mensaje</th>
-            <th>URL</th>
-          </tr>
-        </thead>
-        <tbody id="tbody">
-          <tr><td colspan="7" class="muted">Carga la lista para empezar.</td></tr>
-        </tbody>
-      </table>
-    </div>
+<div class="card">
+  <div class="controls">
+    <select id="playlistSelect"></select>
+    <input class="input" id="searchInput" placeholder="Buscar canal..." />
+    <button class="primary" id="loadBtn">Cargar lista</button>
+    <button class="primary" id="checkVisibleBtn">Revisar visibles</button>
+    <button id="stopBtn">Detener</button>
+    <button id="csvBtn">Descargar CSV</button>
   </div>
 </div>
 
+<div class="stats card">
+  <div class="stat"><b id="totalStat">0</b><span class="muted">Total</span></div>
+  <div class="stat"><b id="okStat" class="good">0</b><span class="muted">OK</span></div>
+  <div class="stat"><b id="failStat" class="bad">0</b><span class="muted">Falla</span></div>
+  <div class="stat"><b id="pendingStat" class="wait">0</b><span class="muted">Pendiente</span></div>
+</div>
+
+<div class="card">
+  <div id="message" class="muted">Carga una lista para comenzar.</div>
+</div>
+
+<div class="card" style="overflow:auto;max-height:70vh;padding:0">
+<table>
+  <thead><tr><th>Estado</th><th>Canal</th><th>Lista</th><th>URL</th><th>Mensaje</th></tr></thead>
+  <tbody id="tbody"></tbody>
+</table>
+</div>
+</div>
+
 <script>
-const M3U_FILES = ["./channels.m3u", "./mundial.m3u", "./adult.m3u"];
-const CHECK_BASE = "https://hls-proxy-tv-plus.mikimc-business.workers.dev/check?url=";
-const CONCURRENCY = 6;
+const WORKER = "https://hls-proxy-tv-plus.mikimc-business.workers.dev";
+const PLAYLISTS = [
+  { id:"mexico", label:"México", file:"./mexico.m3u", isAdult:false },
+  { id:"pluto", label:"Pluto TV", file:"./pluto.m3u", isAdult:false },
+  { id:"espanol", label:"Español", file:"./espanol.m3u", isAdult:false },
+  { id:"ingles", label:"Inglés", file:"./ingles.m3u", isAdult:false },
+  { id:"mundial", label:"Mundial", file:"./mundial.m3u", isAdult:false },
+  { id:"adult", label:"Adultos 18+", file:"./adult.m3u", isAdult:true }
+];
 
-let channels = [];
-let visibleChannels = [];
-let stopRequested = false;
-let running = false;
-
+const playlistSelect = document.getElementById("playlistSelect");
+const searchInput = document.getElementById("searchInput");
 const loadBtn = document.getElementById("loadBtn");
-const checkAllBtn = document.getElementById("checkAllBtn");
 const checkVisibleBtn = document.getElementById("checkVisibleBtn");
 const stopBtn = document.getElementById("stopBtn");
 const csvBtn = document.getElementById("csvBtn");
-const searchInput = document.getElementById("searchInput");
-const statusFilter = document.getElementById("statusFilter");
 const tbody = document.getElementById("tbody");
-const statusText = document.getElementById("statusText");
-const progressFill = document.getElementById("progressFill");
+const message = document.getElementById("message");
+const totalStat = document.getElementById("totalStat");
+const okStat = document.getElementById("okStat");
+const failStat = document.getElementById("failStat");
+const pendingStat = document.getElementById("pendingStat");
+let channels = [];
+let stop = false;
 
-loadBtn.addEventListener("click", loadChannels);
-checkAllBtn.addEventListener("click", () => runChecks(channels));
-checkVisibleBtn.addEventListener("click", () => runChecks(visibleChannels));
-stopBtn.addEventListener("click", () => { stopRequested = true; statusText.textContent = "Deteniendo..."; });
-csvBtn.addEventListener("click", downloadCSV);
-searchInput.addEventListener("input", render);
-statusFilter.addEventListener("change", render);
-
-async function loadChannels(){
-  statusText.textContent = "Cargando listas M3U...";
-  tbody.innerHTML = `<tr><td colspan="7" class="muted">Cargando...</td></tr>`;
-
-  try{
-    const texts = [];
-    for(const file of M3U_FILES){
-      const res = await fetch(file + "?v=" + Date.now(), {cache:"no-store"});
-      if(res.ok){
-        texts.push(await res.text());
-      }
-    }
-    if(!texts.length) throw new Error("No se pudieron cargar las listas M3U");
-    channels = parseM3U(texts.join("\n")).map((ch, i) => ({...ch, index:i+1, status:"pending", message:"Pendiente", stage:""}));
-    statusText.textContent = `Lista cargada: ${channels.length} canales.`;
-    checkAllBtn.disabled = false;
-    checkVisibleBtn.disabled = false;
-    csvBtn.disabled = false;
-    render();
-  }catch(e){
-    statusText.textContent = "Error: " + e.message;
-    tbody.innerHTML = `<tr><td colspan="7" class="muted">No se pudieron cargar las listas M3U.</td></tr>`;
-  }
-}
-
-function parseM3U(text){
-  const lines = text.replace(/\r/g, "").split("\n");
-  const list = [];
-  let current = null;
-  let pendingReferrer = "";
-  let pendingUserAgent = "";
-
-  for(const rawLine of lines){
-    const line = rawLine.trim();
-    if(!line) continue;
-
-    if(line.startsWith("#EXTVLCOPT:http-referrer=")){
-      pendingReferrer = line.replace("#EXTVLCOPT:http-referrer=", "").trim();
-      continue;
-    }
-
-    if(line.startsWith("#EXTVLCOPT:http-user-agent=")){
-      pendingUserAgent = line.replace("#EXTVLCOPT:http-user-agent=", "").trim();
-      continue;
-    }
-
-    if(line.startsWith("#EXTINF")){
-      const attrs = getAttributes(line);
-      const rawName = line.includes(",") ? line.substring(line.indexOf(",") + 1).trim() : "Canal sin nombre";
-      const parsed = parseChannelName(rawName);
-      current = {
-        id: attrs["tvg-id"] || "",
-        rawName,
-        name: parsed.name,
-        quality: parsed.quality,
-        note: parsed.note,
-        category: attrs["group-title"] || guessCategory(rawName, attrs["tvg-id"] || ""),
-        type: "video",
-        url: "",
-        referrer: pendingReferrer,
-        userAgent: pendingUserAgent
-      };
-      continue;
-    }
-
-    if(current && (line.startsWith("http://") || line.startsWith("https://"))){
-      current.url = line;
-      list.push(current);
-      current = null;
-      pendingReferrer = "";
-      pendingUserAgent = "";
-    }
-  }
-
-  const seen = new Set();
-  return list.filter(ch => {
-    if(seen.has(ch.url)) return false;
-    seen.add(ch.url);
-    return true;
+function init(){
+  PLAYLISTS.forEach(pl => {
+    const opt = document.createElement("option");
+    opt.value = pl.id;
+    opt.textContent = pl.label;
+    playlistSelect.appendChild(opt);
   });
+  loadBtn.addEventListener("click", loadSelected);
+  checkVisibleBtn.addEventListener("click", checkVisible);
+  stopBtn.addEventListener("click", () => { stop = true; message.textContent = "Verificación detenida."; });
+  csvBtn.addEventListener("click", downloadCSV);
+  searchInput.addEventListener("input", render);
+  loadSelected();
 }
 
-function getAttributes(line){
-  const attrs = {};
-  const regex = /([\w-]+)="([^"]*)"/g;
-  let match;
-  while((match = regex.exec(line)) !== null){ attrs[match[1]] = match[2]; }
-  return attrs;
-}
-
-function parseChannelName(rawName){
-  let name = String(rawName || "Canal sin nombre").trim();
-  let quality = "AUTO";
-  let note = "";
-  const noteMatches = [...name.matchAll(/\[([^\]]+)\]/g)].map(m => m[1]);
-  if(noteMatches.length){ note = noteMatches.join(" / "); name = name.replace(/\s*\[[^\]]+\]/g, "").trim(); }
-  const qualityMatch = name.match(/\(([^)]*(?:p|HD|SD|4K)[^)]*)\)/i);
-  if(qualityMatch){ quality = qualityMatch[1].trim(); name = name.replace(/\s*\([^)]*(?:p|HD|SD|4K)[^)]*\)/i, "").trim(); }
-  return {name: name || rawName, quality, note};
-}
-
-function guessCategory(name, id){
-  const text = (name + " " + id).toLowerCase();
-  if(text.includes("noticias") || text.includes("adn") || text.includes("milenio") || text.includes("telefórmula") || text.includes("teleformula") || text.includes("cbs") || text.includes("euronews")) return "Noticias";
-  if(text.includes("deportes") || text.includes("tudn") || text.includes("sports") || text.includes("fifa") || text.includes("lucha") || text.includes("dazn")) return "Deportes";
-  if(text.includes("naruto") || text.includes("anime") || text.includes("avatar") || text.includes("boruto") || text.includes("one piece") || text.includes("hunter")) return "Anime";
-  if(text.includes("baby") || text.includes("nick") || text.includes("bob esponja") || text.includes("kids") || text.includes("junior")) return "Infantil";
-  if(text.includes("mtv") || text.includes("telehit") || text.includes("exa") || text.includes("karaoke") || text.includes("concert") || text.includes("stingray")) return "Música";
-  if(text.includes("cine") || text.includes("pelicula") || text.includes("película") || text.includes("golden") || text.includes("sony") || text.includes("amc") || text.includes("novelas") || text.includes("series")) return "Cine y Series";
-  if(text.includes("pluto") || text.includes(".us@latam") || text.includes(".us@sd")) return "Pluto / FAST";
-  if(text.includes(".mx") || text.includes("canal") || text.includes("tv")) return "México / Regional";
-  return "General";
-}
-
-async function runChecks(list){
-  if(running) return;
-  running = true;
-  stopRequested = false;
-  stopBtn.disabled = false;
-  checkAllBtn.disabled = true;
-  checkVisibleBtn.disabled = true;
-  statusText.textContent = `Revisando ${list.length} canales...`;
-
-  let queue = list.filter(ch => ch.status === "pending" || ch.status === "bad" || ch.status === "ok");
-  let active = 0;
-  let pointer = 0;
-
-  await new Promise(resolve => {
-    const next = () => {
-      if(stopRequested && active === 0) return resolve();
-      while(!stopRequested && active < CONCURRENCY && pointer < queue.length){
-        const ch = queue[pointer++];
-        active++;
-        checkChannel(ch).finally(() => {
-          active--;
-          updateStats();
-          render(false);
-          if(pointer >= queue.length && active === 0) resolve();
-          else next();
-        });
-      }
-      if((stopRequested || pointer >= queue.length) && active === 0) resolve();
-    };
-    next();
-  });
-
-  running = false;
-  stopBtn.disabled = true;
-  checkAllBtn.disabled = false;
-  checkVisibleBtn.disabled = false;
-  statusText.textContent = stopRequested ? "Revisión detenida." : "Revisión terminada.";
-  updateStats();
+async function loadSelected(){
+  const pl = PLAYLISTS.find(p => p.id === playlistSelect.value) || PLAYLISTS[0];
+  message.textContent = "Cargando " + pl.label + "...";
+  tbody.innerHTML = "";
+  const res = await fetch(pl.file + "?v=" + Date.now(), {cache:"no-store"});
+  const text = await res.text();
+  channels = parseM3U(text).map((ch, i) => ({...ch, index:i+1, playlist:pl.label, status:"pendiente", message:"", checked:false}));
+  message.textContent = `Lista cargada: ${pl.label}. ${channels.length} canales.`;
   render();
 }
 
-async function checkChannel(ch){
-  ch.status = "checking";
-  ch.message = "Revisando...";
-  render(false);
-
-  try{
-    let url = CHECK_BASE + encodeURIComponent(ch.url);
-    if(ch.referrer) url += "&ref=" + encodeURIComponent(ch.referrer);
-    if(ch.userAgent) url += "&ua=" + encodeURIComponent(ch.userAgent);
-
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 18000);
-    const res = await fetch(url, {cache:"no-store", signal: controller.signal});
-    clearTimeout(timeout);
-    const data = await res.json();
-
-    ch.status = data.ok ? "ok" : "bad";
-    ch.stage = data.stage || "";
-    ch.message = data.message || (data.ok ? "OK" : "Falló");
-    ch.details = data;
-  }catch(e){
-    ch.status = "bad";
-    ch.stage = "fetch";
-    ch.message = e.name === "AbortError" ? "Tiempo agotado" : e.message;
+function parseM3U(text){
+  const lines = String(text || "").replace(/\r/g, "").split("\n");
+  const list=[]; let current=null; let ref=""; let ua="";
+  for(const raw of lines){
+    const line = raw.trim(); if(!line) continue;
+    if(line.startsWith("#EXTVLCOPT:http-referrer=")){ ref = line.replace("#EXTVLCOPT:http-referrer=", "").trim(); if(current) current.referrer = ref; continue; }
+    if(line.startsWith("#EXTVLCOPT:http-user-agent=")){ ua = line.replace("#EXTVLCOPT:http-user-agent=", "").trim(); if(current) current.userAgent = ua; continue; }
+    if(line.startsWith("#EXTINF")){
+      const rawName = line.includes(",") ? line.substring(line.indexOf(",") + 1).trim() : "Canal sin nombre";
+      current = { name:cleanName(rawName), rawName, url:"", referrer:ref, userAgent:ua };
+      continue;
+    }
+    if(current && (line.startsWith("http://") || line.startsWith("https://"))){
+      current.url=line; list.push(current); current=null; ref=""; ua="";
+    }
   }
+  const seen = new Set();
+  return list.filter(ch => { if(seen.has(ch.url)) return false; seen.add(ch.url); return true; });
 }
-
-function render(doStats = true){
-  const search = searchInput.value.trim().toLowerCase();
-  const status = statusFilter.value;
-
-  visibleChannels = channels.filter(ch => {
-    const matchesSearch = !search || (ch.name + " " + ch.category + " " + ch.url).toLowerCase().includes(search);
-    const matchesStatus = status === "all" || ch.status === status;
-    return matchesSearch && matchesStatus;
+function cleanName(raw){ return String(raw).replace(/\s*\[[^\]]+\]/g, "").replace(/\s*\([^)]*(?:p|HD|SD|4K)[^)]*\)/ig, "").trim() || raw; }
+function getVisible(){ const s = searchInput.value.trim().toLowerCase(); return channels.filter(ch => !s || (ch.name + " " + ch.rawName + " " + ch.url).toLowerCase().includes(s)); }
+function render(){
+  const visible = getVisible();
+  tbody.innerHTML = "";
+  const frag = document.createDocumentFragment();
+  visible.slice(0,1200).forEach(ch => {
+    const tr = document.createElement("tr");
+    const cls = ch.status === "ok" ? "status-ok" : ch.status === "falla" ? "status-fail" : "status-pending";
+    tr.innerHTML = `<td><span class="status-pill ${cls}">${ch.status.toUpperCase()}</span></td><td>${escapeHtml(ch.name)}</td><td>${escapeHtml(ch.playlist)}</td><td class="url">${escapeHtml(ch.url)}</td><td>${escapeHtml(ch.message || "")}</td>`;
+    frag.appendChild(tr);
   });
-
-  if(!visibleChannels.length){
-    tbody.innerHTML = `<tr><td colspan="7" class="muted">No hay canales para mostrar.</td></tr>`;
-  }else{
-    tbody.innerHTML = visibleChannels.map(ch => `
-      <tr>
-        <td>${ch.index}</td>
-        <td>${statusPill(ch.status)}</td>
-        <td><b>${escapeHtml(ch.name)}</b>${ch.note ? `<div class="small note">${escapeHtml(ch.note)}</div>` : ""}${ch.referrer ? `<div class="small">REF</div>` : ""}</td>
-        <td>${escapeHtml(ch.category)}</td>
-        <td>${escapeHtml(ch.quality)}</td>
-        <td>${escapeHtml(ch.message)}${ch.stage ? `<div class="small">Etapa: ${escapeHtml(ch.stage)}</div>` : ""}</td>
-        <td class="url">${escapeHtml(ch.url)}</td>
-      </tr>
-    `).join("");
+  tbody.appendChild(frag);
+  if(visible.length > 1200){
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td colspan="5" class="muted">Mostrando 1200 de ${visible.length}. Usa el buscador para filtrar.</td>`;
+    tbody.appendChild(tr);
   }
-
-  if(doStats) updateStats();
+  updateStats();
 }
-
-function statusPill(status){
-  if(status === "ok") return `<span class="pill ok">OK</span>`;
-  if(status === "bad") return `<span class="pill bad">FALLA</span>`;
-  if(status === "checking") return `<span class="pill checking">REVISANDO</span>`;
-  return `<span class="pill pending">PENDIENTE</span>`;
-}
-
 function updateStats(){
-  const total = channels.length;
-  const ok = channels.filter(c => c.status === "ok").length;
-  const bad = channels.filter(c => c.status === "bad").length;
-  const pending = channels.filter(c => c.status === "pending" || c.status === "checking").length;
-  const checked = ok + bad;
-  document.getElementById("totalCount").textContent = total;
-  document.getElementById("okCount").textContent = ok;
-  document.getElementById("badCount").textContent = bad;
-  document.getElementById("pendingCount").textContent = pending;
-  document.getElementById("checkedCount").textContent = checked;
-  progressFill.style.width = total ? ((checked / total) * 100).toFixed(1) + "%" : "0%";
+  totalStat.textContent = channels.length;
+  okStat.textContent = channels.filter(c=>c.status==="ok").length;
+  failStat.textContent = channels.filter(c=>c.status==="falla").length;
+  pendingStat.textContent = channels.filter(c=>c.status==="pendiente").length;
 }
-
+async function checkVisible(){
+  stop = false;
+  const visible = getVisible();
+  message.textContent = `Revisando ${visible.length} canales visibles...`;
+  for(let i=0;i<visible.length;i++){
+    if(stop) break;
+    const ch = visible[i];
+    ch.status = "pendiente"; ch.message = "Revisando..."; render();
+    try{
+      const url = new URL(WORKER + "/check");
+      url.searchParams.set("url", ch.url);
+      if(ch.referrer) url.searchParams.set("ref", ch.referrer);
+      if(ch.userAgent) url.searchParams.set("ua", ch.userAgent);
+      const res = await fetch(url.toString(), {cache:"no-store"});
+      const data = await res.json();
+      ch.status = data.ok ? "ok" : "falla";
+      ch.message = data.message || data.stage || "Sin mensaje";
+    }catch(e){
+      ch.status = "falla";
+      ch.message = e.message;
+    }
+    message.textContent = `Revisando ${i+1}/${visible.length}: ${ch.name}`;
+  }
+  render();
+  message.textContent = stop ? "Verificación detenida." : "Verificación terminada.";
+}
 function downloadCSV(){
-  const header = ["index","status","name","category","quality","message","stage","url"];
-  const rows = channels.map(ch => [ch.index,ch.status,ch.name,ch.category,ch.quality,ch.message,ch.stage,ch.url]);
-  const csv = [header, ...rows].map(row => row.map(cell => `"${String(cell ?? "").replaceAll('"','""')}"`).join(",")).join("\n");
+  const rows = [["estado","canal","lista","url","mensaje"]].concat(channels.map(ch => [ch.status,ch.name,ch.playlist,ch.url,ch.message]));
+  const csv = rows.map(r => r.map(v => '"' + String(v || "").replaceAll('"','""') + '"').join(",")).join("\n");
   const blob = new Blob([csv], {type:"text/csv;charset=utf-8"});
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
-  a.download = "resultado-canales.csv";
+  a.download = "canales-revisados.csv";
   a.click();
   URL.revokeObjectURL(a.href);
 }
-
-function escapeHtml(text){
-  return String(text || "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
-
-loadChannels();
+function escapeHtml(text){ return String(text || "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;"); }
+init();
 </script>
 </body>
 </html>
