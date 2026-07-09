@@ -653,13 +653,14 @@ body{
       <div class="side-card">
         <div class="section-tabs">
           <button class="tab-btn active" data-section="tv">TV</button>
+          <button class="tab-btn" data-section="world">Mundial</button>
           <button class="tab-btn" data-section="favorites">Favoritos</button>
           <button class="tab-btn adult-tab" data-section="adult">Adultos 18+</button>
         </div>
 
         <div id="adultNotice" class="adult-notice" style="display:none;">Sección exclusiva para mayores de 18 años. El acceso queda guardado solo en este navegador.</div>
 
-        <input id="searchInput" class="search-input" type="text" placeholder="Buscar canal..." />
+        <input id="searchInput" class="search-input" type="text" placeholder="Buscar canal, país o nombre..." />
 
         <div class="filters">
           <select id="categoryFilter" class="filter-select">
@@ -692,8 +693,10 @@ body{
 <script>
 const PROXY_BASE = "https://hls-proxy-tv-plus.mikimc-business.workers.dev/proxy?url=";
 const CHANNELS_M3U = "./channels.m3u";
+const WORLD_M3U = "./mundial.m3u";
 const ADULT_M3U = "./adult.m3u";
 const USE_PROXY_FOR_ALL = true;
+const RESULTS_LIMIT = 600;
 const FAVORITES_KEY = "watch_tv_plus_favorites_v1";
 const ADULT_UNLOCK_KEY = "watch_tv_plus_adult_unlocked_v1";
 
@@ -727,6 +730,7 @@ let currentUrl = "";
 let hideTimer = null;
 let CHANNELS = [];
 let BASE_CHANNELS = [];
+let WORLD_CHANNELS = [];
 let ADULT_CHANNELS = [];
 let activeSection = "tv";
 let favoriteUrls = loadFavoriteUrls();
@@ -773,8 +777,9 @@ async function loadM3UChannels(){
   channelList.innerHTML = `<div class="empty">Cargando canales...</div>`;
 
   try{
-    const [tvResponse, adultResponse] = await Promise.all([
+    const [tvResponse, worldResponse, adultResponse] = await Promise.all([
       fetch(CHANNELS_M3U + "?v=" + Date.now(), { cache: "no-store" }),
+      fetch(WORLD_M3U + "?v=" + Date.now(), { cache: "no-store" }),
       fetch(ADULT_M3U + "?v=" + Date.now(), { cache: "no-store" })
     ]);
 
@@ -784,6 +789,18 @@ async function loadM3UChannels(){
 
     const tvText = await tvResponse.text();
     BASE_CHANNELS = parseM3U(tvText).map(ch => ({...ch, section:"tv", isAdult:false}));
+
+    if(worldResponse.ok){
+      const worldText = await worldResponse.text();
+      WORLD_CHANNELS = parseM3U(worldText).map(ch => ({
+        ...ch,
+        section:"world",
+        isAdult:false,
+        category: ch.category === "General" ? "Mundial" : ch.category
+      }));
+    } else {
+      WORLD_CHANNELS = [];
+    }
 
     if(adultResponse.ok){
       const adultText = await adultResponse.text();
@@ -798,7 +815,7 @@ async function loadM3UChannels(){
       ADULT_CHANNELS = [];
     }
 
-    CHANNELS = [...BASE_CHANNELS, ...ADULT_CHANNELS];
+    CHANNELS = [...BASE_CHANNELS, ...WORLD_CHANNELS, ...ADULT_CHANNELS];
 
     if(!CHANNELS.length){
       throw new Error("Las listas M3U no tienen canales válidos");
@@ -807,7 +824,7 @@ async function loadM3UChannels(){
     buildCategories();
     renderChannels();
 
-    countPill.textContent = BASE_CHANNELS.length + " TV · " + ADULT_CHANNELS.length + " 18+";
+    countPill.textContent = BASE_CHANNELS.length + " TV · " + WORLD_CHANNELS.length + " Mundial · " + ADULT_CHANNELS.length + " 18+";
     mainInfo.textContent = "Elige un canal de la lista para iniciar la reproducción.";
 
     if(!currentChannel && BASE_CHANNELS.length){
@@ -820,7 +837,7 @@ async function loadM3UChannels(){
     channelList.innerHTML = `
       <div class="empty">
         No se pudieron cargar las listas M3U.<br><br>
-        Sube <b>channels.m3u</b> y <b>adult.m3u</b> junto a index.html.
+        Sube <b>channels.m3u</b>, <b>mundial.m3u</b> y <b>adult.m3u</b> junto a index.html.
       </div>
     `;
     mainInfo.textContent = "No se pudo cargar la lista de canales.";
@@ -1318,7 +1335,16 @@ function renderChannels(){
     return;
   }
 
-  filtered.forEach(ch => {
+  const visibleList = filtered.slice(0, RESULTS_LIMIT);
+
+  if(filtered.length > RESULTS_LIMIT){
+    const notice = document.createElement("div");
+    notice.className = "empty";
+    notice.innerHTML = `Mostrando ${RESULTS_LIMIT} de ${filtered.length} canales. Usa el buscador para encontrar canales específicos.`;
+    channelList.appendChild(notice);
+  }
+
+  visibleList.forEach(ch => {
     const item = document.createElement("div");
     item.className = "channel-item";
 
@@ -1365,6 +1391,10 @@ function getSectionChannels(requireUnlocked = true){
   if(activeSection === "adult"){
     if(requireUnlocked && !adultUnlocked) return [];
     return ADULT_CHANNELS;
+  }
+
+  if(activeSection === "world"){
+    return WORLD_CHANNELS;
   }
 
   if(activeSection === "favorites"){
