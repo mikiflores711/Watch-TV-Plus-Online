@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<title>TV en Vivo México - Clappr Proxy</title>
+<title>Watch TV Plus</title>
 
 <script src="https://cdn.jsdelivr.net/npm/clappr@latest/dist/clappr.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@clappr/hlsjs-playback@latest/dist/hlsjs-playback.min.js"></script>
@@ -25,46 +25,20 @@
 }
 
 html,body{
-  background:linear-gradient(180deg,#0a0d12 0%, #030508 100%);
+  background:#000;
   color:var(--text);
   font-family:Arial,Helvetica,sans-serif;
   min-height:100%;
+}
+
+body{
+  overflow-x:hidden;
 }
 
 .app{
   max-width:1400px;
   margin:0 auto;
   padding:16px;
-}
-
-.topbar{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  margin-bottom:16px;
-}
-
-.brand-logo{
-  width:42px;
-  height:42px;
-  border-radius:12px;
-  background:linear-gradient(135deg,#1e293b,#0f172a);
-  border:1px solid var(--line);
-  display:grid;
-  place-items:center;
-  font-weight:800;
-  color:#dbeafe;
-  box-shadow:var(--shadow);
-}
-
-.brand-text h1{
-  font-size:20px;
-}
-
-.brand-text p{
-  font-size:12px;
-  color:var(--soft);
-  margin-top:3px;
 }
 
 .layout{
@@ -446,14 +420,6 @@ html,body{
 }
 
 @media (max-width:520px){
-  .brand-text h1{
-    font-size:17px;
-  }
-
-  .brand-text p{
-    display:none;
-  }
-
   .player-footer h2{
     font-size:17px;
   }
@@ -472,14 +438,6 @@ html,body{
 <body>
 
 <div class="app">
-
-  <div class="topbar">
-    <div class="brand-logo">TV</div>
-    <div class="brand-text">
-      <h1>TV en Vivo México</h1>
-      <p>Clappr Player + Proxy HLS</p>
-    </div>
-  </div>
 
   <div class="layout">
 
@@ -579,6 +537,42 @@ const CHANNELS = [
     url: "https://60417ddeaf0d9.streamlock.net/ntv/videontv/playlist.m3u8"
   },
   {
+    name: "15TV",
+    quality: "720p",
+    category: "Regional",
+    type: "video",
+    note: "No 24/7",
+    useProxy: true,
+    url: "https://cdn.fastocloud.com/leonel.m3u8"
+  },
+  {
+    name: "15TV",
+    quality: "AUTO",
+    category: "Regional",
+    type: "video",
+    note: "",
+    useProxy: true,
+    url: "https://servilive.com:3380/live/v3n6thy7glive.m3u8"
+  },
+  {
+    name: "A+",
+    quality: "1080p",
+    category: "General",
+    type: "video",
+    note: "HTTP / Proxy",
+    useProxy: true,
+    url: "http://45.189.62.33:8002/play/a0oc/index.m3u8"
+  },
+  {
+    name: "ADN 40",
+    quality: "1080p",
+    category: "Noticias",
+    type: "video",
+    note: "HTTP / Proxy",
+    useProxy: true,
+    url: "http://45.189.62.33:8002/play/a0ob/index.m3u8"
+  },
+  {
     name: "ADN 40",
     quality: "720p",
     category: "Noticias",
@@ -586,6 +580,213 @@ const CHANNELS = [
     note: "",
     useProxy: false,
     url: "https://mdstrm.com/live-stream-playlist/60b578b060947317de7b57ac.m3u8"
+  },
+  {
+    name: "ADN Noticias",
+    quality: "720p",
+    category: "Noticias",
+    type: "video",
+    note: "Proxy HLS",
+    useProxy: true,
+    url: "https://jmp2.uk/plu-646ccd3681844c000974d6f4.m3u8"
+  },
+  {
+    name: "Alcance TV",
+    quality: "720p",
+    category: "General",
+    type: "video",
+    note: "",
+    useProxy: true,
+    url: "https://5bf8041cb3fed.streamlock.net/AlcanceTV/AlcanceTV/playlist.m3u8"
+  },
+  {
+    name: "AMX Noticias",
+    quality: "720p",
+    category: "Noticias",
+    type: "video",
+    note: "No 24/7",
+    useProxy: true,
+    url: "https://5e50264bd6766.streamlock.net/mexiquense2/videomexiquense2/playlist.m3u8"
+  },
+  {
+    name: "AMC Latin America",
+    quality: "1080p",
+    category: "Cine y Series",
+    type: "video",
+    note: "HTTP / Proxy",
+    useProxy: true,
+    url: "http://177.234.249.178:8888/AMC/index.m3u8"
+  },
+  {
+    name: "AMC Reality",
+    quality: "1080p",
+    category: "Reality",
+    type: "video",
+    note: "",
+    useProxy: true,
+    url: "https://c9672376.wurl.com/master/f36d25e7e52f1ba8d7e56eb859c636563214f541/U2Ftc3VuZy1nYl9BTUNSZWFsaXR5X0hMUw/playlist.m3u8"
+  },
+  {
+    name: "Así Sucede Guanajuato",
+    quality: "720p",
+    category: "Regional",
+    type: "video",
+    note: "No 24/7",
+    useProxy: true,
+    url: "https://stream.oursnetworktv.com/latin/encoder13/playlist.m3u8"
+  },
+  {
+    name: "Adrenalina Pura TV",
+    quality: "720p",
+    category: "Deportes",
+    type: "video",
+    note: "Proxy HLS",
+    useProxy: true,
+    url: "https://jmp2.uk/plu-61b793ccf571b80007b7a610.m3u8"
+  },
+  {
+    name: "Archivos Extraterrestres",
+    quality: "AUTO",
+    category: "Documental",
+    type: "video",
+    note: "Proxy HLS",
+    useProxy: true,
+    url: "https://jmp2.uk/plu-645d1abbe1979c0008779d5a.m3u8"
+  },
+  {
+    name: "Archivos Forenses",
+    quality: "AUTO",
+    category: "Documental",
+    type: "video",
+    note: "Proxy HLS",
+    useProxy: true,
+    url: "https://jmp2.uk/plu-5efb8c19b2678b000780d032.m3u8"
+  },
+  {
+    name: "Avatar: La Leyenda de Aang",
+    quality: "AUTO",
+    category: "Infantil",
+    type: "video",
+    note: "Proxy HLS",
+    useProxy: true,
+    url: "https://jmp2.uk/plu-6759ee82bd523200083b4f0f.m3u8"
+  },
+  {
+    name: "Azteca Deportes Premium",
+    quality: "720p",
+    category: "Deportes",
+    type: "video",
+    note: "Proxy HLS",
+    useProxy: true,
+    url: "https://jmp2.uk/plu-65cf60d166eec80008724e6f.m3u8"
+  },
+  {
+    name: "Azteca Internacional",
+    quality: "720p",
+    category: "General",
+    type: "video",
+    note: "Proxy HLS",
+    useProxy: true,
+    url: "https://jmp2.uk/plu-646cce4d1593940008a33f09.m3u8"
+  },
+  {
+    name: "Azteca Internacional",
+    quality: "1080p",
+    category: "General",
+    type: "video",
+    note: "",
+    useProxy: true,
+    url: "https://azt-mun.otteravision.com/azt/mun/mun.m3u8"
+  },
+  {
+    name: "Azteca Uno",
+    quality: "720p",
+    category: "General",
+    type: "video",
+    note: "Proxy HLS",
+    useProxy: true,
+    url: "https://jmp2.uk/plu-646ccc7a2858cb0008127367.m3u8"
+  },
+  {
+    name: "Azteca Uno",
+    quality: "1080p",
+    category: "General",
+    type: "video",
+    note: "HTTP / Proxy",
+    useProxy: true,
+    url: "http://45.189.62.33:8002/play/a0cc/index.m3u8"
+  },
+  {
+    name: "Azteca 7",
+    quality: "720p",
+    category: "General",
+    type: "video",
+    note: "HTTP / Proxy",
+    useProxy: true,
+    url: "http://177.245.131.133:8080/AZTECA7/index.m3u8"
+  },
+  {
+    name: "Azteca 7",
+    quality: "1080p",
+    category: "General",
+    type: "video",
+    note: "HTTP / Proxy",
+    useProxy: true,
+    url: "http://45.189.62.33:8002/play/a0fm/index.m3u8"
+  },
+  {
+    name: "Baby Shark TV",
+    quality: "AUTO",
+    category: "Infantil",
+    type: "video",
+    note: "Proxy HLS",
+    useProxy: true,
+    url: "https://jmp2.uk/plu-619d5e6a093e7c0007489211.m3u8"
+  },
+  {
+    name: "Babyfirst",
+    quality: "AUTO",
+    category: "Infantil",
+    type: "video",
+    note: "Proxy HLS",
+    useProxy: true,
+    url: "https://jmp2.uk/plu-5ebac49ce4dc8b00078b23bc.m3u8"
+  },
+  {
+    name: "Bob Esponja Pantalones Cuadrados",
+    quality: "720p",
+    category: "Infantil",
+    type: "video",
+    note: "Proxy HLS",
+    useProxy: true,
+    url: "https://jmp2.uk/plu-6254598f5083f800076d8563.m3u8"
+  },
+  {
+    name: "Boruto: Naruto Next Generations",
+    quality: "AUTO",
+    category: "Anime",
+    type: "video",
+    note: "Proxy HLS",
+    useProxy: true,
+    url: "https://jmp2.uk/plu-656f37f257fe4a000884dfee.m3u8"
+  },
+  {
+    name: "Bromas Gags Just for Laughs",
+    quality: "720p",
+    category: "Comedia",
+    type: "video",
+    note: "Proxy HLS",
+    useProxy: true,
+    url: "https://jmp2.uk/plu-678029c654f43dad4b5c1ec0.m3u8"
+  },
+  {
+    name: "Canal 5 TV Cozumel",
+    quality: "1080p",
+    category: "Regional",
+    type: "video",
+    note: "",
+    useProxy: true,
+    url: "https://video0.rogohosting.com:19360/tvcozumel/tvcozumel.m3u8"
   }
 ];
 
@@ -618,7 +819,11 @@ function init(){
   buildCategories();
   renderChannels();
   bindEvents();
-  loadChannel(CHANNELS[0]);
+
+  setTimeout(() => {
+    loadChannel(CHANNELS[0]);
+  }, 300);
+
   showPlayerUI();
 }
 
@@ -659,40 +864,49 @@ function loadChannel(channel){
   destroyPlayer();
 
   const streamUrl = getPlayableUrl(channel);
+  const useProxyNow = shouldUseProxy(channel);
 
-  proxyStatus.textContent = shouldUseProxy(channel) ? "PROXY" : "DIRECTO";
+  proxyStatus.textContent = useProxyNow ? "PROXY" : "DIRECTO";
 
-player = new Clappr.Player({
-  source: streamUrl,
-  parentId: "#player",
+  const pluginsList = [];
 
-  plugins: [HlsjsPlayback],
+  if (window.HlsjsPlayback) {
+    pluginsList.push(window.HlsjsPlayback);
+  }
 
-  autoPlay: true,
-  mute: false,
-  width: "100%",
-  height: "100%",
-  hideMediaControl: true,
+  player = new Clappr.Player({
+    source: streamUrl,
+    parentId: "#player",
+    plugins: pluginsList,
 
-  mimeType: "application/vnd.apple.mpegurl",
+    autoPlay: true,
+    mute: false,
+    width: "100%",
+    height: "100%",
+    hideMediaControl: true,
 
-  hlsPlayback: {
-    preload: true
-  },
+    mimeType: "application/vnd.apple.mpegurl",
 
-  playback: {
-    hlsjsConfig: {
-      enableWorker: true,
-      lowLatencyMode: true,
-      liveSyncDurationCount: 3,
-      maxBufferLength: 24,
-      manifestLoadingMaxRetry: 4,
-      levelLoadingMaxRetry: 4,
-      fragLoadingMaxRetry: 4
-    }
-  },
+    hlsPlayback: {
+      preload: true
+    },
 
-  events: {
+    playback: {
+      hlsjsConfig: {
+        enableWorker: true,
+        lowLatencyMode: true,
+        liveSyncDurationCount: 3,
+        maxBufferLength: 24,
+        manifestLoadingMaxRetry: 6,
+        manifestLoadingRetryDelay: 1000,
+        levelLoadingMaxRetry: 6,
+        fragLoadingMaxRetry: 6,
+        keyLoadingMaxRetry: 6,
+        keyLoadingRetryDelay: 1000
+      }
+    },
+
+    events: {
       onReady: function(){
         mainInfo.textContent = `${channel.category} · Listo`;
         syncVideoEvents();
@@ -704,14 +918,15 @@ player = new Clappr.Player({
       onPause: function(){
         updatePlayState();
       },
-      onError: function(){
-        mainInfo.textContent = "No se pudo reproducir. Puede ser señal caída, CORS, host no permitido o bloqueo del canal.";
+      onError: function(error){
+        console.log("Clappr error:", error);
+        mainInfo.textContent = "No se pudo reproducir. Puede ser señal caída, bloqueo del canal o geobloqueo.";
       }
     }
   });
 
   showPlayerUI();
-  setTimeout(updatePlayState, 500);
+  setTimeout(updatePlayState, 700);
 }
 
 function shouldUseProxy(channel){
@@ -735,7 +950,8 @@ function destroyPlayer(){
     player = null;
   }
 
-  document.getElementById("player").innerHTML = "";
+  const playerBox = document.getElementById("player");
+  playerBox.innerHTML = "";
 }
 
 function getPlayerVideo(){
@@ -763,7 +979,7 @@ function syncVideoEvents(){
   });
 
   video.addEventListener("error", () => {
-    mainInfo.textContent = "Error de reproducción. Prueba usar proxy o revisar si el canal está activo.";
+    mainInfo.textContent = "Error de reproducción. Prueba otro canal.";
   });
 }
 
@@ -850,7 +1066,7 @@ async function togglePiP(){
     } else if(document.pictureInPictureEnabled){
       await video.requestPictureInPicture();
     }
-  }catch(e){}
+  }catch(error){}
 }
 
 async function toggleFullscreen(){
@@ -868,7 +1084,7 @@ async function toggleFullscreen(){
     } else {
       await document.exitFullscreen();
     }
-  }catch(e){}
+  }catch(error){}
 }
 
 function showPlayerUI(){
