@@ -271,7 +271,7 @@ http://bantel-cdn1.iptvperu.tv:1935/btnscrtn/Canal_Las_Estrellas.stream/playlist
 #EXTVLCOPT:http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36
 http://bantel-cdn1.iptvperu.tv:1935/btnscrtn/TL_Novelas.stream/playlist.m3u8
 #EXTINF:-1 tvg-id="Canal5.mx@SD",Canal 5 (1080p)
-http://190.11.225.124:5000/live/canal5_hd/playlist.m3u8
+http://45.5.119.43:4000/play/a05o/index.m3u8
 #EXTINF:-1 tvg-id="TVMigrante.mx@SD",TV Migrante (720p)
 https://s5.mexside.net:1936/tvmigrante/tvmigrante/playlist.m3u8
 #EXTINF:-1 tvg-id="Panico.mx@SD",Panico (576p)
