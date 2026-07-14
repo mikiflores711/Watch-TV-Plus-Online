@@ -253,12 +253,23 @@ const ADULT_UNLOCK_KEY = "watch_tv_plus_adult_unlocked_v2";
 const MAX_RENDER_DEFAULT = 900;
 const MAX_RENDER_WITH_SEARCH = 2500;
 
+/*
+  LOGOTIPOS ORIGINALES:
+  1. Primero usa tvg-logo incluido en cada archivo M3U.
+  2. Si falta, busca el canal por tvg-id, URL o nombre en la API pública de iptv-org.
+  3. En canales Pluto TV también intenta obtener el logotipo oficial desde images.pluto.tv.
+  Los resultados se guardan 7 días en este navegador para no descargar la base en cada inicio.
+*/
+const LOGO_API = "https://iptv-org.github.io/api/logos.json";
+const CHANNELS_API = "https://iptv-org.github.io/api/channels.json";
+const STREAMS_API = "https://iptv-org.github.io/api/streams.json";
+const LOGO_CACHE_KEY = "watch_tv_plus_original_logos_v4";
+const LOGO_CACHE_TTL = 1000 * 60 * 60 * 24 * 7;
+
 const PLAYLISTS = [
   { id:"mexico", label:"México", file:"./mexico.m3u", isAdult:false },
   { id:"pluto", label:"Pluto TV", file:"./pluto.m3u", isAdult:false },
   { id:"espanol", label:"Español", file:"./espanol.m3u", isAdult:false },
-  { id:"ingles", label:"Inglés", file:"./ingles.m3u", isAdult:false },
-  { id:"mundial", label:"Mundial", file:"./mundial.m3u", isAdult:false },
   { id:"favorites", label:"Favoritos", file:null, isAdult:false, isFavorites:true },
   { id:"adult", label:"Adultos 18+", file:"./adult.m3u", isAdult:true }
 ];
@@ -442,7 +453,7 @@ async function loadAllPlaylists(){
 
   if(!allChannels.length){
     countPill.textContent = "No se cargaron canales";
-    channelList.innerHTML = `<div class="empty">No se pudieron cargar las listas. Coloca los archivos M3U junto a este HTML: mexico.m3u, pluto.m3u, espanol.m3u, ingles.m3u, mundial.m3u y adult.m3u.</div>`;
+    channelList.innerHTML = `<div class="empty">No se pudieron cargar las listas. Coloca los archivos M3U junto a este HTML: mexico.m3u, pluto.m3u, espanol.m3u y adult.m3u.</div>`;
     return;
   }
 
@@ -455,6 +466,250 @@ async function loadAllPlaylists(){
     const first = getSectionChannels(false)[0] || allChannels[0];
     if(first) loadChannel(first, false);
   }
+
+  // La búsqueda de logotipos se hace después para que la lista aparezca de inmediato.
+  resolveOriginalLogos().catch(error => {
+    console.log("No se pudieron completar los logotipos externos:", error);
+  });
+}
+
+async function resolveOriginalLogos(){
+  if(!allChannels.length) return;
+
+  // Los enlaces tvg-logo de la lista tienen prioridad y no se reemplazan.
+  applyCachedLogos();
+  renderChannels();
+
+  const missing = allChannels.filter(ch => !ch.logo);
+  if(!missing.length) return;
+
+  const previousInfo = mainInfo.textContent;
+  mainInfo.textContent = `Buscando logotipos originales para ${missing.length} canales...`;
+
+  try{
+    const [logosResponse, channelsResponse, streamsResponse] = await Promise.all([
+      fetch(LOGO_API, { cache:"force-cache" }),
+      fetch(CHANNELS_API, { cache:"force-cache" }),
+      fetch(STREAMS_API, { cache:"force-cache" })
+    ]);
+
+    if(!logosResponse.ok) throw new Error(`logos.json HTTP ${logosResponse.status}`);
+    if(!channelsResponse.ok) throw new Error(`channels.json HTTP ${channelsResponse.status}`);
+    if(!streamsResponse.ok) throw new Error(`streams.json HTTP ${streamsResponse.status}`);
+
+    const [logos, channels, streams] = await Promise.all([
+      logosResponse.json(),
+      channelsResponse.json(),
+      streamsResponse.json()
+    ]);
+
+    const bestLogoByChannel = buildBestLogoMap(logos);
+    const streamChannelMap = buildStreamChannelMap(streams);
+    const channelNameMap = buildChannelNameMap(channels);
+    const cache = readLogoCache();
+    let resolved = 0;
+
+    for(const ch of allChannels){
+      if(ch.logo) continue;
+
+      const plutoLogo = getPlutoLogoFromUrl(ch.url);
+      if(plutoLogo){
+        ch.logo = plutoLogo;
+        ch.logoBackground = "black";
+        cache.data[logoCacheKey(ch)] = { logo:ch.logo, background:ch.logoBackground };
+        resolved++;
+        continue;
+      }
+
+      const channelId = resolveChannelId(ch, streamChannelMap, channelNameMap, bestLogoByChannel);
+      const logoData = channelId ? bestLogoByChannel.get(channelId) : null;
+      if(!logoData) continue;
+
+      ch.logo = logoData.url;
+      ch.logoBackground = chooseLogoBackground(ch, logoData.tags);
+      cache.data[logoCacheKey(ch)] = { logo:ch.logo, background:ch.logoBackground, channelId };
+      resolved++;
+    }
+
+    cache.time = Date.now();
+    try{
+      localStorage.setItem(LOGO_CACHE_KEY, JSON.stringify(cache));
+    }catch(error){
+      console.log("No se pudo guardar la caché de logotipos:", error);
+    }
+
+    renderChannels();
+    if(currentChannel){
+      mainInfo.textContent = `${currentChannel.sectionLabel} · ${currentChannel.category} · ${resolved} logotipos encontrados`;
+    }else{
+      mainInfo.textContent = resolved ? `${resolved} logotipos originales encontrados` : previousInfo;
+    }
+  }catch(error){
+    mainInfo.textContent = previousInfo;
+    throw error;
+  }
+}
+
+function applyCachedLogos(){
+  const cache = readLogoCache();
+  if(!cache.time || Date.now() - cache.time > LOGO_CACHE_TTL) return;
+
+  for(const ch of allChannels){
+    if(ch.logo) continue;
+    const saved = cache.data[logoCacheKey(ch)];
+    if(!saved || !saved.logo) continue;
+    ch.logo = saved.logo;
+    ch.logoBackground = saved.background || ch.logoBackground || "white";
+  }
+}
+
+function readLogoCache(){
+  try{
+    const parsed = JSON.parse(localStorage.getItem(LOGO_CACHE_KEY) || "null");
+    if(parsed && typeof parsed === "object" && parsed.data && typeof parsed.data === "object"){
+      return { time:Number(parsed.time || 0), data:parsed.data };
+    }
+  }catch(error){}
+  return { time:0, data:{} };
+}
+
+function logoCacheKey(ch){
+  return String(ch.url || ch.id || `${ch.section}:${ch.name}`);
+}
+
+function buildBestLogoMap(logos){
+  const map = new Map();
+  for(const logo of Array.isArray(logos) ? logos : []){
+    if(!logo || !logo.channel || !logo.url) continue;
+    const score = scoreLogo(logo);
+    const current = map.get(logo.channel);
+    if(!current || score > current.score){
+      map.set(logo.channel, {
+        url:logo.url,
+        tags:Array.isArray(logo.tags) ? logo.tags : [],
+        score
+      });
+    }
+  }
+  return map;
+}
+
+function scoreLogo(logo){
+  const format = String(logo.format || "").toUpperCase();
+  const tags = Array.isArray(logo.tags) ? logo.tags.map(tag => String(tag).toLowerCase()) : [];
+  let score = 0;
+  if(logo.in_use) score += 100;
+  if(format === "PNG") score += 40;
+  else if(format === "WEBP") score += 32;
+  else if(format === "SVG") score += 28;
+  else if(format === "JPEG" || format === "JPG") score += 20;
+  if(tags.includes("horizontal")) score += 10;
+  if(tags.includes("white") || tags.includes("light")) score += 4;
+  score += Math.min(Number(logo.width || 0), 2000) / 1000;
+  return score;
+}
+
+function buildStreamChannelMap(streams){
+  const map = new Map();
+  for(const stream of Array.isArray(streams) ? streams : []){
+    if(!stream || !stream.url || !stream.channel) continue;
+    const exact = String(stream.url).trim();
+    if(exact && !map.has(exact)) map.set(exact, stream.channel);
+    const canonical = canonicalStreamUrl(exact);
+    if(canonical && !map.has(canonical)) map.set(canonical, stream.channel);
+  }
+  return map;
+}
+
+function buildChannelNameMap(channels){
+  const candidates = new Map();
+
+  const add = (name, channelId) => {
+    const key = normalizeChannelName(name);
+    if(!key || !channelId) return;
+    if(!candidates.has(key)) candidates.set(key, new Set());
+    candidates.get(key).add(channelId);
+  };
+
+  for(const channel of Array.isArray(channels) ? channels : []){
+    if(!channel || !channel.id) continue;
+    add(channel.name, channel.id);
+    add(channel.network, channel.id);
+    if(Array.isArray(channel.alt_names)) channel.alt_names.forEach(name => add(name, channel.id));
+  }
+
+  const unique = new Map();
+  for(const [key, ids] of candidates){
+    if(ids.size === 1) unique.set(key, [...ids][0]);
+  }
+  return unique;
+}
+
+function resolveChannelId(ch, streamChannelMap, channelNameMap, bestLogoByChannel){
+  const rawId = String(ch.id || "").trim();
+  const idCandidates = [rawId, rawId.split("@")[0], rawId.split(":")[0]].filter(Boolean);
+  for(const id of idCandidates){
+    if(bestLogoByChannel.has(id)) return id;
+  }
+
+  const exactUrl = String(ch.url || "").trim();
+  const byUrl = streamChannelMap.get(exactUrl) || streamChannelMap.get(canonicalStreamUrl(exactUrl));
+  if(byUrl && bestLogoByChannel.has(byUrl)) return byUrl;
+
+  const names = [ch.name, ch.rawName, removeChannelDecorations(ch.name), removeChannelDecorations(ch.rawName)];
+  for(const name of names){
+    const byName = channelNameMap.get(normalizeChannelName(name));
+    if(byName && bestLogoByChannel.has(byName)) return byName;
+  }
+
+  return "";
+}
+
+function canonicalStreamUrl(url){
+  return String(url || "")
+    .trim()
+    .replace(/^http:\/\//i, "https://")
+    .replace(/[?#].*$/, "")
+    .replace(/\/$/, "");
+}
+
+function normalizeChannelName(value){
+  return removeChannelDecorations(value)
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/&/g, " and ")
+    .replace(/\b(tv|television|televisión|channel|canal|live|en vivo|hd|fhd|uhd|sd|4k|1080p|720p|576p|480p|360p|plus|latino|latina)\b/g, " ")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim()
+    .replace(/\s+/g, " ");
+}
+
+function removeChannelDecorations(value){
+  return String(value || "")
+    .replace(/\[[^\]]*\]/g, " ")
+    .replace(/\([^)]*(?:p|hd|sd|4k|geo|not\s*24\/7|timeshift)[^)]*\)/gi, " ")
+    .replace(/\b(?:HD\+?|FHD|UHD|SD|4K|1080P|720P|576P|480P|360P)\b/gi, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function getPlutoLogoFromUrl(url){
+  const match = String(url || "").match(/(?:plu-|channels\/)([a-f0-9]{24})/i);
+  return match ? `https://images.pluto.tv/channels/${match[1]}/colorLogoPNG.png` : "";
+}
+
+function chooseLogoBackground(channel, tags){
+  const current = String(channel && channel.logoBackground || "white").toLowerCase();
+
+  // Puedes forzar el fondo desde el M3U con logo-bg="white" o logo-bg="black".
+  if(channel && channel.logoBackgroundExplicit){
+    return current === "black" || current === "dark" ? "black" : "white";
+  }
+
+  const normalizedTags = Array.isArray(tags) ? tags.map(tag => String(tag).toLowerCase()) : [];
+  if(normalizedTags.includes("white") || normalizedTags.includes("light")) return "black";
+  return "white";
 }
 
 function updateCountPill(){
@@ -492,6 +747,7 @@ function parseM3U(text){
         id:attrs["tvg-id"] || "",
         logo:attrs["tvg-logo"] || "",
         logoBackground:(attrs["logo-bg"] || attrs["tvg-logo-bg"] || "white").toLowerCase(),
+        logoBackgroundExplicit:Boolean(attrs["logo-bg"] || attrs["tvg-logo-bg"]),
         rawName,
         name:parsed.name,
         quality:parsed.quality,
@@ -848,7 +1104,7 @@ function setSection(section){
   document.querySelectorAll(".tab-btn[data-section]").forEach(btn => btn.classList.toggle("active", btn.dataset.section === activeSection));
   adultNotice.style.display = activeSection === "adult" ? "block" : "none";
   searchInput.value = "";
-  searchInput.placeholder = activeSection === "mundial" ? "Buscar en Mundial..." : "Buscar canal...";
+  searchInput.placeholder = "Buscar canal...";
   categoryFilter.value = "all";
   buildCategories();
   renderChannels();
