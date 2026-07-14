@@ -33,7 +33,6 @@ button{color:inherit}
 #player{position:absolute;inset:0;width:100%;height:100%;background:#000;z-index:0}
 #player video{width:100%!important;height:100%!important;object-fit:contain!important;background:#000}
 #player .media-control{display:none!important}
-#player .player-error-screen{display:none!important}
 .video-vignette{position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(90deg,rgba(0,0,0,.12),transparent 38%,rgba(0,0,0,.08));}
 
 /* Botón para abrir la guía */
@@ -236,7 +235,7 @@ button{color:inherit}
           </div>
           <div class="right-tools">
             <div class="pill live"><span class="live-dot"></span> DIRECTO</div>
-            <button class="pill" id="proxyStatus" type="button" title="Cambiar ruta de reproducción">AUTO</button>
+            <button class="pill" id="proxyStatus" type="button">PROXY</button>
             <button class="ctrl-btn small" id="pipBtn" type="button" title="Imagen en imagen">▣</button>
             <button class="ctrl-btn small" id="fullBtn" type="button" title="Pantalla completa">⤢</button>
           </div>
@@ -248,8 +247,7 @@ button{color:inherit}
 
 <script>
 const PROXY_BASE = "https://hls-proxy-tv-plus.mikimc-business.workers.dev/proxy?url=";
-const USE_PROXY_FOR_ALL = false; // Automático: primero directo y después proxy cuando haga falta.
-const PLAYBACK_FALLBACK_TIMEOUT = 14000;
+const USE_PROXY_FOR_ALL = true;
 const FAVORITES_KEY = "watch_tv_plus_favorites_v2";
 const ADULT_UNLOCK_KEY = "watch_tv_plus_adult_unlocked_v2";
 const MAX_RENDER_DEFAULT = 900;
@@ -316,12 +314,6 @@ let adultUnlocked = localStorage.getItem(ADULT_UNLOCK_KEY) === "1";
 let allChannels = [];
 let channelsBySection = {};
 let lastRenderedChannels = [];
-let playbackCandidates = [];
-let playbackCandidateIndex = 0;
-let playbackSequence = 0;
-let playbackFallbackTimer = null;
-let playbackStarted = false;
-let playbackFallbackInProgress = false;
 
 async function init(){
   buildTabs();
@@ -350,7 +342,6 @@ function bindEvents(){
   volumeBar.addEventListener("input", onVolumeChange);
   fullBtn.addEventListener("click", toggleFullscreen);
   pipBtn.addEventListener("click", togglePiP);
-  proxyStatus.addEventListener("click", togglePlaybackRoute);
   reloadBtn.addEventListener("click", loadAllPlaylists);
   searchInput.addEventListener("input", renderChannels);
   categoryFilter.addEventListener("change", () => { updateGuideTitle(); renderChannels(); });
@@ -733,7 +724,6 @@ function parseM3U(text){
   let current = null;
   let pendingReferrer = "";
   let pendingUserAgent = "";
-  let pendingOrigin = "";
 
   for(const rawLine of lines){
     const line = rawLine.trim();
@@ -747,24 +737,6 @@ function parseM3U(text){
     if(line.startsWith("#EXTVLCOPT:http-user-agent=")){
       pendingUserAgent = line.replace("#EXTVLCOPT:http-user-agent=", "").trim();
       if(current) current.userAgent = pendingUserAgent;
-      continue;
-    }
-    if(line.startsWith("#EXTVLCOPT:http-origin=")){
-      pendingOrigin = line.replace("#EXTVLCOPT:http-origin=", "").trim();
-      if(current) current.origin = pendingOrigin;
-      continue;
-    }
-    if(line.startsWith("#KODIPROP:inputstream.adaptive.stream_headers=")){
-      const headerText = line.replace("#KODIPROP:inputstream.adaptive.stream_headers=", "").trim();
-      const parsedHeaders = parseHeaderOptions(headerText);
-      pendingReferrer = parsedHeaders.referrer || pendingReferrer;
-      pendingUserAgent = parsedHeaders.userAgent || pendingUserAgent;
-      pendingOrigin = parsedHeaders.origin || pendingOrigin;
-      if(current){
-        current.referrer = pendingReferrer;
-        current.userAgent = pendingUserAgent;
-        current.origin = pendingOrigin;
-      }
       continue;
     }
     if(line.startsWith("#EXTINF")){
@@ -784,54 +756,20 @@ function parseM3U(text){
         type:"video",
         url:"",
         referrer:pendingReferrer,
-        userAgent:pendingUserAgent,
-        origin:pendingOrigin
+        userAgent:pendingUserAgent
       };
       continue;
     }
     if(current && (line.startsWith("http://") || line.startsWith("https://"))){
-      const stream = parseStreamLine(line);
-      current.url = stream.url;
-      current.referrer = stream.referrer || current.referrer || pendingReferrer;
-      current.userAgent = stream.userAgent || current.userAgent || pendingUserAgent;
-      current.origin = stream.origin || current.origin || pendingOrigin;
+      current.url = line;
       current.type = guessType(current);
       channels.push(current);
       current = null;
       pendingReferrer = "";
       pendingUserAgent = "";
-      pendingOrigin = "";
     }
   }
   return removeDuplicateChannels(channels);
-}
-
-function parseStreamLine(line){
-  const parts = String(line || "").split("|");
-  const url = parts.shift().trim();
-  const options = parseHeaderOptions(parts.join("&"));
-  return { url, ...options };
-}
-
-function parseHeaderOptions(value){
-  const result = { referrer:"", userAgent:"", origin:"" };
-  const text = String(value || "").replace(/^\?/, "").trim();
-  if(!text) return result;
-  text.split(/[&|]/).forEach(pair => {
-    const index = pair.indexOf("=");
-    if(index < 0) return;
-    const rawKey = pair.slice(0, index).trim();
-    const rawValue = pair.slice(index + 1).trim();
-    let key = rawKey;
-    let decoded = rawValue;
-    try{ key = decodeURIComponent(rawKey); }catch(error){}
-    try{ decoded = decodeURIComponent(rawValue); }catch(error){}
-    key = key.toLowerCase().replace(/[-_]/g, "");
-    if(key === "referer" || key === "referrer") result.referrer = decoded;
-    if(key === "useragent" || key === "ua") result.userAgent = decoded;
-    if(key === "origin") result.origin = decoded;
-  });
-  return result;
 }
 
 function getAttributes(line){
@@ -896,87 +834,19 @@ function loadChannel(channel, closeOnMobile = true){
   currentChannel = channel;
   currentUrl = channel.url;
   mainTitle.textContent = channel.name;
-  mainInfo.textContent = `${channel.sectionLabel} · ${channel.category} · Preparando señal...`;
+  mainInfo.textContent = `${channel.sectionLabel} · ${channel.category} · Cargando señal...`;
   topCategory.textContent = channel.category.toUpperCase();
   topTitle.textContent = channel.name;
   renderChannels();
+  destroyPlayer();
 
-  playbackSequence += 1;
-  playbackCandidates = buildPlaybackCandidates(channel);
-  playbackCandidateIndex = 0;
-  startPlaybackCandidate(playbackCandidateIndex, playbackSequence);
-
-  if(closeOnMobile && window.matchMedia("(max-width:800px)").matches) setGuideOpen(false);
-  showPlayerUI();
-}
-
-function buildPlaybackCandidates(channel){
-  const direct = { mode:"DIRECTO", url:channel.url };
-  const proxy = { mode:"PROXY", url:buildProxyUrl(channel) };
-  const pageIsHttps = location.protocol === "https:";
-  const streamIsHttp = String(channel.url || "").startsWith("http://");
-  const directAllowed = !(pageIsHttps && streamIsHttp);
-  const requiresHeaders = !!(channel.referrer || channel.userAgent || channel.origin);
-
-  let candidates;
-  if(USE_PROXY_FOR_ALL || requiresHeaders || !directAllowed){
-    candidates = [proxy];
-    if(directAllowed) candidates.push(direct);
-  }else{
-    candidates = [direct, proxy];
-  }
-
-  const seen = new Set();
-  return candidates.filter(candidate => {
-    if(!candidate.url || seen.has(candidate.url)) return false;
-    seen.add(candidate.url);
-    return true;
-  });
-}
-
-function buildProxyUrl(channel){
-  let url = PROXY_BASE + encodeURIComponent(channel.url);
-  if(channel.referrer) url += "&ref=" + encodeURIComponent(channel.referrer);
-  if(channel.userAgent) url += "&ua=" + encodeURIComponent(channel.userAgent);
-  if(channel.origin) url += "&origin=" + encodeURIComponent(channel.origin);
-  return url;
-}
-
-function inferMimeType(url){
-  const original = String(url || "").toLowerCase();
-  const clean = original.split("?")[0].split("#")[0];
-  if(clean.endsWith(".m3u8") || original.includes("m3u8")) return "application/vnd.apple.mpegurl";
-  if(clean.endsWith(".mp4") || original.includes("format=mp4")) return "video/mp4";
-  if(clean.endsWith(".mp3")) return "audio/mpeg";
-  if(clean.endsWith(".aac")) return "audio/aac";
-  return "";
-}
-
-function startPlaybackCandidate(index, sequenceId){
-  if(sequenceId !== playbackSequence || !currentChannel) return;
-  const candidate = playbackCandidates[index];
-  if(!candidate){
-    showFinalPlaybackError();
-    return;
-  }
-
-  playbackCandidateIndex = index;
-  playbackStarted = false;
-  playbackFallbackInProgress = false;
-  clearTimeout(playbackFallbackTimer);
-  destroyPlayer(false);
-
-  proxyStatus.textContent = candidate.mode;
-  proxyStatus.title = playbackCandidates.length > 1
-    ? "Presiona para cambiar entre reproducción directa y proxy"
-    : "Este canal solo puede probarse por esta ruta";
-  mainInfo.textContent = `${currentChannel.sectionLabel} · Intentando ${candidate.mode.toLowerCase()}...`;
-
+  const streamUrl = getPlayableUrl(channel);
+  proxyStatus.textContent = shouldUseProxy(channel) ? "PROXY" : "DIRECTO";
   const pluginsList = [];
   if(window.HlsjsPlayback) pluginsList.push(window.HlsjsPlayback);
 
-  const config = {
-    source:candidate.url,
+  player = new Clappr.Player({
+    source:streamUrl,
     parentId:"#player",
     plugins:pluginsList,
     autoPlay:true,
@@ -984,6 +854,7 @@ function startPlaybackCandidate(index, sequenceId){
     width:"100%",
     height:"100%",
     hideMediaControl:true,
+    mimeType:"application/vnd.apple.mpegurl",
     hlsPlayback:{ preload:true },
     playback:{
       hlsjsConfig:{
@@ -991,125 +862,58 @@ function startPlaybackCandidate(index, sequenceId){
         lowLatencyMode:true,
         liveSyncDurationCount:3,
         maxBufferLength:24,
-        manifestLoadingMaxRetry:5,
-        manifestLoadingRetryDelay:1000,
-        levelLoadingMaxRetry:5,
-        levelLoadingRetryDelay:1000,
-        fragLoadingMaxRetry:5,
-        fragLoadingRetryDelay:1000,
-        keyLoadingMaxRetry:5,
-        keyLoadingRetryDelay:1000
+        manifestLoadingMaxRetry:8,
+        manifestLoadingRetryDelay:1200,
+        levelLoadingMaxRetry:8,
+        levelLoadingRetryDelay:1200,
+        fragLoadingMaxRetry:8,
+        fragLoadingRetryDelay:1200,
+        keyLoadingMaxRetry:8,
+        keyLoadingRetryDelay:1200
       }
     },
     events:{
-      onReady:function(){
-        if(sequenceId !== playbackSequence) return;
-        mainInfo.textContent = `${currentChannel.sectionLabel} · ${currentChannel.category} · Conectando por ${candidate.mode.toLowerCase()}...`;
-        syncVideoEvents(sequenceId);
-      },
-      onPlay:function(){
-        if(sequenceId !== playbackSequence) return;
-        markPlaybackSuccess(sequenceId);
-        updatePlayState();
-      },
+      onReady:function(){ mainInfo.textContent = `${channel.sectionLabel} · ${channel.category} · Listo`; syncVideoEvents(); },
+      onPlay:function(){ updatePlayState(); mainInfo.textContent = `${channel.sectionLabel} · Reproduciendo en directo`; },
       onPause:updatePlayState,
-      onError:function(error){
-        console.log("Clappr error:", error);
-        handlePlaybackFailure("error del reproductor", sequenceId);
-      }
+      onError:function(error){ console.log("Clappr error:", error); mainInfo.textContent = "No se pudo reproducir esta señal. Prueba otro canal."; }
     }
-  };
+  });
 
-  const mimeType = inferMimeType(currentChannel.url);
-  if(mimeType) config.mimeType = mimeType;
-
-  player = new Clappr.Player(config);
-
-  playbackFallbackTimer = setTimeout(() => {
-    if(sequenceId === playbackSequence && !playbackStarted){
-      handlePlaybackFailure("tiempo de espera agotado", sequenceId);
-    }
-  }, PLAYBACK_FALLBACK_TIMEOUT);
-
+  if(closeOnMobile && window.matchMedia("(max-width:800px)").matches) setGuideOpen(false);
   showPlayerUI();
   setTimeout(updatePlayState, 700);
 }
 
-function markPlaybackSuccess(sequenceId){
-  if(sequenceId !== playbackSequence) return;
-  playbackStarted = true;
-  playbackFallbackInProgress = false;
-  clearTimeout(playbackFallbackTimer);
-  const candidate = playbackCandidates[playbackCandidateIndex];
-  const route = candidate ? candidate.mode.toLowerCase() : "automático";
-  if(currentChannel) mainInfo.textContent = `${currentChannel.sectionLabel} · Reproduciendo en directo por ${route}`;
+function shouldUseProxy(channel){
+  if(USE_PROXY_FOR_ALL) return true;
+  if(channel.url.startsWith("http://") && location.protocol === "https:") return true;
+  if(channel.url.includes("jmp2.uk/plu-")) return true;
+  if(channel.referrer || channel.userAgent) return true;
+  return false;
 }
 
-function handlePlaybackFailure(reason, sequenceId){
-  if(sequenceId !== playbackSequence || playbackFallbackInProgress) return;
-  playbackFallbackInProgress = true;
-  clearTimeout(playbackFallbackTimer);
-
-  const nextIndex = playbackCandidateIndex + 1;
-  if(nextIndex < playbackCandidates.length){
-    const next = playbackCandidates[nextIndex];
-    mainInfo.textContent = `Falló ${playbackCandidates[playbackCandidateIndex].mode.toLowerCase()}; probando ${next.mode.toLowerCase()}...`;
-    setTimeout(() => startPlaybackCandidate(nextIndex, sequenceId), 900);
-    return;
-  }
-
-  console.warn("Canal sin reproducción:", currentChannel && currentChannel.name, reason);
-  showFinalPlaybackError();
+function getPlayableUrl(channel){
+  if(!shouldUseProxy(channel)) return channel.url;
+  let url = PROXY_BASE + encodeURIComponent(channel.url);
+  if(channel.referrer) url += "&ref=" + encodeURIComponent(channel.referrer);
+  if(channel.userAgent) url += "&ua=" + encodeURIComponent(channel.userAgent);
+  return url;
 }
 
-function showFinalPlaybackError(){
-  clearTimeout(playbackFallbackTimer);
-  playbackFallbackInProgress = false;
-  mainInfo.textContent = "No se pudo cargar el manifiesto del canal. Actualiza el Worker HLS reforzado; si continúa, el enlace está vencido, bloqueado por país, requiere cookies/DRM o el servidor rechazó la conexión.";
-  proxyStatus.textContent = "REINTENTAR";
-}
-
-function togglePlaybackRoute(){
-  if(!currentChannel) return;
-  playbackSequence += 1;
-  const sequenceId = playbackSequence;
-
-  if(!playbackCandidates.length){
-    playbackCandidates = buildPlaybackCandidates(currentChannel);
-    playbackCandidateIndex = 0;
-  }else if(proxyStatus.textContent === "REINTENTAR"){
-    playbackCandidateIndex = 0;
-  }else{
-    playbackCandidateIndex = (playbackCandidateIndex + 1) % playbackCandidates.length;
-  }
-
-  startPlaybackCandidate(playbackCandidateIndex, sequenceId);
-}
-
-function destroyPlayer(clearFallback = true){
-  if(clearFallback) clearTimeout(playbackFallbackTimer);
+function destroyPlayer(){
   if(player){ player.destroy(); player = null; }
   document.getElementById("player").innerHTML = "";
 }
 function getPlayerVideo(){ return document.querySelector("#player video"); }
-function syncVideoEvents(sequenceId = playbackSequence){
+function syncVideoEvents(){
   const video = getPlayerVideo();
   if(!video) return;
-  video.addEventListener("play", () => { markPlaybackSuccess(sequenceId); updatePlayState(); });
+  video.addEventListener("play", updatePlayState);
   video.addEventListener("pause", updatePlayState);
-  video.addEventListener("playing", () => markPlaybackSuccess(sequenceId));
-  video.addEventListener("loadeddata", () => markPlaybackSuccess(sequenceId));
-  video.addEventListener("waiting", () => {
-    if(sequenceId === playbackSequence && currentChannel && !playbackStarted){
-      mainInfo.textContent = `${currentChannel.sectionLabel} · Cargando señal...`;
-    }
-  });
-  video.addEventListener("stalled", () => {
-    if(sequenceId === playbackSequence && !playbackStarted){
-      handlePlaybackFailure("señal detenida", sequenceId);
-    }
-  });
-  video.addEventListener("error", () => handlePlaybackFailure("error del elemento de video", sequenceId));
+  video.addEventListener("playing", () => { if(currentChannel) mainInfo.textContent = `${currentChannel.sectionLabel} · Reproduciendo en directo`; });
+  video.addEventListener("waiting", () => { if(currentChannel) mainInfo.textContent = `${currentChannel.sectionLabel} · Cargando señal...`; });
+  video.addEventListener("error", () => { mainInfo.textContent = "Error de reproducción. Prueba otro canal."; });
 }
 function togglePlay(){
   showPlayerUI();
