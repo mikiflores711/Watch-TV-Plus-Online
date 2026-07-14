@@ -1,1343 +1,334 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<title>Watch TV Plus</title>
-
-<script src="https://cdn.jsdelivr.net/npm/clappr@latest/dist/clappr.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@clappr/hlsjs-playback@latest/dist/hlsjs-playback.min.js"></script>
-
-<style>
-:root{
-  --bg:#020306;
-  --panel:#07080d;
-  --panel-soft:rgba(8,9,15,.90);
-  --text:#fff;
-  --soft:#a8adbb;
-  --line:rgba(255,255,255,.10);
-  --purple:#5b2ec8;
-  --purple-2:#7a43ef;
-  --purple-soft:rgba(102,55,218,.28);
-  --danger:#b91c1c;
-}
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html,body{width:100%;height:100%;background:#000;color:var(--text);font-family:Arial,Helvetica,sans-serif;overflow:hidden}
-button,input,select{font:inherit}
-button{color:inherit}
-.sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
-
-.tv-app,.player-shell,.player-stage{width:100%;height:100%;min-height:100dvh}
-.player-stage{position:relative;background:#000;overflow:hidden;isolation:isolate;cursor:none}
-.player-stage.show-ui,.player-stage.guide-open{cursor:default}
-#player{position:absolute;inset:0;width:100%;height:100%;background:#000;z-index:0}
-#player video{width:100%!important;height:100%!important;object-fit:contain!important;background:#000}
-#player .media-control{display:none!important}
-#player .player-error-screen{display:none!important}
-.video-vignette{position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(90deg,rgba(0,0,0,.12),transparent 38%,rgba(0,0,0,.08));}
-
-/* Botón para abrir la guía */
-.guide-toggle{position:absolute;top:calc(env(safe-area-inset-top) + 18px);left:calc(env(safe-area-inset-left) + 18px);z-index:35;width:48px;height:48px;border-radius:50%;border:1px solid rgba(255,255,255,.18);background:rgba(8,9,15,.78);backdrop-filter:blur(12px);display:grid;place-items:center;font-size:23px;cursor:pointer;opacity:0;transform:translateY(-6px);transition:.22s ease;box-shadow:0 12px 30px rgba(0,0,0,.35)}
-.player-stage.show-ui:not(.guide-open) .guide-toggle{opacity:1;transform:translateY(0)}
-
-/* Guía lateral estilo decodificador/IPTV */
-.guide-panel{position:absolute;z-index:30;inset:0 auto 0 0;width:clamp(370px,44vw,650px);padding:calc(env(safe-area-inset-top) + 20px) 72px calc(env(safe-area-inset-bottom) + 18px) calc(env(safe-area-inset-left) + 24px);display:flex;flex-direction:column;transform:translateX(-103%);transition:transform .26s ease;pointer-events:none;background:linear-gradient(90deg,rgba(3,4,8,.99) 0%,rgba(4,5,10,.97) 70%,rgba(4,5,10,.70) 87%,rgba(4,5,10,0) 100%)}
-.player-stage.guide-open .guide-panel{transform:translateX(0);pointer-events:auto}
-.guide-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-right:8px;margin-bottom:8px}
-.guide-brand{font-size:12px;text-transform:uppercase;letter-spacing:1.5px;color:#d0d3dc;font-weight:800}
-.close-guide{width:38px;height:38px;border:0;border-radius:50%;background:rgba(255,255,255,.08);cursor:pointer;font-size:18px}
-.close-guide:hover,.close-guide:focus-visible{background:rgba(255,255,255,.16);outline:none}
-
-.guide-title-row{display:grid;grid-template-columns:42px minmax(0,1fr) 42px;align-items:center;gap:8px;margin-bottom:8px}
-.section-step{width:40px;height:40px;border:0;background:transparent;border-radius:50%;font-size:34px;color:#d5d7df;cursor:pointer;display:grid;place-items:center;line-height:1}
-.section-step:hover,.section-step:focus-visible{background:rgba(255,255,255,.09);outline:none}
-.guide-title-box{text-align:center;min-width:0}
-.guide-kicker{font-size:11px;text-transform:uppercase;letter-spacing:1.8px;color:#888e9d;font-weight:800;margin-bottom:4px}
-.guide-title{font-size:29px;line-height:1.05;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-
-.section-tabs{display:flex;gap:7px;overflow-x:auto;scrollbar-width:none;padding:7px 2px 11px;margin-bottom:4px}
-.section-tabs::-webkit-scrollbar{display:none}
-.tab-btn{border:0;background:transparent;color:#8f95a4;padding:7px 9px;border-radius:6px;font-size:11px;font-weight:800;white-space:nowrap;cursor:pointer;text-transform:uppercase;letter-spacing:.45px}
-.tab-btn:hover,.tab-btn:focus-visible{color:#fff;background:rgba(255,255,255,.08);outline:none}
-.tab-btn.active{background:var(--purple);color:#fff;box-shadow:0 6px 18px rgba(84,42,190,.34)}
-.tab-btn.adult-tab{color:#fca5a5}
-.tab-btn.adult-tab.active{background:#991b1b;color:#fff}
-
-.guide-tools{display:grid;grid-template-columns:minmax(0,1fr) 128px;gap:8px;margin-bottom:8px}
-.search-input,.filter-select{height:39px;border:1px solid rgba(255,255,255,.11);background:rgba(255,255,255,.055);color:#fff;border-radius:7px;outline:none;padding:0 11px;font-size:12px}
-.search-input::placeholder{color:#858b99}
-.search-input:focus,.filter-select:focus{border-color:rgba(139,92,246,.9);box-shadow:0 0 0 3px rgba(124,58,237,.16)}
-.filter-select option{background:#0a0b10;color:#fff}
-.filter-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:9px}
-.adult-notice{padding:9px 11px;border-left:3px solid #ef4444;background:rgba(127,29,29,.30);color:#fecaca;font-size:11px;line-height:1.35;margin-bottom:8px}
-
-.channel-list{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding:2px 12px 2px 0;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.24) transparent}
-.channel-list::-webkit-scrollbar{width:5px}
-.channel-list::-webkit-scrollbar-thumb{background:rgba(255,255,255,.25);border-radius:99px}
-.channel-item{min-height:58px;display:grid;grid-template-columns:34px 42px minmax(0,1fr) 34px 22px;align-items:center;gap:9px;padding:5px 8px 5px 4px;border-radius:3px;cursor:pointer;position:relative;color:#eceef4;transition:background .14s ease,transform .14s ease;outline:none}
-.channel-item::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;background:rgba(255,255,255,.045)}
-.channel-item:hover,.channel-item:focus-visible{background:rgba(255,255,255,.085)}
-.channel-item.active{background:linear-gradient(90deg,var(--purple),var(--purple-2));box-shadow:0 6px 20px rgba(72,33,166,.30)}
-.channel-item.active::after{display:none}
-.channel-number{font-size:13px;font-weight:800;text-align:right;color:#aeb3c0;font-variant-numeric:tabular-nums}
-.channel-item.active .channel-number{color:#fff}
-.channel-logo{width:40px;height:40px;border-radius:7px;background:#fff;display:grid;place-items:center;color:#12131a;font-size:11px;font-weight:900;overflow:hidden;border:1px solid rgba(255,255,255,.14)}
-.channel-logo.dark{background:#11131a;color:#fff}
-.channel-logo img{width:100%;height:100%;object-fit:contain;padding:4px;background:#fff}
-.channel-logo img.dark-logo{background:#11131a}
-.channel-text{min-width:0}
-.channel-text h3{font-size:14px;line-height:1.2;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.channel-text p{font-size:10.5px;color:#aeb2bf;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.channel-item.active .channel-text p{color:#e8ddff}
-.favorite-btn{width:30px;height:30px;border:0;background:transparent;border-radius:50%;display:grid;place-items:center;color:#afb3bf;font-size:19px;cursor:pointer}
-.favorite-btn:hover,.favorite-btn:focus-visible{background:rgba(255,255,255,.14);color:#fff;outline:none}
-.favorite-btn.active{color:#ffd54a}
-.channel-arrow{font-size:30px;font-weight:300;line-height:1;color:#d7d9e1}
-.empty{padding:22px 14px;color:#a7abb7;font-size:12px;line-height:1.5;text-align:center;border:1px dashed rgba(255,255,255,.13);background:rgba(255,255,255,.03)}
-
-.guide-footer{display:flex;align-items:center;gap:10px;padding-top:10px;margin-right:9px;border-top:1px solid rgba(255,255,255,.09)}
-.count-pill{flex:1;min-width:0;color:#9fa4b1;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.reload-btn{border:0;background:rgba(255,255,255,.09);color:#fff;border-radius:6px;padding:8px 10px;font-size:11px;font-weight:800;cursor:pointer}
-.reload-btn:hover,.reload-btn:focus-visible{background:rgba(255,255,255,.16);outline:none}
-.small-help{display:none}
-
-/* Información del canal sobre el video */
-.now-playing{position:absolute;z-index:12;left:calc(env(safe-area-inset-left) + 22px);bottom:calc(env(safe-area-inset-bottom) + 80px);max-width:min(560px,calc(100% - 44px));padding:14px 17px;background:linear-gradient(90deg,rgba(3,4,8,.88),rgba(3,4,8,.18));border-left:4px solid var(--purple-2);opacity:0;transform:translateY(10px);transition:.22s ease;pointer-events:none;text-shadow:0 2px 8px #000}
-.player-stage.show-ui:not(.guide-open) .now-playing{opacity:1;transform:translateY(0)}
-.watching-label{font-size:10px;text-transform:uppercase;letter-spacing:1.4px;color:#c9cbd3;font-weight:800}
-.watching-title{font-size:23px;line-height:1.1;margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.main-info{font-size:11px;color:#c7cad2;margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-
-/* Controles inferiores */
-.controls-wrap{position:absolute;z-index:20;left:calc(env(safe-area-inset-left) + 18px);right:calc(env(safe-area-inset-right) + 18px);bottom:calc(env(safe-area-inset-bottom) + 16px);opacity:0;transform:translateY(8px);transition:.22s ease;pointer-events:none}
-.player-stage.show-ui:not(.guide-open) .controls-wrap{opacity:1;transform:translateY(0);pointer-events:auto}
-.controls-bar{min-height:48px;display:flex;align-items:center;gap:8px;padding:7px 8px;background:rgba(5,6,10,.77);border:1px solid rgba(255,255,255,.12);border-radius:10px;backdrop-filter:blur(14px);box-shadow:0 10px 30px rgba(0,0,0,.35)}
-.ctrl-btn,.pill{height:34px;border:0;border-radius:7px;background:rgba(255,255,255,.09);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;cursor:pointer}
-.ctrl-btn{min-width:36px;padding:0 11px;gap:6px}
-.ctrl-btn.small{width:36px;padding:0}
-.ctrl-btn:hover,.pill:hover,.ctrl-btn:focus-visible,.pill:focus-visible{background:rgba(255,255,255,.17);outline:none}
-.play-btn{background:var(--purple)}
-.volume-wrap{display:flex;align-items:center;gap:8px}
-.slider{-webkit-appearance:none;appearance:none;width:90px;height:4px;border-radius:99px;background:rgba(255,255,255,.25);outline:none}
-.slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:12px;height:12px;border-radius:50%;background:#fff}
-.right-tools{display:flex;align-items:center;gap:8px;margin-left:auto}
-.pill{padding:0 10px;font-size:10px;letter-spacing:.5px}
-.pill.live{background:rgba(142,23,36,.9);gap:6px}
-.live-dot{width:7px;height:7px;border-radius:50%;background:#ff7a86;box-shadow:0 0 8px #ff7a86}
-
-/* En pantallas de TV anchas se parece más al menú de la referencia */
-@media (min-width:1200px){
-  .guide-panel{padding-left:calc(env(safe-area-inset-left) + 38px)}
-  .channel-item{min-height:62px}
-  .channel-text h3{font-size:15px}
-}
-@media (max-width:800px){
-  .guide-panel{width:min(94vw,530px);padding-right:28px;background:linear-gradient(90deg,rgba(3,4,8,.99) 0%,rgba(3,4,8,.98) 88%,rgba(3,4,8,0) 100%)}
-  .guide-title{font-size:23px}
-  .guide-tools{grid-template-columns:1fr}
-  .filter-row{grid-template-columns:1fr 1fr}
-  .channel-item{grid-template-columns:30px 40px minmax(0,1fr) 32px 18px;min-height:55px;gap:7px}
-  .channel-logo{width:38px;height:38px}
-  .channel-text h3{font-size:13px}
-  .controls-bar{flex-wrap:wrap}
-  .right-tools{margin-left:0}
-}
-@media (max-width:520px){
-  .guide-panel{width:100%;padding:calc(env(safe-area-inset-top) + 12px) calc(env(safe-area-inset-right) + 12px) calc(env(safe-area-inset-bottom) + 12px) calc(env(safe-area-inset-left) + 12px);background:rgba(3,4,8,.98)}
-  .guide-head{margin-bottom:2px}
-  .guide-title-row{grid-template-columns:36px minmax(0,1fr) 36px}
-  .section-step{width:34px;height:34px;font-size:29px}
-  .guide-title{font-size:21px}
-  .section-tabs{padding-bottom:8px}
-  .guide-tools{grid-template-columns:1fr}
-  .filter-row{display:none}
-  .channel-list{padding-right:3px}
-  .channel-item{grid-template-columns:27px 38px minmax(0,1fr) 31px 17px;padding-right:4px}
-  .favorite-btn{width:29px;height:29px}
-  .guide-footer{margin-right:0}
-  .now-playing{bottom:110px}
-  .right-tools .pill:not(.live){display:none}
-  .slider{width:64px}
-}
-@media (max-height:600px) and (orientation:landscape){
-  .guide-panel{padding-top:calc(env(safe-area-inset-top) + 9px);padding-bottom:calc(env(safe-area-inset-bottom) + 8px)}
-  .guide-head{margin-bottom:0}
-  .guide-title{font-size:21px}
-  .guide-kicker{display:none}
-  .section-tabs{padding:3px 2px 6px}
-  .guide-tools{margin-bottom:5px}
-  .search-input,.filter-select{height:34px}
-  .filter-row{display:none}
-  .channel-item{min-height:48px}
-  .channel-logo{width:34px;height:34px}
-  .guide-footer{padding-top:6px}
-}
-</style>
-</head>
-<body>
-<div class="tv-app">
-  <section class="player-shell">
-    <div class="player-stage show-ui guide-open" id="playerStage">
-      <div id="player"></div>
-      <div class="video-vignette"></div>
-
-      <button class="guide-toggle" id="guideToggle" type="button" aria-label="Abrir lista de canales">☰</button>
-
-      <aside class="guide-panel" id="guidePanel" aria-label="Guía de canales">
-        <div class="guide-head">
-          <div class="guide-brand">Watch TV Plus</div>
-          <button class="close-guide" id="closeGuide" type="button" aria-label="Cerrar lista">×</button>
-        </div>
-
-        <div class="guide-title-row">
-          <button class="section-step" id="prevSection" type="button" aria-label="Sección anterior">‹</button>
-          <div class="guide-title-box">
-            <div class="guide-kicker">Canales en vivo</div>
-            <h1 class="guide-title" id="guideTitle">México</h1>
-          </div>
-          <button class="section-step" id="nextSection" type="button" aria-label="Sección siguiente">›</button>
-        </div>
-
-        <div class="section-tabs" id="sectionTabs"></div>
-
-        <div id="adultNotice" class="adult-notice" style="display:none;">Sección exclusiva para mayores de 18 años. El acceso queda guardado únicamente en este navegador.</div>
-
-        <div class="guide-tools">
-          <input id="searchInput" class="search-input" type="search" placeholder="Buscar canal..." autocomplete="off" />
-          <select id="categoryFilter" class="filter-select" aria-label="Categoría"><option value="all">Todas las categorías</option></select>
-        </div>
-        <div class="filter-row">
-          <select id="typeFilter" class="filter-select" aria-label="Tipo de canal"><option value="all">Todo</option><option value="video">TV</option><option value="audio">Radio</option></select>
-          <div class="small-help" id="sectionInfo">Usa la estrella para guardar favoritos.</div>
-        </div>
-
-        <div class="channel-list" id="channelList"><div class="empty">Cargando canales...</div></div>
-
-        <div class="guide-footer">
-          <div class="count-pill" id="countPill">Cargando listas...</div>
-          <button class="reload-btn" id="reloadBtn" type="button">Recargar</button>
-        </div>
-      </aside>
-
-      <div class="now-playing">
-        <div class="watching-label">ESTÁS VIENDO · <span id="topCategory">CANAL</span></div>
-        <h2 class="watching-title" id="topTitle">Selecciona un canal</h2>
-        <p class="main-info" id="mainInfo">Cargando listas M3U...</p>
-        <h2 class="sr-only" id="mainTitle">Selecciona un canal</h2>
-      </div>
-
-      <div class="controls-wrap">
-        <div class="controls-bar">
-          <button class="ctrl-btn" id="openGuideBtn" type="button" title="Lista de canales">☰</button>
-          <button class="ctrl-btn play-btn" id="playBtn" type="button"><span id="playIcon">▶</span><span id="playText">Play</span></button>
-          <div class="volume-wrap">
-            <button class="ctrl-btn small" id="muteBtn" type="button">🔊</button>
-            <input class="slider" id="volumeBar" type="range" min="0" max="100" value="100" aria-label="Volumen" />
-          </div>
-          <div class="right-tools">
-            <div class="pill live"><span class="live-dot"></span> DIRECTO</div>
-            <button class="pill" id="proxyStatus" type="button" title="Cambiar ruta de reproducción">AUTO</button>
-            <button class="ctrl-btn small" id="pipBtn" type="button" title="Imagen en imagen">▣</button>
-            <button class="ctrl-btn small" id="fullBtn" type="button" title="Pantalla completa">⤢</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-</div>
-
-<script>
-const PROXY_BASE = "https://hls-proxy-tv-plus.mikimc-business.workers.dev/proxy?url=";
-const USE_PROXY_FOR_ALL = false; // Automático: primero directo y después proxy cuando haga falta.
-const PLAYBACK_FALLBACK_TIMEOUT = 14000;
-const FAVORITES_KEY = "watch_tv_plus_favorites_v2";
-const ADULT_UNLOCK_KEY = "watch_tv_plus_adult_unlocked_v2";
-const MAX_RENDER_DEFAULT = 900;
-const MAX_RENDER_WITH_SEARCH = 2500;
-
-/*
-  LOGOTIPOS ORIGINALES:
-  1. Primero usa tvg-logo incluido en cada archivo M3U.
-  2. Si falta, busca el canal por tvg-id, URL o nombre en la API pública de iptv-org.
-  3. En canales Pluto TV también intenta obtener el logotipo oficial desde images.pluto.tv.
-  Los resultados se guardan 7 días en este navegador para no descargar la base en cada inicio.
-*/
-const LOGO_API = "https://iptv-org.github.io/api/logos.json";
-const CHANNELS_API = "https://iptv-org.github.io/api/channels.json";
-const STREAMS_API = "https://iptv-org.github.io/api/streams.json";
-const LOGO_CACHE_KEY = "watch_tv_plus_original_logos_v4";
-const LOGO_CACHE_TTL = 1000 * 60 * 60 * 24 * 7;
-
-const PLAYLISTS = [
-  { id:"mexico", label:"México", file:"./mexico.m3u", isAdult:false },
-  { id:"pluto", label:"Pluto TV", file:"./pluto.m3u", isAdult:false },
-  { id:"espanol", label:"Español", file:"./espanol.m3u", isAdult:false },
-  { id:"favorites", label:"Favoritos", file:null, isAdult:false, isFavorites:true },
-  { id:"adult", label:"Adultos 18+", file:"./adult.m3u", isAdult:true }
-];
-
-const playerStage = document.getElementById("playerStage");
-const guidePanel = document.getElementById("guidePanel");
-const guideToggle = document.getElementById("guideToggle");
-const openGuideBtn = document.getElementById("openGuideBtn");
-const closeGuide = document.getElementById("closeGuide");
-const prevSection = document.getElementById("prevSection");
-const nextSection = document.getElementById("nextSection");
-const guideTitle = document.getElementById("guideTitle");
-const playBtn = document.getElementById("playBtn");
-const playIcon = document.getElementById("playIcon");
-const playText = document.getElementById("playText");
-const muteBtn = document.getElementById("muteBtn");
-const volumeBar = document.getElementById("volumeBar");
-const pipBtn = document.getElementById("pipBtn");
-const fullBtn = document.getElementById("fullBtn");
-const proxyStatus = document.getElementById("proxyStatus");
-const topCategory = document.getElementById("topCategory");
-const topTitle = document.getElementById("topTitle");
-const mainTitle = document.getElementById("mainTitle");
-const mainInfo = document.getElementById("mainInfo");
-const countPill = document.getElementById("countPill");
-const searchInput = document.getElementById("searchInput");
-const categoryFilter = document.getElementById("categoryFilter");
-const typeFilter = document.getElementById("typeFilter");
-const channelList = document.getElementById("channelList");
-const reloadBtn = document.getElementById("reloadBtn");
-const adultNotice = document.getElementById("adultNotice");
-const sectionTabs = document.getElementById("sectionTabs");
-const sectionInfo = document.getElementById("sectionInfo");
-
-let player = null;
-let currentChannel = null;
-let currentUrl = "";
-let hideTimer = null;
-let activeSection = "mexico";
-let favoriteUrls = loadFavoriteUrls();
-let adultUnlocked = localStorage.getItem(ADULT_UNLOCK_KEY) === "1";
-let allChannels = [];
-let channelsBySection = {};
-let lastRenderedChannels = [];
-let playbackCandidates = [];
-let playbackCandidateIndex = 0;
-let playbackSequence = 0;
-let playbackFallbackTimer = null;
-let playbackStarted = false;
-let playbackFallbackInProgress = false;
-
-async function init(){
-  buildTabs();
-  bindEvents();
-  setGuideOpen(true);
-  showPlayerUI();
-  await loadAllPlaylists();
-}
-
-function buildTabs(){
-  sectionTabs.innerHTML = "";
-  PLAYLISTS.forEach(pl => {
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = "tab-btn" + (pl.id === activeSection ? " active" : "") + (pl.isAdult ? " adult-tab" : "");
-    btn.dataset.section = pl.id;
-    btn.textContent = pl.label;
-    btn.addEventListener("click", () => setSection(pl.id));
-    sectionTabs.appendChild(btn);
-  });
-}
-
-function bindEvents(){
-  playBtn.addEventListener("click", togglePlay);
-  muteBtn.addEventListener("click", toggleMute);
-  volumeBar.addEventListener("input", onVolumeChange);
-  fullBtn.addEventListener("click", toggleFullscreen);
-  pipBtn.addEventListener("click", togglePiP);
-  proxyStatus.addEventListener("click", togglePlaybackRoute);
-  reloadBtn.addEventListener("click", loadAllPlaylists);
-  searchInput.addEventListener("input", renderChannels);
-  categoryFilter.addEventListener("change", () => { updateGuideTitle(); renderChannels(); });
-  typeFilter.addEventListener("change", renderChannels);
-  guideToggle.addEventListener("click", () => setGuideOpen(true));
-  openGuideBtn.addEventListener("click", () => setGuideOpen(true));
-  closeGuide.addEventListener("click", () => setGuideOpen(false));
-  prevSection.addEventListener("click", () => stepSection(-1));
-  nextSection.addEventListener("click", () => stepSection(1));
-
-  ["mousemove", "touchstart", "click"].forEach(eventName => {
-    playerStage.addEventListener(eventName, showPlayerUI, { passive:true });
-  });
-  playerStage.addEventListener("mouseleave", () => hidePlayerUI(700));
-  document.addEventListener("keydown", handleKeyboard);
-}
-
-function setGuideOpen(open){
-  playerStage.classList.toggle("guide-open", !!open);
-  if(open){
-    showPlayerUI();
-    setTimeout(() => {
-      const active = channelList.querySelector(".channel-item.active") || channelList.querySelector(".channel-item");
-      if(active) active.scrollIntoView({ block:"center", behavior:"smooth" });
-    }, 80);
-  }
-}
-
-function stepSection(direction){
-  const sections = PLAYLISTS.map(p => p.id);
-  const index = sections.indexOf(activeSection);
-  const nextIndex = (index + direction + sections.length) % sections.length;
-  setSection(sections[nextIndex]);
-}
-
-function handleKeyboard(event){
-  showPlayerUI();
-  const tag = document.activeElement && document.activeElement.tagName;
-  const typing = tag === "INPUT" || tag === "SELECT" || tag === "TEXTAREA";
-
-  if(event.key === "Escape" || (!typing && event.key === "Backspace")){
-    event.preventDefault();
-    setGuideOpen(!playerStage.classList.contains("guide-open"));
-    return;
-  }
-
-  if(!playerStage.classList.contains("guide-open")){
-    if(event.key === "Enter") setGuideOpen(true);
-    if(event.key === " " && !typing){ event.preventDefault(); togglePlay(); }
-    if((event.key === "m" || event.key === "M") && !typing) toggleMute();
-    if((event.key === "f" || event.key === "F") && !typing) toggleFullscreen();
-    return;
-  }
-
-  if(typing) return;
-  const items = [...channelList.querySelectorAll(".channel-item")];
-  if(!items.length) return;
-  let index = items.indexOf(document.activeElement);
-  if(index < 0) index = Math.max(0, items.findIndex(item => item.classList.contains("active")));
-
-  if(event.key === "ArrowDown"){
-    event.preventDefault();
-    items[Math.min(items.length - 1, index + 1)].focus();
-  }else if(event.key === "ArrowUp"){
-    event.preventDefault();
-    items[Math.max(0, index - 1)].focus();
-  }else if(event.key === "ArrowLeft"){
-    event.preventDefault();
-    stepSection(-1);
-  }else if(event.key === "ArrowRight"){
-    event.preventDefault();
-    stepSection(1);
-  }else if(event.key === "Enter" && document.activeElement.classList.contains("channel-item")){
-    document.activeElement.click();
-  }
-}
-
-async function loadAllPlaylists(){
-  countPill.textContent = "Cargando listas...";
-  mainInfo.textContent = "Cargando listas M3U...";
-  channelList.innerHTML = `<div class="empty">Cargando canales...</div>`;
-  allChannels = [];
-  channelsBySection = {};
-
-  const results = await Promise.all(PLAYLISTS.filter(pl => pl.file).map(async pl => {
-    try{
-      const res = await fetch(pl.file + "?v=" + Date.now(), { cache:"no-store" });
-      if(!res.ok) throw new Error("HTTP " + res.status);
-      const text = await res.text();
-      const parsed = parseM3U(text).map((ch, index) => ({
-        ...ch,
-        channelNumber:index + 1,
-        section:pl.id,
-        sectionLabel:pl.label,
-        isAdult:!!pl.isAdult,
-        category:pl.isAdult ? "Adultos 18+" : (ch.category || guessCategory(ch.rawName, ch.id))
-      }));
-      return { pl, ok:true, channels:parsed };
-    }catch(error){
-      console.error("Error cargando", pl.file, error);
-      return { pl, ok:false, channels:[], error:error.message };
-    }
-  }));
-
-  results.forEach(r => {
-    channelsBySection[r.pl.id] = r.channels;
-    allChannels.push(...r.channels);
-  });
-
-  if(!allChannels.length){
-    countPill.textContent = "No se cargaron canales";
-    channelList.innerHTML = `<div class="empty">No se pudieron cargar las listas. Coloca los archivos M3U junto a este HTML: mexico.m3u, pluto.m3u, espanol.m3u y adult.m3u.</div>`;
-    return;
-  }
-
-  buildCategories();
-  renderChannels();
-  updateCountPill();
-  mainInfo.textContent = "Elige un canal de la guía para iniciar la reproducción.";
-
-  if(!currentChannel){
-    const first = getSectionChannels(false)[0] || allChannels[0];
-    if(first) loadChannel(first, false);
-  }
-
-  // La búsqueda de logotipos se hace después para que la lista aparezca de inmediato.
-  resolveOriginalLogos().catch(error => {
-    console.log("No se pudieron completar los logotipos externos:", error);
-  });
-}
-
-async function resolveOriginalLogos(){
-  if(!allChannels.length) return;
-
-  // Los enlaces tvg-logo de la lista tienen prioridad y no se reemplazan.
-  applyCachedLogos();
-  renderChannels();
-
-  const missing = allChannels.filter(ch => !ch.logo);
-  if(!missing.length) return;
-
-  const previousInfo = mainInfo.textContent;
-  mainInfo.textContent = `Buscando logotipos originales para ${missing.length} canales...`;
-
-  try{
-    const [logosResponse, channelsResponse, streamsResponse] = await Promise.all([
-      fetch(LOGO_API, { cache:"force-cache" }),
-      fetch(CHANNELS_API, { cache:"force-cache" }),
-      fetch(STREAMS_API, { cache:"force-cache" })
-    ]);
-
-    if(!logosResponse.ok) throw new Error(`logos.json HTTP ${logosResponse.status}`);
-    if(!channelsResponse.ok) throw new Error(`channels.json HTTP ${channelsResponse.status}`);
-    if(!streamsResponse.ok) throw new Error(`streams.json HTTP ${streamsResponse.status}`);
-
-    const [logos, channels, streams] = await Promise.all([
-      logosResponse.json(),
-      channelsResponse.json(),
-      streamsResponse.json()
-    ]);
-
-    const bestLogoByChannel = buildBestLogoMap(logos);
-    const streamChannelMap = buildStreamChannelMap(streams);
-    const channelNameMap = buildChannelNameMap(channels);
-    const cache = readLogoCache();
-    let resolved = 0;
-
-    for(const ch of allChannels){
-      if(ch.logo) continue;
-
-      const plutoLogo = getPlutoLogoFromUrl(ch.url);
-      if(plutoLogo){
-        ch.logo = plutoLogo;
-        ch.logoBackground = "black";
-        cache.data[logoCacheKey(ch)] = { logo:ch.logo, background:ch.logoBackground };
-        resolved++;
-        continue;
-      }
-
-      const channelId = resolveChannelId(ch, streamChannelMap, channelNameMap, bestLogoByChannel);
-      const logoData = channelId ? bestLogoByChannel.get(channelId) : null;
-      if(!logoData) continue;
-
-      ch.logo = logoData.url;
-      ch.logoBackground = chooseLogoBackground(ch, logoData.tags);
-      cache.data[logoCacheKey(ch)] = { logo:ch.logo, background:ch.logoBackground, channelId };
-      resolved++;
-    }
-
-    cache.time = Date.now();
-    try{
-      localStorage.setItem(LOGO_CACHE_KEY, JSON.stringify(cache));
-    }catch(error){
-      console.log("No se pudo guardar la caché de logotipos:", error);
-    }
-
-    renderChannels();
-    if(currentChannel){
-      mainInfo.textContent = `${currentChannel.sectionLabel} · ${currentChannel.category} · ${resolved} logotipos encontrados`;
-    }else{
-      mainInfo.textContent = resolved ? `${resolved} logotipos originales encontrados` : previousInfo;
-    }
-  }catch(error){
-    mainInfo.textContent = previousInfo;
-    throw error;
-  }
-}
-
-function applyCachedLogos(){
-  const cache = readLogoCache();
-  if(!cache.time || Date.now() - cache.time > LOGO_CACHE_TTL) return;
-
-  for(const ch of allChannels){
-    if(ch.logo) continue;
-    const saved = cache.data[logoCacheKey(ch)];
-    if(!saved || !saved.logo) continue;
-    ch.logo = saved.logo;
-    ch.logoBackground = saved.background || ch.logoBackground || "white";
-  }
-}
-
-function readLogoCache(){
-  try{
-    const parsed = JSON.parse(localStorage.getItem(LOGO_CACHE_KEY) || "null");
-    if(parsed && typeof parsed === "object" && parsed.data && typeof parsed.data === "object"){
-      return { time:Number(parsed.time || 0), data:parsed.data };
-    }
-  }catch(error){}
-  return { time:0, data:{} };
-}
-
-function logoCacheKey(ch){
-  return String(ch.url || ch.id || `${ch.section}:${ch.name}`);
-}
-
-function buildBestLogoMap(logos){
-  const map = new Map();
-  for(const logo of Array.isArray(logos) ? logos : []){
-    if(!logo || !logo.channel || !logo.url) continue;
-    const score = scoreLogo(logo);
-    const current = map.get(logo.channel);
-    if(!current || score > current.score){
-      map.set(logo.channel, {
-        url:logo.url,
-        tags:Array.isArray(logo.tags) ? logo.tags : [],
-        score
-      });
-    }
-  }
-  return map;
-}
-
-function scoreLogo(logo){
-  const format = String(logo.format || "").toUpperCase();
-  const tags = Array.isArray(logo.tags) ? logo.tags.map(tag => String(tag).toLowerCase()) : [];
-  let score = 0;
-  if(logo.in_use) score += 100;
-  if(format === "PNG") score += 40;
-  else if(format === "WEBP") score += 32;
-  else if(format === "SVG") score += 28;
-  else if(format === "JPEG" || format === "JPG") score += 20;
-  if(tags.includes("horizontal")) score += 10;
-  if(tags.includes("white") || tags.includes("light")) score += 4;
-  score += Math.min(Number(logo.width || 0), 2000) / 1000;
-  return score;
-}
-
-function buildStreamChannelMap(streams){
-  const map = new Map();
-  for(const stream of Array.isArray(streams) ? streams : []){
-    if(!stream || !stream.url || !stream.channel) continue;
-    const exact = String(stream.url).trim();
-    if(exact && !map.has(exact)) map.set(exact, stream.channel);
-    const canonical = canonicalStreamUrl(exact);
-    if(canonical && !map.has(canonical)) map.set(canonical, stream.channel);
-  }
-  return map;
-}
-
-function buildChannelNameMap(channels){
-  const candidates = new Map();
-
-  const add = (name, channelId) => {
-    const key = normalizeChannelName(name);
-    if(!key || !channelId) return;
-    if(!candidates.has(key)) candidates.set(key, new Set());
-    candidates.get(key).add(channelId);
-  };
-
-  for(const channel of Array.isArray(channels) ? channels : []){
-    if(!channel || !channel.id) continue;
-    add(channel.name, channel.id);
-    add(channel.network, channel.id);
-    if(Array.isArray(channel.alt_names)) channel.alt_names.forEach(name => add(name, channel.id));
-  }
-
-  const unique = new Map();
-  for(const [key, ids] of candidates){
-    if(ids.size === 1) unique.set(key, [...ids][0]);
-  }
-  return unique;
-}
-
-function resolveChannelId(ch, streamChannelMap, channelNameMap, bestLogoByChannel){
-  const rawId = String(ch.id || "").trim();
-  const idCandidates = [rawId, rawId.split("@")[0], rawId.split(":")[0]].filter(Boolean);
-  for(const id of idCandidates){
-    if(bestLogoByChannel.has(id)) return id;
-  }
-
-  const exactUrl = String(ch.url || "").trim();
-  const byUrl = streamChannelMap.get(exactUrl) || streamChannelMap.get(canonicalStreamUrl(exactUrl));
-  if(byUrl && bestLogoByChannel.has(byUrl)) return byUrl;
-
-  const names = [ch.name, ch.rawName, removeChannelDecorations(ch.name), removeChannelDecorations(ch.rawName)];
-  for(const name of names){
-    const byName = channelNameMap.get(normalizeChannelName(name));
-    if(byName && bestLogoByChannel.has(byName)) return byName;
-  }
-
-  return "";
-}
-
-function canonicalStreamUrl(url){
-  return String(url || "")
-    .trim()
-    .replace(/^http:\/\//i, "https://")
-    .replace(/[?#].*$/, "")
-    .replace(/\/$/, "");
-}
-
-function normalizeChannelName(value){
-  return removeChannelDecorations(value)
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .replace(/&/g, " and ")
-    .replace(/\b(tv|television|televisión|channel|canal|live|en vivo|hd|fhd|uhd|sd|4k|1080p|720p|576p|480p|360p|plus|latino|latina)\b/g, " ")
-    .replace(/[^a-z0-9]+/g, " ")
-    .trim()
-    .replace(/\s+/g, " ");
-}
-
-function removeChannelDecorations(value){
-  return String(value || "")
-    .replace(/\[[^\]]*\]/g, " ")
-    .replace(/\([^)]*(?:p|hd|sd|4k|geo|not\s*24\/7|timeshift)[^)]*\)/gi, " ")
-    .replace(/\b(?:HD\+?|FHD|UHD|SD|4K|1080P|720P|576P|480P|360P)\b/gi, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-function getPlutoLogoFromUrl(url){
-  const match = String(url || "").match(/(?:plu-|channels\/)([a-f0-9]{24})/i);
-  return match ? `https://images.pluto.tv/channels/${match[1]}/colorLogoPNG.png` : "";
-}
-
-function chooseLogoBackground(channel, tags){
-  const current = String(channel && channel.logoBackground || "white").toLowerCase();
-
-  // Puedes forzar el fondo desde el M3U con logo-bg="white" o logo-bg="black".
-  if(channel && channel.logoBackgroundExplicit){
-    return current === "black" || current === "dark" ? "black" : "white";
-  }
-
-  const normalizedTags = Array.isArray(tags) ? tags.map(tag => String(tag).toLowerCase()) : [];
-  if(normalizedTags.includes("white") || normalizedTags.includes("light")) return "black";
-  return "white";
-}
-
-function updateCountPill(){
-  const total = allChannels.length;
-  const favorites = favoriteUrls.size;
-  countPill.textContent = `${total} canales cargados · ${favorites} favoritos`;
-}
-
-function parseM3U(text){
-  const lines = String(text || "").replace(/\r/g, "").split("\n");
-  const channels = [];
-  let current = null;
-  let pendingReferrer = "";
-  let pendingUserAgent = "";
-  let pendingOrigin = "";
-
-  for(const rawLine of lines){
-    const line = rawLine.trim();
-    if(!line) continue;
-
-    if(line.startsWith("#EXTVLCOPT:http-referrer=")){
-      pendingReferrer = line.replace("#EXTVLCOPT:http-referrer=", "").trim();
-      if(current) current.referrer = pendingReferrer;
-      continue;
-    }
-    if(line.startsWith("#EXTVLCOPT:http-user-agent=")){
-      pendingUserAgent = line.replace("#EXTVLCOPT:http-user-agent=", "").trim();
-      if(current) current.userAgent = pendingUserAgent;
-      continue;
-    }
-    if(line.startsWith("#EXTVLCOPT:http-origin=")){
-      pendingOrigin = line.replace("#EXTVLCOPT:http-origin=", "").trim();
-      if(current) current.origin = pendingOrigin;
-      continue;
-    }
-    if(line.startsWith("#KODIPROP:inputstream.adaptive.stream_headers=")){
-      const headerText = line.replace("#KODIPROP:inputstream.adaptive.stream_headers=", "").trim();
-      const parsedHeaders = parseHeaderOptions(headerText);
-      pendingReferrer = parsedHeaders.referrer || pendingReferrer;
-      pendingUserAgent = parsedHeaders.userAgent || pendingUserAgent;
-      pendingOrigin = parsedHeaders.origin || pendingOrigin;
-      if(current){
-        current.referrer = pendingReferrer;
-        current.userAgent = pendingUserAgent;
-        current.origin = pendingOrigin;
-      }
-      continue;
-    }
-    if(line.startsWith("#EXTINF")){
-      const attrs = getAttributes(line);
-      const rawName = line.includes(",") ? line.substring(line.indexOf(",") + 1).trim() : "Canal sin nombre";
-      const parsed = parseChannelName(rawName);
-      current = {
-        id:attrs["tvg-id"] || "",
-        logo:attrs["tvg-logo"] || "",
-        logoBackground:(attrs["logo-bg"] || attrs["tvg-logo-bg"] || "white").toLowerCase(),
-        logoBackgroundExplicit:Boolean(attrs["logo-bg"] || attrs["tvg-logo-bg"]),
-        rawName,
-        name:parsed.name,
-        quality:parsed.quality,
-        note:parsed.note,
-        category:attrs["group-title"] || guessCategory(rawName, attrs["tvg-id"] || ""),
-        type:"video",
-        url:"",
-        referrer:pendingReferrer,
-        userAgent:pendingUserAgent,
-        origin:pendingOrigin
-      };
-      continue;
-    }
-    if(current && (line.startsWith("http://") || line.startsWith("https://"))){
-      const stream = parseStreamLine(line);
-      current.url = stream.url;
-      current.referrer = stream.referrer || current.referrer || pendingReferrer;
-      current.userAgent = stream.userAgent || current.userAgent || pendingUserAgent;
-      current.origin = stream.origin || current.origin || pendingOrigin;
-      current.type = guessType(current);
-      channels.push(current);
-      current = null;
-      pendingReferrer = "";
-      pendingUserAgent = "";
-      pendingOrigin = "";
-    }
-  }
-  return removeDuplicateChannels(channels);
-}
-
-function parseStreamLine(line){
-  const parts = String(line || "").split("|");
-  const url = parts.shift().trim();
-  const options = parseHeaderOptions(parts.join("&"));
-  return { url, ...options };
-}
-
-function parseHeaderOptions(value){
-  const result = { referrer:"", userAgent:"", origin:"" };
-  const text = String(value || "").replace(/^\?/, "").trim();
-  if(!text) return result;
-  text.split(/[&|]/).forEach(pair => {
-    const index = pair.indexOf("=");
-    if(index < 0) return;
-    const rawKey = pair.slice(0, index).trim();
-    const rawValue = pair.slice(index + 1).trim();
-    let key = rawKey;
-    let decoded = rawValue;
-    try{ key = decodeURIComponent(rawKey); }catch(error){}
-    try{ decoded = decodeURIComponent(rawValue); }catch(error){}
-    key = key.toLowerCase().replace(/[-_]/g, "");
-    if(key === "referer" || key === "referrer") result.referrer = decoded;
-    if(key === "useragent" || key === "ua") result.userAgent = decoded;
-    if(key === "origin") result.origin = decoded;
-  });
-  return result;
-}
-
-function getAttributes(line){
-  const attrs = {};
-  const regex = /([\w-]+)="([^"]*)"/g;
-  let match;
-  while((match = regex.exec(line)) !== null) attrs[match[1]] = match[2];
-  return attrs;
-}
-
-function parseChannelName(rawName){
-  let name = String(rawName || "Canal sin nombre").trim();
-  let quality = "AUTO";
-  let note = "";
-  const noteMatches = [...name.matchAll(/\[([^\]]+)\]/g)].map(m => m[1]);
-  if(noteMatches.length){
-    note = noteMatches.join(" / ");
-    name = name.replace(/\s*\[[^\]]+\]/g, "").trim();
-  }
-  const qualityMatch = name.match(/\(([^)]*(?:p|HD|SD|4K)[^)]*)\)/i);
-  if(qualityMatch){
-    quality = qualityMatch[1].trim();
-    name = name.replace(/\s*\([^)]*(?:p|HD|SD|4K)[^)]*\)/i, "").trim();
-  }
-  return { name:name || rawName, quality, note };
-}
-
-function guessCategory(name, id){
-  const text = (name + " " + id).toLowerCase();
-  if(text.includes("adult") || text.includes("18+")) return "Adultos 18+";
-  if(text.includes("noticias") || text.includes("news") || text.includes("adn") || text.includes("milenio") || text.includes("teleformula") || text.includes("telefórmula") || text.includes("euronews") || text.includes("cbs")) return "Noticias";
-  if(text.includes("deportes") || text.includes("sports") || text.includes("tudn") || text.includes("fifa") || text.includes("lucha") || text.includes("dazn") || text.includes("espn") || text.includes("fox sports")) return "Deportes";
-  if(text.includes("anime") || text.includes("naruto") || text.includes("one piece") || text.includes("dragon ball") || text.includes("boruto") || text.includes("avatar")) return "Anime";
-  if(text.includes("kids") || text.includes("nick") || text.includes("baby") || text.includes("infantil") || text.includes("junior") || text.includes("cartoon")) return "Infantil";
-  if(text.includes("music") || text.includes("música") || text.includes("musica") || text.includes("mtv") || text.includes("telehit") || text.includes("stingray") || text.includes("concert")) return "Música";
-  if(text.includes("cine") || text.includes("movie") || text.includes("film") || text.includes("pelicula") || text.includes("película") || text.includes("series") || text.includes("novelas") || text.includes("amc") || text.includes("sony") || text.includes("golden") || text.includes("pluto tv cine")) return "Cine y Series";
-  if(text.includes("document") || text.includes("history") || text.includes("historia") || text.includes("national geographic") || text.includes("discovery")) return "Documental";
-  if(text.includes("pluto") || text.includes("fast") || text.includes("samsung") || text.includes("roku") || text.includes("plex")) return "FAST";
-  if(text.includes("radio")) return "Radio";
-  return "General";
-}
-
-function guessType(channel){
-  const text = (channel.name + " " + channel.id + " " + channel.url).toLowerCase();
-  if(text.includes("radio") || text.includes("/radio") || text.includes("audio")) return "audio";
-  return "video";
-}
-
-function removeDuplicateChannels(list){
-  const seen = new Set();
-  const clean = [];
-  for(const channel of list){
-    const key = String(channel.url || "").trim();
-    if(!key || seen.has(key)) continue;
-    seen.add(key);
-    clean.push(channel);
-  }
-  return clean;
-}
-
-function loadChannel(channel, closeOnMobile = true){
-  currentChannel = channel;
-  currentUrl = channel.url;
-  mainTitle.textContent = channel.name;
-  mainInfo.textContent = `${channel.sectionLabel} · ${channel.category} · Preparando señal...`;
-  topCategory.textContent = channel.category.toUpperCase();
-  topTitle.textContent = channel.name;
-  renderChannels();
-
-  playbackSequence += 1;
-  playbackCandidates = buildPlaybackCandidates(channel);
-  playbackCandidateIndex = 0;
-  startPlaybackCandidate(playbackCandidateIndex, playbackSequence);
-
-  if(closeOnMobile && window.matchMedia("(max-width:800px)").matches) setGuideOpen(false);
-  showPlayerUI();
-}
-
-function buildPlaybackCandidates(channel){
-  const direct = { mode:"DIRECTO", url:channel.url };
-  const proxy = { mode:"PROXY", url:buildProxyUrl(channel) };
-  const pageIsHttps = location.protocol === "https:";
-  const streamIsHttp = String(channel.url || "").startsWith("http://");
-  const directAllowed = !(pageIsHttps && streamIsHttp);
-  const requiresHeaders = !!(channel.referrer || channel.userAgent || channel.origin);
-
-  let candidates;
-  if(USE_PROXY_FOR_ALL || requiresHeaders || !directAllowed){
-    candidates = [proxy];
-    if(directAllowed) candidates.push(direct);
-  }else{
-    candidates = [direct, proxy];
-  }
-
-  const seen = new Set();
-  return candidates.filter(candidate => {
-    if(!candidate.url || seen.has(candidate.url)) return false;
-    seen.add(candidate.url);
-    return true;
-  });
-}
-
-function buildProxyUrl(channel){
-  let url = PROXY_BASE + encodeURIComponent(channel.url);
-  if(channel.referrer) url += "&ref=" + encodeURIComponent(channel.referrer);
-  if(channel.userAgent) url += "&ua=" + encodeURIComponent(channel.userAgent);
-  if(channel.origin) url += "&origin=" + encodeURIComponent(channel.origin);
-  return url;
-}
-
-function inferMimeType(url){
-  const original = String(url || "").toLowerCase();
-  const clean = original.split("?")[0].split("#")[0];
-  if(clean.endsWith(".m3u8") || original.includes("m3u8")) return "application/vnd.apple.mpegurl";
-  if(clean.endsWith(".mp4") || original.includes("format=mp4")) return "video/mp4";
-  if(clean.endsWith(".mp3")) return "audio/mpeg";
-  if(clean.endsWith(".aac")) return "audio/aac";
-  return "";
-}
-
-function startPlaybackCandidate(index, sequenceId){
-  if(sequenceId !== playbackSequence || !currentChannel) return;
-  const candidate = playbackCandidates[index];
-  if(!candidate){
-    showFinalPlaybackError();
-    return;
-  }
-
-  playbackCandidateIndex = index;
-  playbackStarted = false;
-  playbackFallbackInProgress = false;
-  clearTimeout(playbackFallbackTimer);
-  destroyPlayer(false);
-
-  proxyStatus.textContent = candidate.mode;
-  proxyStatus.title = playbackCandidates.length > 1
-    ? "Presiona para cambiar entre reproducción directa y proxy"
-    : "Este canal solo puede probarse por esta ruta";
-  mainInfo.textContent = `${currentChannel.sectionLabel} · Intentando ${candidate.mode.toLowerCase()}...`;
-
-  const pluginsList = [];
-  if(window.HlsjsPlayback) pluginsList.push(window.HlsjsPlayback);
-
-  const config = {
-    source:candidate.url,
-    parentId:"#player",
-    plugins:pluginsList,
-    autoPlay:true,
-    mute:false,
-    width:"100%",
-    height:"100%",
-    hideMediaControl:true,
-    hlsPlayback:{ preload:true },
-    playback:{
-      hlsjsConfig:{
-        enableWorker:true,
-        lowLatencyMode:true,
-        liveSyncDurationCount:3,
-        maxBufferLength:24,
-        manifestLoadingMaxRetry:5,
-        manifestLoadingRetryDelay:1000,
-        levelLoadingMaxRetry:5,
-        levelLoadingRetryDelay:1000,
-        fragLoadingMaxRetry:5,
-        fragLoadingRetryDelay:1000,
-        keyLoadingMaxRetry:5,
-        keyLoadingRetryDelay:1000
-      }
-    },
-    events:{
-      onReady:function(){
-        if(sequenceId !== playbackSequence) return;
-        mainInfo.textContent = `${currentChannel.sectionLabel} · ${currentChannel.category} · Conectando por ${candidate.mode.toLowerCase()}...`;
-        syncVideoEvents(sequenceId);
-      },
-      onPlay:function(){
-        if(sequenceId !== playbackSequence) return;
-        markPlaybackSuccess(sequenceId);
-        updatePlayState();
-      },
-      onPause:updatePlayState,
-      onError:function(error){
-        console.log("Clappr error:", error);
-        handlePlaybackFailure("error del reproductor", sequenceId);
-      }
-    }
-  };
-
-  const mimeType = inferMimeType(currentChannel.url);
-  if(mimeType) config.mimeType = mimeType;
-
-  player = new Clappr.Player(config);
-
-  playbackFallbackTimer = setTimeout(() => {
-    if(sequenceId === playbackSequence && !playbackStarted){
-      handlePlaybackFailure("tiempo de espera agotado", sequenceId);
-    }
-  }, PLAYBACK_FALLBACK_TIMEOUT);
-
-  showPlayerUI();
-  setTimeout(updatePlayState, 700);
-}
-
-function markPlaybackSuccess(sequenceId){
-  if(sequenceId !== playbackSequence) return;
-  playbackStarted = true;
-  playbackFallbackInProgress = false;
-  clearTimeout(playbackFallbackTimer);
-  const candidate = playbackCandidates[playbackCandidateIndex];
-  const route = candidate ? candidate.mode.toLowerCase() : "automático";
-  if(currentChannel) mainInfo.textContent = `${currentChannel.sectionLabel} · Reproduciendo en directo por ${route}`;
-}
-
-function handlePlaybackFailure(reason, sequenceId){
-  if(sequenceId !== playbackSequence || playbackFallbackInProgress) return;
-  playbackFallbackInProgress = true;
-  clearTimeout(playbackFallbackTimer);
-
-  const nextIndex = playbackCandidateIndex + 1;
-  if(nextIndex < playbackCandidates.length){
-    const next = playbackCandidates[nextIndex];
-    mainInfo.textContent = `Falló ${playbackCandidates[playbackCandidateIndex].mode.toLowerCase()}; probando ${next.mode.toLowerCase()}...`;
-    setTimeout(() => startPlaybackCandidate(nextIndex, sequenceId), 900);
-    return;
-  }
-
-  console.warn("Canal sin reproducción:", currentChannel && currentChannel.name, reason);
-  showFinalPlaybackError();
-}
-
-function showFinalPlaybackError(){
-  clearTimeout(playbackFallbackTimer);
-  playbackFallbackInProgress = false;
-  mainInfo.textContent = "No se pudo cargar el manifiesto del canal. Actualiza el Worker HLS reforzado; si continúa, el enlace está vencido, bloqueado por país, requiere cookies/DRM o el servidor rechazó la conexión.";
-  proxyStatus.textContent = "REINTENTAR";
-}
-
-function togglePlaybackRoute(){
-  if(!currentChannel) return;
-  playbackSequence += 1;
-  const sequenceId = playbackSequence;
-
-  if(!playbackCandidates.length){
-    playbackCandidates = buildPlaybackCandidates(currentChannel);
-    playbackCandidateIndex = 0;
-  }else if(proxyStatus.textContent === "REINTENTAR"){
-    playbackCandidateIndex = 0;
-  }else{
-    playbackCandidateIndex = (playbackCandidateIndex + 1) % playbackCandidates.length;
-  }
-
-  startPlaybackCandidate(playbackCandidateIndex, sequenceId);
-}
-
-function destroyPlayer(clearFallback = true){
-  if(clearFallback) clearTimeout(playbackFallbackTimer);
-  if(player){ player.destroy(); player = null; }
-  document.getElementById("player").innerHTML = "";
-}
-function getPlayerVideo(){ return document.querySelector("#player video"); }
-function syncVideoEvents(sequenceId = playbackSequence){
-  const video = getPlayerVideo();
-  if(!video) return;
-  video.addEventListener("play", () => { markPlaybackSuccess(sequenceId); updatePlayState(); });
-  video.addEventListener("pause", updatePlayState);
-  video.addEventListener("playing", () => markPlaybackSuccess(sequenceId));
-  video.addEventListener("loadeddata", () => markPlaybackSuccess(sequenceId));
-  video.addEventListener("waiting", () => {
-    if(sequenceId === playbackSequence && currentChannel && !playbackStarted){
-      mainInfo.textContent = `${currentChannel.sectionLabel} · Cargando señal...`;
-    }
-  });
-  video.addEventListener("stalled", () => {
-    if(sequenceId === playbackSequence && !playbackStarted){
-      handlePlaybackFailure("señal detenida", sequenceId);
-    }
-  });
-  video.addEventListener("error", () => handlePlaybackFailure("error del elemento de video", sequenceId));
-}
-function togglePlay(){
-  showPlayerUI();
-  const video = getPlayerVideo();
-  if(!video) return;
-  if(video.paused) video.play().catch(() => {}); else video.pause();
-  updatePlayState();
-}
-function toggleMute(){
-  showPlayerUI();
-  const video = getPlayerVideo();
-  if(!video) return;
-  video.muted = !video.muted;
-  updateVolumeUI();
-}
-function onVolumeChange(){
-  showPlayerUI();
-  const video = getPlayerVideo();
-  if(!video) return;
-  video.volume = Number(volumeBar.value) / 100;
-  video.muted = video.volume === 0;
-  updateVolumeUI();
-}
-function updateVolumeUI(){
-  const video = getPlayerVideo();
-  if(!video) return;
-  muteBtn.textContent = (video.muted || video.volume === 0) ? "🔇" : (video.volume < .5 ? "🔉" : "🔊");
-  volumeBar.value = Math.round((video.muted ? 0 : video.volume) * 100);
-}
-function updatePlayState(){
-  const video = getPlayerVideo();
-  if(!video || video.paused){
-    playIcon.textContent = "▶";
-    playText.textContent = "Play";
-    playerStage.classList.add("show-ui");
-  }else{
-    playIcon.textContent = "❚❚";
-    playText.textContent = "Pausa";
-    showPlayerUI();
-  }
-}
-async function togglePiP(){
-  showPlayerUI();
-  const video = getPlayerVideo();
-  if(!video) return;
-  try{
-    if(document.pictureInPictureElement) await document.exitPictureInPicture();
-    else if(document.pictureInPictureEnabled) await video.requestPictureInPicture();
-  }catch(error){}
-}
-async function toggleFullscreen(){
-  showPlayerUI();
-  const target = document.querySelector(".player-shell");
-  try{
-    if(!document.fullscreenElement){
-      await target.requestFullscreen();
-      if(screen.orientation && screen.orientation.lock) screen.orientation.lock("landscape").catch(() => {});
-    }else{
-      await document.exitFullscreen();
-    }
-  }catch(error){}
-}
-function showPlayerUI(){
-  playerStage.classList.add("show-ui");
-  clearTimeout(hideTimer);
-  hideTimer = setTimeout(() => hidePlayerUI(), 3500);
-}
-function hidePlayerUI(delay = 0){
-  clearTimeout(hideTimer);
-  hideTimer = setTimeout(() => {
-    const video = getPlayerVideo();
-    if(video && !video.paused && !playerStage.classList.contains("guide-open")) playerStage.classList.remove("show-ui");
-  }, delay);
-}
-
-function buildCategories(){
-  const source = getSectionChannels(false);
-  const categories = [...new Set(source.map(ch => ch.category).filter(Boolean))].sort();
-  const currentValue = categoryFilter.value || "all";
-  categoryFilter.innerHTML = `<option value="all">Todas las categorías</option>`;
-  categories.forEach(cat => {
-    const option = document.createElement("option");
-    option.value = cat;
-    option.textContent = cat;
-    categoryFilter.appendChild(option);
-  });
-  categoryFilter.value = categories.includes(currentValue) ? currentValue : "all";
-  updateGuideTitle();
-}
-
-function updateGuideTitle(){
-  const playlist = PLAYLISTS.find(pl => pl.id === activeSection);
-  const category = categoryFilter.value;
-  guideTitle.textContent = category !== "all" ? category : (playlist ? playlist.label : "Canales");
-}
-
-function renderChannels(){
-  const search = searchInput.value.trim().toLowerCase();
-  const category = categoryFilter.value;
-  const type = typeFilter.value;
-  const source = getSectionChannels(true);
-
-  if(activeSection === "adult" && !adultUnlocked){
-    channelList.innerHTML = `<div class="empty">Sección bloqueada. Presiona <b>Adultos 18+</b> y confirma que eres mayor de edad.</div>`;
-    sectionInfo.textContent = "Contenido solo para adultos.";
-    lastRenderedChannels = [];
-    return;
-  }
-
-  const filtered = source.filter(ch => {
-    const text = `${ch.name} ${ch.rawName} ${ch.id} ${ch.category} ${ch.sectionLabel}`.toLowerCase();
-    return (!search || text.includes(search)) && (category === "all" || ch.category === category) && (type === "all" || ch.type === type);
-  });
-
-  lastRenderedChannels = filtered;
-  channelList.innerHTML = "";
-  if(!filtered.length){
-    const msg = activeSection === "favorites" ? "No tienes canales favoritos todavía. Presiona la estrella de un canal para guardarlo aquí." : "No se encontraron canales.";
-    channelList.innerHTML = `<div class="empty">${msg}</div>`;
-    return;
-  }
-
-  const limit = search ? MAX_RENDER_WITH_SEARCH : MAX_RENDER_DEFAULT;
-  const shown = filtered.slice(0, limit);
-  sectionInfo.textContent = filtered.length > shown.length ? `Mostrando ${shown.length} de ${filtered.length}` : `${shown.length} canales`;
-
-  const frag = document.createDocumentFragment();
-  shown.forEach((ch, index) => frag.appendChild(createChannelItem(ch, index)));
-  if(filtered.length > shown.length){
-    const more = document.createElement("div");
-    more.className = "empty";
-    more.innerHTML = `Hay ${filtered.length - shown.length} canales más. Usa el buscador para encontrarlos.`;
-    frag.appendChild(more);
-  }
-  channelList.appendChild(frag);
-}
-
-function createChannelItem(ch, visibleIndex){
-  const item = document.createElement("div");
-  item.className = "channel-item" + (ch.url === currentUrl ? " active" : "");
-  item.tabIndex = 0;
-  item.dataset.url = ch.url;
-  const isFav = isFavorite(ch.url);
-  const number = ch.channelNumber || visibleIndex + 1;
-  const darkLogo = ch.logoBackground === "black" || ch.logoBackground === "dark";
-  const logoHtml = ch.logo
-    ? `<img src="${escapeHtml(ch.logo)}" alt="" class="${darkLogo ? "dark-logo" : ""}" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove();this.parentElement.textContent='${escapeHtml(getInitials(ch.name))}'">`
-    : escapeHtml(getInitials(ch.name));
-
-  item.innerHTML = `
-    <div class="channel-number">${String(number).padStart(2, "0")}</div>
-    <div class="channel-logo ${darkLogo ? "dark" : ""}">${logoHtml}</div>
-    <div class="channel-text">
-      <h3>${escapeHtml(ch.name)}</h3>
-      <p>${escapeHtml(ch.category)} · ${escapeHtml(ch.quality)}${ch.note ? ` · ${escapeHtml(ch.note)}` : ""}</p>
-    </div>
-    <button class="favorite-btn ${isFav ? "active" : ""}" type="button" title="Favorito" aria-label="Favorito">${isFav ? "★" : "☆"}</button>
-    <div class="channel-arrow">›</div>`;
-
-  item.addEventListener("click", () => loadChannel(ch));
-  item.addEventListener("focus", () => item.scrollIntoView({ block:"nearest" }));
-  const favBtn = item.querySelector(".favorite-btn");
-  favBtn.addEventListener("click", event => {
-    event.stopPropagation();
-    toggleFavorite(ch.url);
-  });
-  return item;
-}
-
-function getSectionChannels(requireUnlocked = true){
-  if(activeSection === "favorites") return allChannels.filter(ch => isFavorite(ch.url));
-  if(activeSection === "adult"){
-    if(requireUnlocked && !adultUnlocked) return [];
-    return channelsBySection.adult || [];
-  }
-  return channelsBySection[activeSection] || [];
-}
-
-function setSection(section){
-  if(section === "adult" && !adultUnlocked){
-    const ok = confirm("Esta sección contiene contenido solo para adultos. Confirma que tienes 18 años o más para continuar.");
-    if(!ok) return;
-    adultUnlocked = true;
-    localStorage.setItem(ADULT_UNLOCK_KEY, "1");
-  }
-
-  activeSection = section;
-  document.querySelectorAll(".tab-btn[data-section]").forEach(btn => btn.classList.toggle("active", btn.dataset.section === activeSection));
-  adultNotice.style.display = activeSection === "adult" ? "block" : "none";
-  searchInput.value = "";
-  searchInput.placeholder = "Buscar canal...";
-  categoryFilter.value = "all";
-  buildCategories();
-  renderChannels();
-
-  const activeTab = sectionTabs.querySelector(`.tab-btn[data-section="${section}"]`);
-  if(activeTab) activeTab.scrollIntoView({ behavior:"smooth", inline:"center", block:"nearest" });
-}
-
-function loadFavoriteUrls(){
-  try{
-    const saved = JSON.parse(localStorage.getItem(FAVORITES_KEY) || "[]");
-    return new Set(Array.isArray(saved) ? saved : []);
-  }catch(error){
-    return new Set();
-  }
-}
-function saveFavoriteUrls(){ localStorage.setItem(FAVORITES_KEY, JSON.stringify([...favoriteUrls])); }
-function isFavorite(url){ return favoriteUrls.has(url); }
-function toggleFavorite(url){
-  favoriteUrls.has(url) ? favoriteUrls.delete(url) : favoriteUrls.add(url);
-  saveFavoriteUrls();
-  updateCountPill();
-  renderChannels();
-}
-function getInitials(name){
-  return String(name || "TV").split(" ").filter(Boolean).slice(0,2).map(w => w[0]).join("").toUpperCase();
-}
-function escapeHtml(text){
-  return String(text || "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
-
-init();
-</script>
-</body>
-</html>
+#EXTM3U
+#EXTINF:-1 tvg-id="8NTV.mx@SD",8NTV (1080p)
+https://60417ddeaf0d9.streamlock.net/ntv/videontv/playlist.m3u8
+#EXTINF:-1 tvg-id="15TV.mx@SD",15TV (720p) [Not 24/7]
+https://cdn.fastocloud.com/leonel.m3u8
+#EXTINF:-1 tvg-id="ADN40.mx@SD",ADN 40 (720p)
+https://mdstrm.com/live-stream-playlist/60b578b060947317de7b57ac.m3u8
+#EXTINF:-1 tvg-id="AlcanceTV.mx@SD",Alcance TV (720p)
+https://5bf8041cb3fed.streamlock.net/AlcanceTV/AlcanceTV/playlist.m3u8
+#EXTINF:-1 tvg-id="AMXNoticias.mx@SD",AMX Noticias (720p) [Not 24/7]
+https://5e50264bd6766.streamlock.net/mexiquense2/videomexiquense2/playlist.m3u8
+#EXTINF:-1 tvg-id="AsiSucedeGuanajuato.mx@SD",Así Sucede Guanajuato (720p) [Not 24/7]
+https://stream.oursnetworktv.com/latin/encoder13/playlist.m3u8
+#EXTINF:-1 tvg-id="AztecaInternacional.mx@SD",Azteca Internacional (1080p)
+https://azt-mun.otteravision.com/azt/mun/mun.m3u8
+#EXTINF:-1 tvg-id="B15Fresnillo.mx@SD",B15 Fresnillo (1080p)
+https://s5.mexside.net:1936/lsac/lsac/playlist.m3u8
+#EXTINF:-1 tvg-id="B15Zacatecas.mx@SD",B15 Zacatecas (1080p)
+https://s5.mexside.net:1936/envio2/envio2/playlist.m3u8
+#EXTINF:-1 tvg-id="BAMOSTV.mx@SD",BAMOS TV (1080p) [Not 24/7]
+https://video2.getstreamhosting.com:19360/8092/8092.m3u8
+#EXTINF:-1 tvg-id="CaliforniaMediosTV.mx@SD",California Medios TV (720p)
+https://s5.mexside.net:1936/medios/medios/playlist.m3u8
+#EXTINF:-1 tvg-id="Canal5.mx@SD",Canal 5 (720p) [Geo-blocked]
+http://45.5.119.43:4000/play/a05o/index.m3u8
+#EXTINF:-1 tvg-id="Canal5TVCozumel.mx@SD",Canal 5 TV Cozumel (1080p)
+https://video0.rogohosting.com:19360/tvcozumel/tvcozumel.m3u8
+#EXTINF:-1 tvg-id="Canal10Cancun.mx@SD",Canal 10 Cancún (720p) [Not 24/7]
+http://stream2.dynalias.com:1935/live/tvlive1/playlist.m3u8
+#EXTINF:-1 tvg-id="XHTTGTDT.mx@SD",Canal 10 Chiapas (720p)
+https://5ca9af4645e15.streamlock.net/chiapas/videochiapas/playlist.m3u8
+#EXTINF:-1 tvg-id="Canal10Durango.mx@SD",Canal 10 Durango (1080p)
+https://5e50264bd6766.streamlock.net/canal10durango/videocanal10durango/playlist.m3u8
+#EXTINF:-1 tvg-id="Canal13Bajio.mx@SD",Canal 13 Bajío (720p) [Not 24/7]
+https://stream-207963.castr.net/65313d270e749722b6474684/live_1c690d40dfb711eeabd66ba1b9ba93a1/index.fmp4.m3u8
+#EXTINF:-1 tvg-id="Canal13Campeche.mx@SD",Canal 13 Campeche (720p) [Not 24/7]
+https://stream-207963.castr.net/65313d270e749722b6474684/live_38c14fb0dfbd11ee8847c303f3096501/index.fmp4.m3u8
+#EXTINF:-1 tvg-id="Canal13Chiapas.mx@SD",Canal 13 Chiapas (720p) [Not 24/7]
+https://stream-207963.castr.net/65313d270e749722b6474684/live_55784330f36711ee97a7a19a8448730c/index.fmp4.m3u8
+#EXTINF:-1 tvg-id="Canal13Guadalajara.mx@SD",Canal 13 Guadalajara (720p) [Not 24/7]
+https://stream-207963.castr.net/65313d270e749722b6474684/live_fa0ed380dfbe11eeabd66ba1b9ba93a1/index.fmp4.m3u8
+#EXTINF:-1 tvg-id="Canal13Michoacan.mx@SD",Canal 13 Michoacán (720p) [Not 24/7]
+https://stream-207963.castr.net/65313d270e749722b6474684/live_0424eb20dfbf11ee821911a0b6ba5091/index.fmp4.m3u8
+#EXTINF:-1 tvg-id="Canal13Oaxaca.mx@SD",Canal 13 Oaxaca (720p) [Not 24/7]
+https://stream-207963.castr.net/65313d270e749722b6474684/live_0bd65ed0dfbf11ee848c53d8a686e201/index.fmp4.m3u8
+#EXTINF:-1 tvg-id="Canal13Puebla.mx@SD",Canal 13 Puebla (720p) [Not 24/7]
+https://stream-207963.castr.net/65313d270e749722b6474684/live_19c1e870dfbf11eeadd41749c3286f4a/index.fmp4.m3u8
+#EXTINF:-1 tvg-id="Canal13Tabasco.mx@SD",Canal 13 Tabasco (720p) [Not 24/7]
+https://stream-207963.castr.net/65313d270e749722b6474684/live_185f5f10888711ee83e2f144889e3879/index.fmp4.m3u8
+#EXTINF:-1 tvg-id="Canal13Tapachula.mx@SD",Canal 13 Tapachula (720p) [Not 24/7]
+https://stream-207963.castr.net/65313d270e749722b6474684/live_2b589fc0dfbf11ee9ce13534ca2a46c3/index.fmp4.m3u8
+#EXTINF:-1 tvg-id="ILCECanal15SummaSaberes.mx@SD",Canal 15 ILCE Summa Sabres (720p)
+https://live-ilce.ovp-vivaro.digital/ovp-origin-abr/ngrp:6359ef999f3fb_all/playlist.m3u8
+#EXTINF:-1 tvg-id="Canal22Nacional.mx@SD",Canal 22 Nacional (720p) [Geo-blocked]
+https://5fc584f3f19c9.streamlock.net/canal22/smil:canal22.smil/playlist.m3u8
+#EXTINF:-1 tvg-id="Canal26.mx@SD",Canal 26 Aguascalientes (1080p)
+https://60417ddeaf0d9.streamlock.net/telemetrika3/smil:telemetrika3.smil/playlist.m3u8
+#EXTINF:-1 tvg-id="Canal28.mx@SD",Canal 28 (720p) [Not 24/7]
+#EXTVLCOPT:http-referrer=https://player.castr.com/live_bf24d4208d8611eeb116dbe87aa63be0
+https://stream.castr.com/653d77dcde70014f52ad1e19/live_bf24d4208d8611eeb116dbe87aa63be0/rewind-3600.m3u8
+#EXTINF:-1 tvg-id="Canal30Cintalapa.mx@SD",Canal 30 Cintalapa (720p) [Not 24/7]
+https://rpn3.bozztv.com/ssh101/ssh101/canal30mx/playlist.m3u8
+#EXTINF:-1 tvg-id="Canal33Tijuana.mx@SD",Canal 33 Tijuana (720p)
+https://5f2c1b0d880e5.streamlock.net/canal33tijuana/videocanal33tijuana/playlist.m3u8
+#EXTINF:-1 tvg-id="Canal44.mx@SD",Canal 44 Chihuahua (720p) [Not 24/7]
+https://5e50264bd6766.streamlock.net/canal442/videocanal442/playlist.m3u8
+#EXTINF:-1 tvg-id="XHIJTDT.mx@SD",Canal 44 Ciudad Juárez (720p) [Not 24/7]
+https://5e50264bd6766.streamlock.net/canal44/videocanal44/playlist.m3u8
+#EXTINF:-1 tvg-id="XEJTDT.mx@SD",Canal 50.1 Juárez (XEJ-TDT) (614p)
+https://stream.oursnetworktv.com/latin/juarez50/playlist.m3u8
+#EXTINF:-1 tvg-id="CanaldelCongreso451.mx@SD",Canal del Congreso 45.1
+https://ccstreaming.packet.mx/WebRTCAppEE/streams/45.1_kd5oiNTTWO0gEOFc431277834.m3u8
+#EXTINF:-1 tvg-id="CanalParlamentodelCongresodeJalisco.mx@SD",Canal Parlamento del Congreso de Jalisco (720p) [Not 24/7]
+https://60417ddeaf0d9.streamlock.net/srtc/smil:srtc.smil/playlist.m3u8
+#EXTINF:-1 tvg-id="Capital21.mx@SD",Capital 21 (1080p) [Not 24/7]
+https://video.cdmx.gob.mx/redes/stream.m3u8
+#EXTINF:-1 tvg-id="ConectaTV.mx@SD",Conecta TV (720p)
+https://stream8.mexiserver.com:19360/conectatvx/conectatvx.m3u8
+#EXTINF:-1 tvg-id="CreaLaTV.mx@SD",CreaLaTV (1080p)
+https://stream.crealatv.com/live.m3u8
+#EXTINF:-1 tvg-id="DePeliculaLatinAmerica.mx@SD",De Pelicula Latin America
+http://181.119.93.83:8000/play/a1jw/index.m3u8
+#EXTINF:-1 tvg-id="DespiertaTV.mx@SD",Despierta TV (1080p) [Not 24/7]
+https://video2.lhdserver.es/despiertatv/live.m3u8
+#EXTINF:-1 tvg-id="EclipseTV.mx@SD",Eclipse TV (720p)
+https://vdo6.instainternet.com:3272/live/jobetalborezlive.m3u8
+#EXTINF:-1 tvg-id="ElChavoTV.mx@HD",El Chavo del 8 TV (720p)
+https://live20.bozztv.com/giatvplayout7/giatv-211465/playlist.m3u8
+#EXTINF:-1 tvg-id="ElSonorense.mx@SD",El Sonorense (1080p) [Not 24/7]
+https://s5.mexside.net:1936/elsonorense/elsonorense/playlist.m3u8
+#EXTINF:-1 tvg-id="ExpresaTV.mx@SD",Expresa TV (720p)
+https://5ca9af4645e15.streamlock.net/teleradio/smil:teleradio.smil/playlist.m3u8
+#EXTINF:-1 tvg-id="GikTVMX.mx@SD",GikTVMX (720p)
+#EXTVLCOPT:http-referrer=https://giktv.com
+https://pistream.ddns.net/hls/stream.m3u8
+#EXTINF:-1 tvg-id="IcrtvColima.mx@SD",ICRTV Colima (1080p)
+https://5fc584f3f19c9.streamlock.net/icrtvcolima/smil:icrtvcolima.smil/playlist.m3u8
+#EXTINF:-1 tvg-id="IERTBCSCanal82.mx@SD",IERTBCS Canal 8.2 La Paz (1080p) [Not 24/7]
+https://s5.mexside.net:1936/xhbzc82/xhbzc82/playlist.m3u8
+#EXTINF:-1 tvg-id="XHBZCTDT.mx@SD",IERTBCS Canal 8 La Paz (1080p) [Not 24/7]
+https://s5.mexside.net:1936/xhbzc81/xhbzc81/playlist.m3u8
+#EXTINF:-1 tvg-id="IMRyT.mx@SD",IMRyT Morelos TV (720p)
+https://stream8.mexiserver.com:19360/morelostv/morelostv.m3u8
+#EXTINF:-1 tvg-id="IngenioTV.mx@SD",Ingenio TV (720p) [Geo-blocked]
+https://aprende-usea.streaming.media.azure.net/9317ea3f-03a0-4266-9292-ac97a0e41c4d/output-20230609-123537-manifest.ism/manifest(format=m3u8-cmaf).m3u8
+#EXTINF:-1 tvg-id="ITVDeportes.mx@SD",ITV Deportes (720p)
+https://thm-it-roku.otteravision.com/thm/it/it.m3u8
+#EXTINF:-1 tvg-id="JaliscoTV.mx@SD",Jalisco TV (720p)
+https://video0.rogohosting.com:19360/sisjalisciense/sisjalisciense.m3u8
+#EXTINF:-1 tvg-id="JusticiaTV.mx@SD",Justicia TV (720p)
+https://live-scjn.ovp-vivaro.digital/ovp-origin/638a22b47746d/playlist.m3u8
+#EXTINF:-1 tvg-id="LasEstrellas.mx@SD",Las Estrellas (1080p)
+https://channel01-onlymex.akamaized.net/hls/live/2022749/event01/index.m3u8
+#EXTINF:-1 tvg-id="LoboTV.mx@SD",Lobo TV (720p)
+https://5ca3e84a76d30.streamlock.net/tvlobo/videotvlobo/playlist.m3u8
+#EXTINF:-1 tvg-id="MariaVision.mx@SD",María Visión Mexico (360p) [Not 24/7]
+https://1601580044.rsc.cdn77.org/live/_jcn_/amlst:Mariavision/master.m3u8
+#EXTINF:-1 tvg-id="MexiquenseTV.mx@SD",Mexiquense TV (720p)
+https://5e50264bd6766.streamlock.net/mexiquense/videomexiquense/playlist.m3u8
+#EXTINF:-1 tvg-id="MonteMaria.mx@SD",Monte Maria (1080p)
+https://5ca9af4645e15.streamlock.net/montemaria/videomontemaria/playlist.m3u8
+#EXTINF:-1 tvg-id="MVSTV.mx@SD",MVS TV [Geo-blocked]
+https://dish.akamaized.net/Content/HLS_HLS_CLR/Live/channel(mvs)/variant.m3u8
+#EXTINF:-1 tvg-id="NayaritComunica.mx@SD",Nayarit Comunica (1080p)
+https://live.iplanay.gob.mx/hls/nayarittv.m3u8
+#EXTINF:-1 tvg-id="XHFGLTDT.mx@SD",Notigram TV (XHFGL-TDT) (1080p)
+https://stream.ontvmx.com/ontv/Wn3jgo4UYNSmwRDIev/playlist.m3u8
+#EXTINF:-1 tvg-id="NueveTV.mx@SD",Nueve TV San Luís Potosí (720p)
+https://5ca9af4645e15.streamlock.net/nuevetv/videonuevetv/.m3u8
+#EXTINF:-1 tvg-id="XEIPNTDT.mx@SD",Once México (1080p)
+https://vivo.canaloncelive.tv/securepkgr3/oncemexico/playlist.m3u8
+#EXTINF:-1 tvg-id="PresumiendoMexico.mx@SD",Presumiendo México (720p)
+https://60417ddeaf0d9.streamlock.net/telemetrika/smil:telemetrika.smil/playlist.m3u8
+#EXTINF:-1 tvg-id="PSN.mx@SD",PSN (288p)
+https://srspsn.live/live/livestream.m3u8
+#EXTINF:-1 tvg-id="PSNCanal452.mx@SD",PSN Canal 45.2 (288p)
+https://srspsn2.live/live/livestream.m3u8
+#EXTINF:-1 tvg-id="RadioyTelevisionCrisoldelaAlegria.mx@SD",Radio y Televisión Crisol de la Alegría (1080p) [Not 24/7]
+https://omegaingenieria.com:19360/CRisolTVdigital-Live_abr/CRisolTVdigital-Live_abr.m3u8
+#EXTINF:-1 tvg-id="Radiotele.mx@SD",Radiotele Morelia (352p)
+http://linkrt.ddns.net:8080/hls/rtmorelia_MID.m3u8
+#EXTINF:-1 tvg-id="RalyTV.mx@SD",Raly TV (720p)
+https://cloudvideo.servers10.com:8081/8072/index.m3u8
+#EXTINF:-1 tvg-id="RCGTV.mx@SD",RCG TV (1080p)
+https://video1.getstreamhosting.com:1936/8172/8172/playlist.m3u8
+#EXTINF:-1 tvg-id="RCGTV2.mx@SD",RCG TV 2 (360p) [Not 24/7]
+https://5caf24a595d94.streamlock.net:1937/stream56/stream56/playlist.m3u8
+#EXTINF:-1 tvg-id="RCGTV.mx@SD",RCG TV (Timeshifted -2 Hours) (432p)
+https://video1.getstreamhosting.com:1936/8246/8246/playlist.m3u8
+#EXTINF:-1 tvg-id="RTG.mx@SD",RTG (720p)
+https://5e50264bd6766.streamlock.net/radtvguerrero/videoradtvguerrero/playlist.m3u8
+#EXTINF:-1 tvg-id="RTQQueretaro.mx@SD",RTQ Querétaro (1080p)
+https://59d39900ebfb8.streamlock.net/rytqrolive/rytqrolive/chunklist.m3u8
+#EXTINF:-1 tvg-id="XHUNESTDT.mx@SD",Señal España (XHUNES-TDT) (720p)
+https://tv91.hostingnuclear.com:19360/xhunestv/xhunestv.m3u8
+#EXTINF:-1 tvg-id="XHPBZCTDT1.mx@SD",SET Televisión Canal 26.1 (720p) [Not 24/7]
+https://5d0d1d7a6be9e.streamlock.net/sicom/canal1/playlist.m3u8
+#EXTINF:-1 tvg-id="XHPBZCTDT2.mx@SD",SET Televisión Canal 26.2 (720p) [Not 24/7]
+https://5d0d1d7a6be9e.streamlock.net/sicom/canal2/playlist.m3u8
+#EXTINF:-1 tvg-id="SIPSETV81.mx@SD",SIPSE TV 8.1 (1080p) [Not 24/7]
+https://webprod.sipse.com.mx:8080/show/merida.m3u8
+#EXTINF:-1 tvg-id="SIPSETVCUN81.mx@SD",SIPSE TVCUN 8.1 (1080p) [Not 24/7]
+https://webprod.sipse.com.mx:8080/show/tvcun.m3u8
+#EXTINF:-1 tvg-id="SistemaMichoacanodeTV.mx@SD",Sistema Michoacano de TV (1080p) [Not 24/7]
+https://s5.mexside.net:1936/enlinea/enlinea/playlist.m3u8
+#EXTINF:-1 tvg-id="XHZHZTDT.mx@SD",SIZART Canal 24 (XHZHZ-TDT) (720p)
+https://5f2c1b0d880e5.streamlock.net/zacatecas/videozacatecas/playlist.m3u8
+#EXTINF:-1 tvg-id="SQCSCanal4.mx@SD",SQCS Canal 4 (1080p)
+https://video0.rogohosting.com:19360/4982/4982.m3u8
+#EXTINF:-1 tvg-id="Super9TV.mx@SD",Super9 TV (480p) [Not 24/7]
+https://tv.radiohosting.online:1936/TV344/TV344/playlist.m3u8
+#EXTINF:-1 tvg-id="SuperChannel12.mx@SD",Super Channel 12 (1080p)
+https://servilive.com:3263/live/channel12live.m3u8
+#EXTINF:-1 tvg-id="TELE4Ojocaliente.mx@SD",TELE 4 Ojocaliente (720p)
+https://stream.oursnetworktv.com/latin/encoder53/playlist.m3u8
+#EXTINF:-1 tvg-id="TeleSaltillo.mx@SD",Tele Saltillo
+https://servilive.com:3879/live/telesaltillolive.m3u8
+#EXTINF:-1 tvg-id="TeleUV.mx@SD",Tele UV [Not 24/7]
+https://58fe359775f31.streamlock.net/tvuv/myStream/playlist.m3u8
+#EXTINF:-1 tvg-id="TeleYucatan.mx@SD",Tele Yucatan (1080p) [Geo-blocked]
+#EXTVLCOPT:http-referrer=https://www.teleyucatan.gob.mx/
+https://5ca3e84a76d30.streamlock.net/teleyucatan/videoteleyucatan/playlist.m3u8
+#EXTINF:-1 tvg-id="TeleFormula.mx@SD",TeleFórmula (720p)
+https://mdstrm.com/live-stream-playlist/62f2c855f7981b5a5a2d8763.m3u8
+#EXTINF:-1 tvg-id="TelehitMusica.mx@SD",Telehit Musica
+http://190.61.55.34:2401/play/a06t/index.m3u8
+#EXTINF:-1 tvg-id="XEWHTDT.mx@SD",Telemax (XEWH-TDT) (1080p)
+https://s5.mexside.net:1936/telemax/telemax/playlist.m3u8
+#EXTINF:-1 tvg-id="TeleplaySureste.mx@SD",Teleplay Sureste (720p)
+https://player.tvstream.mx/livestream/teleplay/livehd/playlist.m3u8
+#EXTINF:-1 tvg-id="TeleplaySureste.mx@SD",Teleplay Sureste (360p)
+https://player.tvstream.mx/livestream/teleplay/livesd/playlist.m3u8
+#EXTINF:-1 tvg-id="Teleritmo.mx@SD",Teleritmo (720p) [Not 24/7]
+https://mdstrm.com/live-stream-playlist/57b4dc126338448314449d0c.m3u8
+#EXTINF:-1 tvg-id="TlaxcalaTV.mx@SD",Tlaxcala Televisión (360p) [Not 24/7]
+https://vid26.mega00.com:5443/live/streams/qNmc7nulmq8zPYZE1582752735050.m3u8
+#EXTINF:-1 tvg-id="TransmediaTelevisionMorelia.mx@SD",Transmedia Televisión Morelia (614p) [Geo-blocked]
+http://streamingcws20.com:1935/tmtv/videotmtv/playlist.m3u8
+#EXTINF:-1 tvg-id="TransmediaTelevisionMorelia.mx@SD",Transmedia Televisión Morelia (614p) [Geo-blocked]
+https://5ca3e84a76d30.streamlock.net/tmtv/videotmtv/playlist.m3u8
+#EXTINF:-1 tvg-id="TRCTV.mx@SD",TRC Televisión (720p)
+https://5fe2654d6127d.streamlock.net/trc/videotrc/playlist.m3u8
+#EXTINF:-1 tvg-id="TUDN.mx@SD",TUDN (1080p)
+https://streaming.alwaysdata.net/tudn.php
+#EXTINF:-1 tvg-id="TuristikTV.mx@SD",Turistik TV (720p)
+https://cdn1.cef-technology.com/stream_web/turistik/playlist.m3u8
+#EXTINF:-1 tvg-id="TVBUAP.mx@SD",TV BUAP (1080p)
+https://tvenvivo.buap.mx/livestream/stream/index.m3u8
+#EXTINF:-1 tvg-id="TVCuatro41.mx@SD",TV Cuatro 4.1 (1080p)
+https://5f1af61612fb5.streamlock.net/tv4/tv4.smil/.m3u8
+#EXTINF:-1 tvg-id="TVCuatro42.mx@SD",TV Cuatro 4.2 (1080p)
+https://5f2c1b0d880e5.streamlock.net/tv42/tv42.smil/.m3u8
+#EXTINF:-1 tvg-id="TVGuanajuato.mx@SD",TV Guanajuato (720p)
+https://stream.oursnetworktv.com/latin/tvguanajuato/playlist.m3u8
+#EXTINF:-1 tvg-id="TVIndependencia.mx@SD",TV Independencia (1080p)
+https://stream.oursnetworktv.com/latin/tvindependencia/playlist.m3u8
+#EXTINF:-1 tvg-id="TVLibertad.mx@SD",TV Libertad (720p)
+https://stream.oursnetworktv.com/latin/tvlibertad/playlist.m3u8
+#EXTINF:-1 tvg-id="TVLobo.mx@SD",TV Lobo Durango (720p)
+https://5ca9af4645e15.streamlock.net/lobodurango/videolobodurango/playlist.m3u8
+#EXTINF:-1 tvg-id="TVMarLaPaz.mx@SD",TV Mar La Paz (1080p)
+https://5fc584f3f19c9.streamlock.net/tvmarlapaz/smil:tvmarlapaz.smil/playlist.m3u8
+#EXTINF:-1 tvg-id="TVMarLosCabos.mx@SD",TV Mar Los Cabos (1080p)
+https://5fc584f3f19c9.streamlock.net/tvmarloscabos/smil:tvmarloscabos.smil/playlist.m3u8
+#EXTINF:-1 tvg-id="TVMarPuertoVallarta.mx@SD",TV Mar Puerto Vallarta (1080p)
+https://5ca9af4645e15.streamlock.net/tvmarvallarta/videotvmarvallarta/playlist.m3u8
+#EXTINF:-1 tvg-id="XHMNLTDT.mx@SD",TV Nuevo León Canal 28 (XHMNL-TDT) (720p)
+https://s5.mexside.net:1936/canal28/canal28/playlist.m3u8
+#EXTINF:-1 tvg-id="TVUG.mx@SD",TV UG (1080p) [Not 24/7]
+https://5ca3e84a76d30.streamlock.net/universidadgto/videouniversidadgto/playlist.m3u8
+#EXTINF:-1 tvg-id="TVUJAT.mx@SD",TV UJAT (XHUJAT-TDT) (720p) [Not 24/7]
+https://5e50264bd6766.streamlock.net/ujat/videoujat/playlist.m3u8
+#EXTINF:-1 tvg-id="XHGVTDT.mx@SD",TVMÁS (XHGV-TDT) (360p) [Not 24/7]
+https://5ca9af4645e15.streamlock.net/rtv/videortv/playlist.m3u8
+#EXTINF:-1 tvg-id="TVPCuliacan.mx@SD",TVP Culiacán (720p) [Not 24/7]
+https://5ca3e84a76d30.streamlock.net/gpacifico1/smil:gpculiacan.smil/playlist.m3u8
+#EXTINF:-1 tvg-id="TVPLosMochis.mx@SD",TVP Los Mochis (720p) [Not 24/7]
+https://5ca3e84a76d30.streamlock.net/gpacifico2/mochis.smil/playlist.m3u8
+#EXTINF:-1 tvg-id="TVPMazatlan.mx@SD",TVP Mazatlán (720p) [Not 24/7]
+https://5ca3e84a76d30.streamlock.net/gpacifico4/smil:mazatlan.smil/playlist.m3u8
+#EXTINF:-1 tvg-id="TVPObregon.mx@SD",TVP Obregón (720p) [Not 24/7]
+https://5ca3e84a76d30.streamlock.net/gpacifico3/obregon.smil/playlist.m3u8
+#EXTINF:-1 tvg-id="UACJTV.mx@SD",UACJ-TV [Not 24/7]
+https://5ca3e84a76d30.streamlock.net/uacj/videouacj/playlist.m3u8
+#EXTINF:-1 tvg-id="UDGTV.mx@SD",UDG TV Canal 44 (720p) [Not 24/7]
+https://liveos.bytecazt.com/udgtv/streams/cfprivq23akg00a7ke2g_d306m7q9io6g00fsq3cg_.m3u8
+#EXTINF:-1 tvg-id="UltraTVPuebla.mx@SD",Ultra TV Puebla (720p) [Not 24/7]
+https://5e50264bd6766.streamlock.net/telemetrika2/smil:telemetrika2.smil/playlist.m3u8
+#EXTINF:-1 tvg-id="UMTV.mx@SD",UMTV (1080p) [Not 24/7]
+https://60417ddeaf0d9.streamlock.net/montemorelos/videomontemorelos/playlist.m3u8
+#EXTINF:-1 tvg-id="UnisonTV.mx@SD",Unison TV (1080p) [Not 24/7]
+https://stream.unison.mx/hls/unisontvatem.m3u8
+#EXTINF:-1 tvg-id="VBMediaTV.mx@SD",VB Media TV (1080p)
+https://capomo01-enitv.eninetworks.com/locales_vbmedia_publico/index.m3u8
+#EXTINF:-1 tvg-id="VisionTelevision.mx@SD",Visión Televisión (720p)
+https://cloudvideo.servers10.com:8081/8016/index.m3u8
+#EXTINF:-1 tvg-id="ZAZ.mx@SD",ZAZ (1080p)
+https://cloud.fastchannel.es/mic/manifiest/hls/zaztv/zaztv.m3u8
+#EXTINF:-1 tvg-id="TVCuatro41.mx@SD",TV Cuatro 4.1 (1080p)
+https://5ca3e84a76d30.streamlock.net/tv4gto/tv4gto.smil/.m3u8
+#EXTINF:-1 tvg-id="TVCuatro43.mx@SD",TV Cuatro 4.3 (1080p)
+https://5ca3e84a76d30.streamlock.net/tv43gto/tv43gto.smil/.m3u8
+#EXTINF:-1 tvg-id="TVCuatro44.mx@SD",TV Cuatro 4.4 (1080p)
+https://5ca3e84a76d30.streamlock.net/tv44gto/tv44gto.smil/.m3u8
+#EXTINF:-1 tvg-id="UnivisionLatinAmerica.mx@Panregional",Univision Latin America (1080p)
+http://138.121.15.230:9002/UNIVISION/index.m3u8
+#EXTINF:-1 tvg-id="LasEstrellasLatinAmerica.mx@SD",Las Estrellas Latin America (1080p)
+#EXTVLCOPT:http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36
+http://bantel-cdn1.iptvperu.tv:1935/btnscrtn/Canal_Las_Estrellas.stream/playlist.m3u8
+#EXTINF:-1 tvg-id="TlnovelasLatinAmerica.mx@SD",Tlnovelas Latin America (1080p)
+#EXTVLCOPT:http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36
+http://bantel-cdn1.iptvperu.tv:1935/btnscrtn/TL_Novelas.stream/playlist.m3u8
+#EXTINF:-1 tvg-id="Canal5.mx@SD",Canal 5 (1080p)
+http://190.11.225.124:5000/live/canal5_hd/playlist.m3u8
+#EXTINF:-1 tvg-id="TVMigrante.mx@SD",TV Migrante (720p)
+https://s5.mexside.net:1936/tvmigrante/tvmigrante/playlist.m3u8
+#EXTINF:-1 tvg-id="Panico.mx@SD",Panico (576p)
+http://181.78.8.199:8000/play/a0bt/index.m3u8
+#EXTINF:-1 tvg-id="XEIPNTDT.mx@SD",XEIPN-TDT (720p)
+https://s5.mexside.net:1936/stream/stream/index.m3u8
+#EXTINF:-1 tvg-id="PopcornCentral.mx@SD",Popcorn Central (1080p)
+https://oly-ftvpc.otteravision.com/oly/ftvpc/ftvpc.m3u8
+#EXTINF:-1 tvg-id="15TV.mx@SD",15TV
+https://servilive.com:3380/live/v3n6thy7glive.m3u8
+#EXTINF:-1 tvg-id="AntenaTV.mx@SD",Antena TV
+https://5ca9af4645e15.streamlock.net/grd/videogrd/playlist.m3u8
+#EXTINF:-1 tvg-id="CBTVMichoacan.mx@SD",CB TV Michoacan
+https://5ca3e84a76d30.streamlock.net/cbtv/videoc3b3t3v3/playlist.m3u8
+#EXTINF:-1 tvg-id="ImagenTV.mx@SD",Imagen TV (1080p)
+https://igd-it-runtime.otteravision.com/igd/it/it.m3u8
+#EXTINF:-1 tvg-id="OnceNinasyNinos.mx@SD",Once Ninas y Ninos (576p)
+http://45.189.62.33:8002/play/a0p7/index.m3u8
+#EXTINF:-1 tvg-id="LaMejorTV.mx@SD",La Mejor TV (576p)
+http://45.189.62.33:8002/play/a0ls/index.m3u8
+#EXTINF:-1 tvg-id="ExaTV.mx@SD",Exa TV (576p)
+http://45.189.62.33:8002/play/a0lr/index.m3u8
+#EXTINF:-1 tvg-id="Azteca7.mx@SD",Azteca 7 (1080p)
+http://45.189.62.33:8002/play/a0fm/index.m3u8
+#EXTINF:-1 tvg-id="AztecaUno.mx@SD",Azteca Uno (1080p)
+http://45.189.62.33:8002/play/a0cc/index.m3u8
+#EXTINF:-1 tvg-id="ADN40.mx@SD",ADN 40 (1080p)
+http://45.189.62.33:8002/play/a0ob/index.m3u8
+#EXTINF:-1 tvg-id="APlus.mx@SD",A+ (1080p)
+http://45.189.62.33:8002/play/a0oc/index.m3u8
+#EXTINF:-1 tvg-id="XEIPNTDT.mx@SD",XEIPN-TDT (720p)
+http://45.189.62.33:8002/play/a0bq/index.m3u8
+#EXTINF:-1 tvg-id="TUDN.mx@SD",TUDN (1080p)
+https://streamvidex.qzz.io/videx/tudnmx/index.m3u8
+#EXTINF:-1 tvg-id="Golden.mx@Panregional",Golden (720p)
+http://177.234.249.135:8888/Golden/index.m3u8
+#EXTINF:-1 tvg-id="GoldenEdge.mx@Panregional",Golden Edge (720p)
+http://177.234.249.135:8888/GoldenEdge/index.m3u8
+#EXTINF:-1 tvg-id="UnivisionLatinAmerica.mx",Univision Latin America (1080p)
+http://177.234.249.135:8888/Univision/index.m3u8
+#EXTINF:-1 tvg-id="LasEstrellasLatinAmerica.mx@SD",Las Estrellas Latin America (1080p)
+http://177.234.249.135:8888/LasEstrellas/index.m3u8
+#EXTINF:-1 tvg-id="TlnovelasLatinAmerica.mx@SD",Tlnovelas Latin America (1080p)
+http://177.234.249.135:8888/Telenovelas/index.m3u8
+#EXTINF:-1 tvg-id="DistritoComedia.mx@SD",Distrito Comedia (1080p)
+http://177.234.249.135:8888/DistritoComedia/index.m3u8
+#EXTINF:-1 tvg-id="XEIPNTDT.mx@SD",XEIPN-TDT (720p)
+http://177.245.131.133:8080/ONCE/index.m3u8
+#EXTINF:-1 tvg-id="SonyChannel.mx@SD",Sony Channel (720p)
+http://177.245.131.133:8080/SONY/index.m3u8
+#EXTINF:-1 tvg-id="CanaldelCongreso451.mx@SD",Canal del Congreso 45.1 (720p)
+http://177.245.131.133:8080/CONGRESO/index.m3u8
+#EXTINF:-1 tvg-id="Azteca7.mx@SD",Azteca 7 (720p)
+http://177.245.131.133:8080/AZTECA7/index.m3u8
+#EXTINF:-1 tvg-id="NationalGeographic.mx@SD",National Geographic (1080p)
+http://138.121.15.230:9002/NAT-GEO/index.m3u8
+#EXTINF:-1 tvg-id="TVUNAM.mx@SD",TV UNAM (720p)
+http://177.245.131.133:8080/UNAM/index.m3u8
+#EXTINF:-1 tvg-id="GoldenEdge.mx@Panregional",Golden Edge (1080p)
+http://138.186.23.7:8082/GOLDENEDGE/index.m3u8
