@@ -345,6 +345,7 @@ const PLAYLISTS = [
   { id:"mexico", label:"México", file:"./mexico.m3u", isAdult:false },
   { id:"pluto", label:"Pluto TV", file:"./pluto.m3u", isAdult:false },
   { id:"tubi", label:"Tubi TV", file:"./tubi.m3u", isAdult:false },
+  { id:"vix", label:"ViX", file:"./vix.m3u", isAdult:false },
   { id:"espanol", label:"Español", file:"./espanol.m3u", isAdult:false },
   { id:"favorites", label:"Favoritos", file:null, isAdult:false, isFavorites:true },
   { id:"adult", label:"Adultos 18+", file:"./adult.m3u", isAdult:true }
@@ -559,7 +560,7 @@ async function loadAllPlaylists(){
 
   if(!allChannels.length){
     countPill.textContent = "No se cargaron canales";
-    channelList.innerHTML = `<div class="empty">No se pudieron cargar las listas. Coloca los archivos M3U junto a este HTML: mexico.m3u, pluto.m3u, tubi.m3u, espanol.m3u y adult.m3u.</div>`;
+    channelList.innerHTML = `<div class="empty">No se pudieron cargar las listas. Coloca los archivos M3U junto a este HTML: mexico.m3u, pluto.m3u, tubi.m3u, vix.m3u, espanol.m3u y adult.m3u.</div>`;
     return;
   }
 
@@ -951,10 +952,14 @@ function parseM3U(text){
       if(!current.provider){
         if(/jmp2\.uk\/plu-|pluto\.tv|service-stitcher/i.test(current.url)) current.provider = "pluto";
         else if(/tubi|adrise\.io/i.test(current.url) || current.contentId) current.provider = "tubi";
+        else if(/vix\.com\/es-es\/canales\//i.test(current.url)) current.provider = "vix";
       }
       if(current.provider === "pluto" && !current.epgId) current.epgId = getPlutoChannelId(current);
       if(current.provider === "tubi" && !current.officialUrl && current.contentId){
         current.officialUrl = buildTubiOfficialUrl(current);
+      }
+      if(current.provider === "vix" && !current.officialUrl){
+        current.officialUrl = current.url;
       }
       channels.push(current);
       current = null;
@@ -1053,6 +1058,19 @@ function removeDuplicateChannels(list){
 }
 
 function loadChannel(channel, closeOnMobile = true){
+  if(channel && (channel.provider === "vix" || /vix\.com\/es-es\/canales\//i.test(channel.url || ""))){
+    currentChannel = channel;
+    currentUrl = channel.url;
+    mainTitle.textContent = channel.name;
+    topCategory.textContent = channel.category.toUpperCase();
+    topTitle.textContent = channel.name;
+    mainInfo.textContent = "Abriendo el canal en ViX oficial...";
+    renderChannels();
+    window.open(channel.officialUrl || channel.url, "_blank", "noopener,noreferrer");
+    if(closeOnMobile && window.matchMedia("(max-width:800px)").matches) setGuideOpen(false);
+    return;
+  }
+
   currentChannel = channel;
   currentUrl = channel.url;
   mainTitle.textContent = channel.name;
@@ -1448,7 +1466,7 @@ function createChannelItem(ch, visibleIndex){
 
 
 function canShowSchedule(ch){
-  return ch && (ch.provider === "pluto" || ch.provider === "tubi" || ch.officialUrl || ch.epgId);
+  return ch && (ch.provider === "pluto" || ch.provider === "tubi" || ch.provider === "vix" || ch.officialUrl || ch.epgId);
 }
 
 function getPlutoChannelId(ch){
@@ -1474,6 +1492,7 @@ function getOfficialGuideUrl(ch){
     return id ? `https://pluto.tv/latam/live-tv/${id}` : "https://pluto.tv/latam/live-tv";
   }
   if(ch.provider === "tubi") return buildTubiOfficialUrl(ch);
+  if(ch.provider === "vix") return ch.officialUrl || ch.url || "https://vix.com/es-es/canales";
   return ch.url || "#";
 }
 
@@ -1527,6 +1546,12 @@ async function loadSchedule(ch, forceRefresh = false){
     let result;
     if(ch.provider === "pluto") result = await loadPlutoSchedule(ch);
     else if(ch.provider === "tubi") result = await loadTubiSchedule(ch);
+    else if(ch.provider === "vix") result = {
+      programs:[],
+      source:"ViX",
+      sourceId:ch.epgId || ch.id || "",
+      message:"ViX muestra la programación y reproducción dentro de su página oficial. Presiona Abrir guía oficial."
+    };
     else result = { programs:[], message:"Este canal no tiene una fuente de programación configurada." };
     if(requestId !== epgRequestId) return;
     epgMemoryCache.set(key, { time:Date.now(), result });

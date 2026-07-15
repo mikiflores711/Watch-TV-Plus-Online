@@ -1,0 +1,125 @@
+#EXTM3U
+#EXTINF:-1 tvg-id="vix-Noticias-Univision-24-7" tvg-name="N+Univision 24-7" group-title="Noticias" provider="vix" epg-id="Noticias-Univision-24-7" official-url="https://vix.com/es-es/canales/noticias/channel-callsign-Noticias-Univision-24-7",N+Univision 24-7
+https://vix.com/es-es/canales/noticias/channel-callsign-Noticias-Univision-24-7
+#EXTINF:-1 tvg-id="vix-ForoTV-LATAM" tvg-name="N+ Foro" group-title="Noticias" provider="vix" epg-id="ForoTV-LATAM" official-url="https://vix.com/es-es/canales/noticias/channel-callsign-ForoTV-LATAM",N+ Foro
+https://vix.com/es-es/canales/noticias/channel-callsign-ForoTV-LATAM
+#EXTINF:-1 tvg-id="vix-N_Plus_MEX" tvg-name="N+ Focus" group-title="Noticias" provider="vix" epg-id="N_Plus_MEX" official-url="https://vix.com/es-es/canales/noticias/channel-callsign-N_Plus_MEX",N+ Focus
+https://vix.com/es-es/canales/noticias/channel-callsign-N_Plus_MEX
+#EXTINF:-1 tvg-id="vix-N_Plus_Guadalajara" tvg-name="N+ Guadalajara" group-title="Noticias" provider="vix" epg-id="N_Plus_Guadalajara" official-url="https://vix.com/es-es/canales/noticias/channel-callsign-N_Plus_Guadalajara",N+ Guadalajara
+https://vix.com/es-es/canales/noticias/channel-callsign-N_Plus_Guadalajara
+#EXTINF:-1 tvg-id="vix-Noticias_Monterrey" tvg-name="N+ Monterrey" group-title="Noticias" provider="vix" epg-id="Noticias_Monterrey" official-url="https://vix.com/es-es/canales/noticias/channel-callsign-Noticias_Monterrey",N+ Monterrey
+https://vix.com/es-es/canales/noticias/channel-callsign-Noticias_Monterrey
+#EXTINF:-1 tvg-id="vix-NMAS_MEDIA_TIM" tvg-name="N+ Media" group-title="Noticias" provider="vix" epg-id="NMAS_MEDIA_TIM" official-url="https://vix.com/es-es/canales/noticias/channel-callsign-NMAS_MEDIA_TIM",N+ Media
+https://vix.com/es-es/canales/noticias/channel-callsign-NMAS_MEDIA_TIM
+#EXTINF:-1 tvg-id="vix-Zona_TUDN_MX" tvg-name="Zona TUDN" group-title="Deportes" provider="vix" epg-id="Zona_TUDN_MX" official-url="https://vix.com/es-es/canales/deportes/channel-callsign-Zona_TUDN_MX",Zona TUDN
+https://vix.com/es-es/canales/deportes/channel-callsign-Zona_TUDN_MX
+#EXTINF:-1 tvg-id="vix-Z001" tvg-name="Memorables Mundialistas" group-title="Deportes" provider="vix" epg-id="Z001" official-url="https://vix.com/es-es/canales/deportes/channel-callsign-Z001",Memorables Mundialistas
+https://vix.com/es-es/canales/deportes/channel-callsign-Z001
+#EXTINF:-1 tvg-id="vix-Z180" tvg-name="Lo Mejor de la Liga MX" group-title="Deportes" provider="vix" epg-id="Z180" official-url="https://vix.com/es-es/canales/deportes/channel-callsign-Z180",Lo Mejor de la Liga MX
+https://vix.com/es-es/canales/deportes/channel-callsign-Z180
+#EXTINF:-1 tvg-id="vix-Top_BARCA_Spanish" tvg-name="Top Barça" group-title="Deportes" provider="vix" epg-id="Top_BARCA_Spanish" official-url="https://vix.com/es-es/canales/deportes/channel-callsign-Top_BARCA_Spanish",Top Barça
+https://vix.com/es-es/canales/deportes/channel-callsign-Top_BARCA_Spanish
+#EXTINF:-1 tvg-id="vix-RedBullTV" tvg-name="Red Bull TV" group-title="Deportes" provider="vix" epg-id="RedBullTV" official-url="https://vix.com/es-es/canales/deportes/channel-callsign-RedBullTV",Red Bull TV
+https://vix.com/es-es/canales/deportes/channel-callsign-RedBullTV
+#EXTINF:-1 tvg-id="vix-Z024" tvg-name="Jajaja" group-title="Humor" provider="vix" epg-id="Z024" official-url="https://vix.com/es-es/canales/humor/channel-callsign-Z024",Jajaja
+https://vix.com/es-es/canales/humor/channel-callsign-Z024
+#EXTINF:-1 tvg-id="vix-Z021" tvg-name="Comedia en Tacones" group-title="Humor" provider="vix" epg-id="Z021" official-url="https://vix.com/es-es/canales/humor/channel-callsign-Z021",Comedia en Tacones
+https://vix.com/es-es/canales/humor/channel-callsign-Z021
+#EXTINF:-1 tvg-id="vix-Z215" tvg-name="Mejijico" group-title="Humor" provider="vix" epg-id="Z215" official-url="https://vix.com/es-es/canales/humor/channel-callsign-Z215",Mejijico
+https://vix.com/es-es/canales/humor/channel-callsign-Z215
+#EXTINF:-1 tvg-id="vix-Z032" tvg-name="Risas de Oro" group-title="Humor" provider="vix" epg-id="Z032" official-url="https://vix.com/es-es/canales/humor/channel-callsign-Z032",Risas de Oro
+https://vix.com/es-es/canales/humor/channel-callsign-Z032
+#EXTINF:-1 tvg-id="vix-Z189" tvg-name="La Hora Pico" group-title="Humor" provider="vix" epg-id="Z189" official-url="https://vix.com/es-es/canales/humor/channel-callsign-Z189",La Hora Pico
+https://vix.com/es-es/canales/humor/channel-callsign-Z189
+#EXTINF:-1 tvg-id="vix-Z071" tvg-name="Vecinos" group-title="Humor" provider="vix" epg-id="Z071" official-url="https://vix.com/es-es/canales/humor/channel-callsign-Z071",Vecinos
+https://vix.com/es-es/canales/humor/channel-callsign-Z071
+#EXTINF:-1 tvg-id="vix-Z036" tvg-name="40 y 20" group-title="Humor" provider="vix" epg-id="Z036" official-url="https://vix.com/es-es/canales/humor/channel-callsign-Z036",40 y 20
+https://vix.com/es-es/canales/humor/channel-callsign-Z036
+#EXTINF:-1 tvg-id="vix-Z186" tvg-name="Nosotros los Guapos" group-title="Humor" provider="vix" epg-id="Z186" official-url="https://vix.com/es-es/canales/humor/channel-callsign-Z186",Nosotros los Guapos
+https://vix.com/es-es/canales/humor/channel-callsign-Z186
+#EXTINF:-1 tvg-id="vix-Z025" tvg-name="La Familia P. Luche" group-title="Humor" provider="vix" epg-id="Z025" official-url="https://vix.com/es-es/canales/humor/channel-callsign-Z025",La Familia P. Luche
+https://vix.com/es-es/canales/humor/channel-callsign-Z025
+#EXTINF:-1 tvg-id="vix-Z192" tvg-name="Una Familia de Diez" group-title="Humor" provider="vix" epg-id="Z192" official-url="https://vix.com/es-es/canales/humor/channel-callsign-Z192",Una Familia de Diez
+https://vix.com/es-es/canales/humor/channel-callsign-Z192
+#EXTINF:-1 tvg-id="vix-Z176" tvg-name="Guerra de Chistes" group-title="Humor" provider="vix" epg-id="Z176" official-url="https://vix.com/es-es/canales/humor/channel-callsign-Z176",Guerra de Chistes
+https://vix.com/es-es/canales/humor/channel-callsign-Z176
+#EXTINF:-1 tvg-id="vix-Z044" tvg-name="Cine Comedia" group-title="Cine" provider="vix" epg-id="Z044" official-url="https://vix.com/es-es/canales/cine/channel-callsign-Z044",Cine Comedia
+https://vix.com/es-es/canales/cine/channel-callsign-Z044
+#EXTINF:-1 tvg-id="vix-Sony_One_Cinema_MX" tvg-name="Sony One: Cinema" group-title="Cine" provider="vix" epg-id="Sony_One_Cinema_MX" official-url="https://vix.com/es-es/canales/cine/channel-callsign-Sony_One_Cinema_MX",Sony One: Cinema
+https://vix.com/es-es/canales/cine/channel-callsign-Sony_One_Cinema_MX
+#EXTINF:-1 tvg-id="vix-Z040" tvg-name="Cine de Oro" group-title="Cine" provider="vix" epg-id="Z040" official-url="https://vix.com/es-es/canales/cine/channel-callsign-Z040",Cine de Oro
+https://vix.com/es-es/canales/cine/channel-callsign-Z040
+#EXTINF:-1 tvg-id="vix-Z022" tvg-name="Cine Retro" group-title="Cine" provider="vix" epg-id="Z022" official-url="https://vix.com/es-es/canales/cine/channel-callsign-Z022",Cine Retro
+https://vix.com/es-es/canales/cine/channel-callsign-Z022
+#EXTINF:-1 tvg-id="vix-Z053" tvg-name="MOOVIMEX" group-title="Cine" provider="vix" epg-id="Z053" official-url="https://vix.com/es-es/canales/cine/channel-callsign-Z053",MOOVIMEX
+https://vix.com/es-es/canales/cine/channel-callsign-Z053
+#EXTINF:-1 tvg-id="vix-Z046" tvg-name="Galanes" group-title="Novelas" provider="vix" epg-id="Z046" official-url="https://vix.com/es-es/canales/novelas/channel-callsign-Z046",Galanes
+https://vix.com/es-es/canales/novelas/channel-callsign-Z046
+#EXTINF:-1 tvg-id="vix-Z049" tvg-name="Las 3 Marías" group-title="Novelas" provider="vix" epg-id="Z049" official-url="https://vix.com/es-es/canales/novelas/channel-callsign-Z049",Las 3 Marías
+https://vix.com/es-es/canales/novelas/channel-callsign-Z049
+#EXTINF:-1 tvg-id="vix-Todo_Drama" tvg-name="Todo Novelas, Más Pasiones" group-title="Novelas" provider="vix" epg-id="Todo_Drama" official-url="https://vix.com/es-es/canales/novelas/channel-callsign-Todo_Drama",Todo Novelas, Más Pasiones
+https://vix.com/es-es/canales/novelas/channel-callsign-Todo_Drama
+#EXTINF:-1 tvg-id="vix-Z193" tvg-name="Colunga Lovers" group-title="Novelas" provider="vix" epg-id="Z193" official-url="https://vix.com/es-es/canales/novelas/channel-callsign-Z193",Colunga Lovers
+https://vix.com/es-es/canales/novelas/channel-callsign-Z193
+#EXTINF:-1 tvg-id="vix-Z033" tvg-name="Rubí" group-title="Novelas" provider="vix" epg-id="Z033" official-url="https://vix.com/es-es/canales/novelas/channel-callsign-Z033",Rubí
+https://vix.com/es-es/canales/novelas/channel-callsign-Z033
+#EXTINF:-1 tvg-id="vix-Z037" tvg-name="Para Volver a Amar" group-title="Novelas" provider="vix" epg-id="Z037" official-url="https://vix.com/es-es/canales/novelas/channel-callsign-Z037",Para Volver a Amar
+https://vix.com/es-es/canales/novelas/channel-callsign-Z037
+#EXTINF:-1 tvg-id="vix-Z038" tvg-name="Amores Que Fuimos" group-title="Novelas" provider="vix" epg-id="Z038" official-url="https://vix.com/es-es/canales/novelas/channel-callsign-Z038",Amores Que Fuimos
+https://vix.com/es-es/canales/novelas/channel-callsign-Z038
+#EXTINF:-1 tvg-id="vix-Z125" tvg-name="Amor Real" group-title="Novelas" provider="vix" epg-id="Z125" official-url="https://vix.com/es-es/canales/novelas/channel-callsign-Z125",Amor Real
+https://vix.com/es-es/canales/novelas/channel-callsign-Z125
+#EXTINF:-1 tvg-id="vix-Z050" tvg-name="Lo Que La Vida Me Robó" group-title="Novelas" provider="vix" epg-id="Z050" official-url="https://vix.com/es-es/canales/novelas/channel-callsign-Z050",Lo Que La Vida Me Robó
+https://vix.com/es-es/canales/novelas/channel-callsign-Z050
+#EXTINF:-1 tvg-id="vix-Z141" tvg-name="La Fuerza del Destino" group-title="Novelas" provider="vix" epg-id="Z141" official-url="https://vix.com/es-es/canales/novelas/channel-callsign-Z141",La Fuerza del Destino
+https://vix.com/es-es/canales/novelas/channel-callsign-Z141
+#EXTINF:-1 tvg-id="vix-Z170" tvg-name="La Que No Podía Amar" group-title="Novelas" provider="vix" epg-id="Z170" official-url="https://vix.com/es-es/canales/novelas/channel-callsign-Z170",La Que No Podía Amar
+https://vix.com/es-es/canales/novelas/channel-callsign-Z170
+#EXTINF:-1 tvg-id="vix-Z147" tvg-name="Mi Corazón Es Tuyo" group-title="Novelas" provider="vix" epg-id="Z147" official-url="https://vix.com/es-es/canales/novelas/channel-callsign-Z147",Mi Corazón Es Tuyo
+https://vix.com/es-es/canales/novelas/channel-callsign-Z147
+#EXTINF:-1 tvg-id="vix-Z030" tvg-name="Rebelde" group-title="Novelas" provider="vix" epg-id="Z030" official-url="https://vix.com/es-es/canales/novelas/channel-callsign-Z030",Rebelde
+https://vix.com/es-es/canales/novelas/channel-callsign-Z030
+#EXTINF:-1 tvg-id="vix-Z228" tvg-name="Una Familia Con Suerte" group-title="Novelas" provider="vix" epg-id="Z228" official-url="https://vix.com/es-es/canales/novelas/channel-callsign-Z228",Una Familia Con Suerte
+https://vix.com/es-es/canales/novelas/channel-callsign-Z228
+#EXTINF:-1 tvg-id="vix-Z034" tvg-name="Sortilegio" group-title="Novelas" provider="vix" epg-id="Z034" official-url="https://vix.com/es-es/canales/novelas/channel-callsign-Z034",Sortilegio
+https://vix.com/es-es/canales/novelas/channel-callsign-Z034
+#EXTINF:-1 tvg-id="vix-Z070" tvg-name="Triunfo del Amor" group-title="Novelas" provider="vix" epg-id="Z070" official-url="https://vix.com/es-es/canales/novelas/channel-callsign-Z070",Triunfo del Amor
+https://vix.com/es-es/canales/novelas/channel-callsign-Z070
+#EXTINF:-1 tvg-id="vix-Z106" tvg-name="Amor Bravío" group-title="Novelas" provider="vix" epg-id="Z106" official-url="https://vix.com/es-es/canales/novelas/channel-callsign-Z106",Amor Bravío
+https://vix.com/es-es/canales/novelas/channel-callsign-Z106
+#EXTINF:-1 tvg-id="vix-Z107" tvg-name="Amores Verdaderos" group-title="Novelas" provider="vix" epg-id="Z107" official-url="https://vix.com/es-es/canales/novelas/channel-callsign-Z107",Amores Verdaderos
+https://vix.com/es-es/canales/novelas/channel-callsign-Z107
+#EXTINF:-1 tvg-id="vix-Z220" tvg-name="COPS" group-title="Documentales" provider="vix" epg-id="Z220" official-url="https://vix.com/es-es/canales/docu/channel-callsign-Z220",COPS
+https://vix.com/es-es/canales/docu/channel-callsign-Z220
+#EXTINF:-1 tvg-id="vix-Z026" tvg-name="Los Archivos del FBI" group-title="Documentales" provider="vix" epg-id="Z026" official-url="https://vix.com/es-es/canales/docu/channel-callsign-Z026",Los Archivos del FBI
+https://vix.com/es-es/canales/docu/channel-callsign-Z026
+#EXTINF:-1 tvg-id="vix-Z223" tvg-name="Historias de Ultratumba" group-title="Documentales" provider="vix" epg-id="Z223" official-url="https://vix.com/es-es/canales/docu/channel-callsign-Z223",Historias de Ultratumba
+https://vix.com/es-es/canales/docu/channel-callsign-Z223
+#EXTINF:-1 tvg-id="vix-Z154" tvg-name="Sala de Emergencias" group-title="Documentales" provider="vix" epg-id="Z154" official-url="https://vix.com/es-es/canales/docu/channel-callsign-Z154",Sala de Emergencias
+https://vix.com/es-es/canales/docu/channel-callsign-Z154
+#EXTINF:-1 tvg-id="vix-TuClio_GLOBAL" tvg-name="Tu Clío" group-title="Documentales" provider="vix" epg-id="TuClio_GLOBAL" official-url="https://vix.com/es-es/canales/docu/channel-callsign-TuClio_GLOBAL",Tu Clío
+https://vix.com/es-es/canales/docu/channel-callsign-TuClio_GLOBAL
+#EXTINF:-1 tvg-id="vix-Z002" tvg-name="Canal ViX" group-title="Series" provider="vix" epg-id="Z002" official-url="https://vix.com/es-es/canales/series/channel-callsign-Z002",Canal ViX
+https://vix.com/es-es/canales/series/channel-callsign-Z002
+#EXTINF:-1 tvg-id="vix-VIX_Musica_MX" tvg-name="ViX Música" group-title="Música" provider="vix" epg-id="VIX_Musica_MX" official-url="https://vix.com/es-es/canales/series/channel-callsign-VIX_Musica_MX",ViX Música
+https://vix.com/es-es/canales/series/channel-callsign-VIX_Musica_MX
+#EXTINF:-1 tvg-id="vix-Z139" tvg-name="Esta Historia Me Suena" group-title="Series" provider="vix" epg-id="Z139" official-url="https://vix.com/es-es/canales/series/channel-callsign-Z139",Esta Historia Me Suena
+https://vix.com/es-es/canales/series/channel-callsign-Z139
+#EXTINF:-1 tvg-id="vix-Z005" tvg-name="La Rosa de Guadalupe" group-title="Series" provider="vix" epg-id="Z005" official-url="https://vix.com/es-es/canales/series/channel-callsign-Z005",La Rosa de Guadalupe
+https://vix.com/es-es/canales/series/channel-callsign-Z005
+#EXTINF:-1 tvg-id="vix-Z043" tvg-name="Como Dice el Dicho" group-title="Series" provider="vix" epg-id="Z043" official-url="https://vix.com/es-es/canales/series/channel-callsign-Z043",Como Dice el Dicho
+https://vix.com/es-es/canales/series/channel-callsign-Z043
+#EXTINF:-1 tvg-id="vix-RCNPlus_GLOBAL_excl_COL" tvg-name="RCN Más+" group-title="Series" provider="vix" epg-id="RCNPlus_GLOBAL_excl_COL" official-url="https://vix.com/es-es/canales/series/channel-callsign-RCNPlus_GLOBAL_excl_COL",RCN Más+
+https://vix.com/es-es/canales/series/channel-callsign-RCNPlus_GLOBAL_excl_COL
+#EXTINF:-1 tvg-id="vix-Z182" tvg-name="Miembros al Aire" group-title="Entretenimiento" provider="vix" epg-id="Z182" official-url="https://vix.com/es-es/canales/series/channel-callsign-Z182",Miembros al Aire
+https://vix.com/es-es/canales/series/channel-callsign-Z182
+#EXTINF:-1 tvg-id="vix-Sony_One_Shark_Tank" tvg-name="Sony One: Shark Tank México" group-title="Reality" provider="vix" epg-id="Sony_One_Shark_Tank" official-url="https://vix.com/es-es/canales/series/channel-callsign-Sony_One_Shark_Tank",Sony One: Shark Tank México
+https://vix.com/es-es/canales/series/channel-callsign-Sony_One_Shark_Tank
+#EXTINF:-1 tvg-id="vix-Z042" tvg-name="Cocina TV" group-title="Cocina" provider="vix" epg-id="Z042" official-url="https://vix.com/es-es/canales/series/channel-callsign-Z042",Cocina TV
+https://vix.com/es-es/canales/series/channel-callsign-Z042
+#EXTINF:-1 tvg-id="vix-Sony_Competencias_Channel" tvg-name="Sony One: Escape Perfecto" group-title="Competencia" provider="vix" epg-id="Sony_Competencias_Channel" official-url="https://vix.com/es-es/canales/series/channel-callsign-Sony_Competencias_Channel",Sony One: Escape Perfecto
+https://vix.com/es-es/canales/series/channel-callsign-Sony_Competencias_Channel
+#EXTINF:-1 tvg-id="vix-Z074" tvg-name="Pequeños Gigantes" group-title="Competencia" provider="vix" epg-id="Z074" official-url="https://vix.com/es-es/canales/series/channel-callsign-Z074",Pequeños Gigantes
+https://vix.com/es-es/canales/series/channel-callsign-Z074
+#EXTINF:-1 tvg-id="vix-Z019" tvg-name="Casiteen" group-title="Kids" provider="vix" epg-id="Z019" official-url="https://vix.com/es-es/canales/kids/channel-callsign-Z019",Casiteen
+https://vix.com/es-es/canales/kids/channel-callsign-Z019
