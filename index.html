@@ -74,7 +74,7 @@ button{color:inherit}
 .channel-list{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding:2px 12px 2px 0;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.24) transparent}
 .channel-list::-webkit-scrollbar{width:5px}
 .channel-list::-webkit-scrollbar-thumb{background:rgba(255,255,255,.25);border-radius:99px}
-.channel-item{min-height:58px;display:grid;grid-template-columns:34px 42px minmax(0,1fr) 34px 22px;align-items:center;gap:9px;padding:5px 8px 5px 4px;border-radius:3px;cursor:pointer;position:relative;color:#eceef4;transition:background .14s ease,transform .14s ease;outline:none}
+.channel-item{min-height:58px;display:grid;grid-template-columns:34px 42px minmax(0,1fr) 31px 31px 22px;align-items:center;gap:8px;padding:5px 8px 5px 4px;border-radius:3px;cursor:pointer;position:relative;color:#eceef4;transition:background .14s ease,transform .14s ease;outline:none}
 .channel-item::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;background:rgba(255,255,255,.045)}
 .channel-item:hover,.channel-item:focus-visible{background:rgba(255,255,255,.085)}
 .channel-item.active{background:linear-gradient(90deg,var(--purple),var(--purple-2));box-shadow:0 6px 20px rgba(72,33,166,.30)}
@@ -92,6 +92,10 @@ button{color:inherit}
 .favorite-btn{width:30px;height:30px;border:0;background:transparent;border-radius:50%;display:grid;place-items:center;color:#afb3bf;font-size:19px;cursor:pointer}
 .favorite-btn:hover,.favorite-btn:focus-visible{background:rgba(255,255,255,.14);color:#fff;outline:none}
 .favorite-btn.active{color:#ffd54a}
+.schedule-btn{width:30px;height:30px;border:0;background:rgba(255,255,255,.07);border-radius:50%;display:grid;place-items:center;color:#d8dbea;font-size:15px;cursor:pointer;transition:.15s ease}
+.schedule-btn:hover,.schedule-btn:focus-visible{background:rgba(255,255,255,.18);color:#fff;outline:none;transform:scale(1.04)}
+.schedule-btn[disabled]{opacity:.25;cursor:default;transform:none}
+.channel-item.active .schedule-btn{background:rgba(255,255,255,.17)}
 .channel-arrow{font-size:30px;font-weight:300;line-height:1;color:#d7d9e1}
 .empty{padding:22px 14px;color:#a7abb7;font-size:12px;line-height:1.5;text-align:center;border:1px dashed rgba(255,255,255,.13);background:rgba(255,255,255,.03)}
 
@@ -125,6 +129,39 @@ button{color:inherit}
 .pill.live{background:rgba(142,23,36,.9);gap:6px}
 .live-dot{width:7px;height:7px;border-radius:50%;background:#ff7a86;box-shadow:0 0 8px #ff7a86}
 
+
+
+/* Vista previa de programación oficial */
+.epg-modal{position:absolute;inset:0;z-index:80;display:none;align-items:center;justify-content:center;padding:calc(env(safe-area-inset-top) + 18px) calc(env(safe-area-inset-right) + 18px) calc(env(safe-area-inset-bottom) + 18px) calc(env(safe-area-inset-left) + 18px)}
+.epg-modal.open{display:flex}
+.epg-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.78);backdrop-filter:blur(9px)}
+.epg-card{position:relative;width:min(760px,96vw);max-height:min(760px,92dvh);display:flex;flex-direction:column;background:linear-gradient(180deg,#11131b,#07080d);border:1px solid rgba(255,255,255,.14);border-radius:18px;box-shadow:0 28px 90px rgba(0,0,0,.72);overflow:hidden}
+.epg-head{display:grid;grid-template-columns:58px minmax(0,1fr) 42px;align-items:center;gap:12px;padding:15px 16px;border-bottom:1px solid rgba(255,255,255,.09);background:rgba(255,255,255,.025)}
+.epg-logo{width:56px;height:56px;border-radius:12px;background:#fff;display:grid;place-items:center;overflow:hidden;color:#111;font-weight:900}
+.epg-logo.dark{background:#11131a;color:#fff}
+.epg-logo img{width:100%;height:100%;object-fit:contain;padding:5px;background:#fff}
+.epg-logo img.dark-logo{background:#11131a}
+.epg-provider{font-size:10px;color:#a9afbd;text-transform:uppercase;letter-spacing:1.4px;font-weight:900}
+.epg-title{font-size:21px;line-height:1.15;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.epg-close{width:38px;height:38px;border:0;border-radius:50%;background:rgba(255,255,255,.09);font-size:21px;cursor:pointer}
+.epg-close:hover,.epg-close:focus-visible{background:rgba(255,255,255,.18);outline:none}
+.epg-status{padding:10px 16px;font-size:11px;color:#b7bcc8;border-bottom:1px solid rgba(255,255,255,.07)}
+.epg-list{overflow:auto;min-height:170px;padding:7px 12px 12px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.25) transparent}
+.epg-program{display:grid;grid-template-columns:96px minmax(0,1fr);gap:12px;padding:12px 10px;border-bottom:1px solid rgba(255,255,255,.075);border-radius:9px}
+.epg-program.current{background:linear-gradient(90deg,rgba(91,46,200,.62),rgba(91,46,200,.13));border-bottom-color:transparent}
+.epg-time{font-size:11px;color:#b9bec9;font-weight:800;font-variant-numeric:tabular-nums;padding-top:2px}
+.epg-program.current .epg-time{color:#fff}
+.epg-program-title{font-size:14px;font-weight:800;line-height:1.28}
+.epg-program-sub{font-size:11px;color:#adb2bf;line-height:1.4;margin-top:5px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.epg-badge{display:inline-flex;align-items:center;height:20px;padding:0 7px;border-radius:99px;background:#5b2ec8;color:#fff;font-size:9px;font-weight:900;margin-right:6px;text-transform:uppercase;letter-spacing:.4px}
+.epg-empty{padding:30px 18px;text-align:center;color:#b0b5c1;font-size:12px;line-height:1.55}
+.epg-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;padding:11px 14px;border-top:1px solid rgba(255,255,255,.09);background:rgba(255,255,255,.025)}
+.epg-action{height:36px;border:0;border-radius:8px;padding:0 12px;background:rgba(255,255,255,.09);color:#fff;font-size:11px;font-weight:900;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
+.epg-action:hover,.epg-action:focus-visible{background:rgba(255,255,255,.18);outline:none}
+.epg-action.primary{background:var(--purple)}
+.epg-spinner{width:28px;height:28px;border:3px solid rgba(255,255,255,.18);border-top-color:#8b5cf6;border-radius:50%;animation:epgSpin .75s linear infinite;margin:35px auto}
+@keyframes epgSpin{to{transform:rotate(360deg)}}
+
 /* En pantallas de TV anchas se parece más al menú de la referencia */
 @media (min-width:1200px){
   .guide-panel{padding-left:calc(env(safe-area-inset-left) + 38px)}
@@ -136,7 +173,7 @@ button{color:inherit}
   .guide-title{font-size:23px}
   .guide-tools{grid-template-columns:1fr}
   .filter-row{grid-template-columns:1fr 1fr}
-  .channel-item{grid-template-columns:30px 40px minmax(0,1fr) 32px 18px;min-height:55px;gap:7px}
+  .channel-item{grid-template-columns:30px 40px minmax(0,1fr) 30px 30px 18px;min-height:55px;gap:6px}
   .channel-logo{width:38px;height:38px}
   .channel-text h3{font-size:13px}
   .controls-bar{flex-wrap:wrap}
@@ -152,8 +189,16 @@ button{color:inherit}
   .guide-tools{grid-template-columns:1fr}
   .filter-row{display:none}
   .channel-list{padding-right:3px}
-  .channel-item{grid-template-columns:27px 38px minmax(0,1fr) 31px 17px;padding-right:4px}
-  .favorite-btn{width:29px;height:29px}
+  .channel-item{grid-template-columns:27px 38px minmax(0,1fr) 29px 29px 17px;padding-right:4px;gap:5px}
+  .favorite-btn,.schedule-btn{width:28px;height:28px}
+  .epg-modal{padding:8px}
+  .epg-card{width:100%;max-height:96dvh;border-radius:13px}
+  .epg-head{grid-template-columns:48px minmax(0,1fr) 38px;padding:12px}
+  .epg-logo{width:46px;height:46px}
+  .epg-title{font-size:17px}
+  .epg-program{grid-template-columns:78px minmax(0,1fr);gap:8px;padding:10px 7px}
+  .epg-actions{flex-wrap:wrap}
+  .epg-action{flex:1}
   .guide-footer{margin-right:0}
   .now-playing{bottom:110px}
   .right-tools .pill:not(.live){display:none}
@@ -242,6 +287,27 @@ button{color:inherit}
           </div>
         </div>
       </div>
+
+      <div class="epg-modal" id="epgModal" aria-hidden="true">
+        <div class="epg-backdrop" id="epgBackdrop"></div>
+        <section class="epg-card" role="dialog" aria-modal="true" aria-labelledby="epgTitle">
+          <header class="epg-head">
+            <div class="epg-logo" id="epgLogo">TV</div>
+            <div>
+              <div class="epg-provider" id="epgProvider">PROGRAMACIÓN OFICIAL</div>
+              <h2 class="epg-title" id="epgTitle">Canal</h2>
+            </div>
+            <button class="epg-close" id="epgClose" type="button" aria-label="Cerrar programación">×</button>
+          </header>
+          <div class="epg-status" id="epgStatus">Cargando programación...</div>
+          <div class="epg-list" id="epgList"><div class="epg-spinner"></div></div>
+          <footer class="epg-actions">
+            <button class="epg-action" id="epgRefresh" type="button">Actualizar</button>
+            <a class="epg-action primary" id="epgOfficialLink" href="#" target="_blank" rel="noopener noreferrer">Abrir guía oficial</a>
+          </footer>
+        </section>
+      </div>
+
     </div>
   </section>
 </div>
@@ -267,10 +333,17 @@ const CHANNELS_API = "https://iptv-org.github.io/api/channels.json";
 const STREAMS_API = "https://iptv-org.github.io/api/streams.json";
 const LOGO_CACHE_KEY = "watch_tv_plus_original_logos_v4";
 const LOGO_CACHE_TTL = 1000 * 60 * 60 * 24 * 7;
+const EPG_CACHE_TTL = 1000 * 60 * 8;
+const EPG_HOURS = 12;
+const PLUTO_BOOT_API = "https://boot.pluto.tv/v4/start";
+const PLUTO_GUIDE_V2_API = "https://service-channels.clusters.pluto.tv/v2/guide/timelines";
+const PLUTO_GUIDE_API = "https://service-channels.clusters.pluto.tv/v1/guide";
+const PLUTO_LEGACY_GUIDE_API = "https://api.pluto.tv/v2/channels";
 
 const PLAYLISTS = [
   { id:"mexico", label:"México", file:"./mexico.m3u", isAdult:false },
   { id:"pluto", label:"Pluto TV", file:"./pluto.m3u", isAdult:false },
+  { id:"tubi", label:"Tubi TV", file:"./tubi.m3u", isAdult:false },
   { id:"espanol", label:"Español", file:"./espanol.m3u", isAdult:false },
   { id:"favorites", label:"Favoritos", file:null, isAdult:false, isFavorites:true },
   { id:"adult", label:"Adultos 18+", file:"./adult.m3u", isAdult:true }
@@ -305,6 +378,16 @@ const reloadBtn = document.getElementById("reloadBtn");
 const adultNotice = document.getElementById("adultNotice");
 const sectionTabs = document.getElementById("sectionTabs");
 const sectionInfo = document.getElementById("sectionInfo");
+const epgModal = document.getElementById("epgModal");
+const epgBackdrop = document.getElementById("epgBackdrop");
+const epgClose = document.getElementById("epgClose");
+const epgLogo = document.getElementById("epgLogo");
+const epgProvider = document.getElementById("epgProvider");
+const epgTitle = document.getElementById("epgTitle");
+const epgStatus = document.getElementById("epgStatus");
+const epgList = document.getElementById("epgList");
+const epgRefresh = document.getElementById("epgRefresh");
+const epgOfficialLink = document.getElementById("epgOfficialLink");
 
 let player = null;
 let currentChannel = null;
@@ -322,6 +405,9 @@ let playbackSequence = 0;
 let playbackFallbackTimer = null;
 let playbackStarted = false;
 let playbackFallbackInProgress = false;
+let epgChannel = null;
+let epgRequestId = 0;
+const epgMemoryCache = new Map();
 
 async function init(){
   buildTabs();
@@ -360,6 +446,9 @@ function bindEvents(){
   closeGuide.addEventListener("click", () => setGuideOpen(false));
   prevSection.addEventListener("click", () => stepSection(-1));
   nextSection.addEventListener("click", () => stepSection(1));
+  epgClose.addEventListener("click", closeSchedule);
+  epgBackdrop.addEventListener("click", closeSchedule);
+  epgRefresh.addEventListener("click", () => epgChannel && loadSchedule(epgChannel, true));
 
   ["mousemove", "touchstart", "click"].forEach(eventName => {
     playerStage.addEventListener(eventName, showPlayerUI, { passive:true });
@@ -388,6 +477,13 @@ function stepSection(direction){
 
 function handleKeyboard(event){
   showPlayerUI();
+  if(epgModal.classList.contains("open")){
+    if(event.key === "Escape" || event.key === "Backspace"){
+      event.preventDefault();
+      closeSchedule();
+    }
+    return;
+  }
   const tag = document.activeElement && document.activeElement.tagName;
   const typing = tag === "INPUT" || tag === "SELECT" || tag === "TEXTAREA";
 
@@ -462,7 +558,7 @@ async function loadAllPlaylists(){
 
   if(!allChannels.length){
     countPill.textContent = "No se cargaron canales";
-    channelList.innerHTML = `<div class="empty">No se pudieron cargar las listas. Coloca los archivos M3U junto a este HTML: mexico.m3u, pluto.m3u, espanol.m3u y adult.m3u.</div>`;
+    channelList.innerHTML = `<div class="empty">No se pudieron cargar las listas. Coloca los archivos M3U junto a este HTML: mexico.m3u, pluto.m3u, tubi.m3u, espanol.m3u y adult.m3u.</div>`;
     return;
   }
 
@@ -489,7 +585,10 @@ async function resolveOriginalLogos(){
   applyCachedLogos();
   renderChannels();
 
-  const missing = allChannels.filter(ch => !ch.logo);
+  // Tubi: obtiene la imagen original desde la metainformación de la página oficial.
+  resolveTubiOfficialLogos().catch(error => console.log("No se pudieron resolver logos de Tubi:", error));
+
+  const missing = allChannels.filter(ch => !ch.logo && ch.provider !== "tubi");
   if(!missing.length) return;
 
   const previousInfo = mainInfo.textContent;
@@ -557,6 +656,56 @@ async function resolveOriginalLogos(){
     mainInfo.textContent = previousInfo;
     throw error;
   }
+}
+
+
+async function resolveTubiOfficialLogos(){
+  const targets = allChannels.filter(ch => ch.provider === "tubi" && !ch.logo && ch.officialUrl);
+  if(!targets.length) return;
+  const cache = readLogoCache();
+  let cursor = 0;
+  let resolved = 0;
+
+  async function worker(){
+    while(cursor < targets.length){
+      const index = cursor++;
+      const ch = targets[index];
+      try{
+        const html = await fetchOfficialText(ch.officialUrl, {
+          referrer:"https://tubitv.com/",
+          origin:"https://tubitv.com",
+          timeout:9000
+        });
+        const meta = extractOfficialPageMeta(html);
+        if(meta.logo){
+          ch.logo = meta.logo;
+          ch.logoBackground = "black";
+          cache.data[logoCacheKey(ch)] = { logo:ch.logo, background:ch.logoBackground };
+          resolved++;
+        }
+        if(meta.description && !ch.description) ch.description = meta.description;
+      }catch(error){
+        console.log("Logo Tubi no disponible:", ch.name, error);
+      }
+    }
+  }
+
+  await Promise.all(Array.from({length:Math.min(4, targets.length)}, worker));
+  if(resolved){
+    cache.time = Date.now();
+    try{ localStorage.setItem(LOGO_CACHE_KEY, JSON.stringify(cache)); }catch(error){}
+    renderChannels();
+  }
+}
+
+function extractOfficialPageMeta(html){
+  const doc = new DOMParser().parseFromString(String(html || ""), "text/html");
+  const get = selector => doc.querySelector(selector)?.getAttribute("content") || "";
+  return {
+    logo:get('meta[property="og:image"]') || get('meta[name="twitter:image"]'),
+    title:get('meta[property="og:title"]') || doc.title || "",
+    description:get('meta[property="og:description"]') || get('meta[name="description"]') || ""
+  };
 }
 
 function applyCachedLogos(){
@@ -785,7 +934,13 @@ function parseM3U(text){
         url:"",
         referrer:pendingReferrer,
         userAgent:pendingUserAgent,
-        origin:pendingOrigin
+        origin:pendingOrigin,
+        provider:(attrs["provider"] || "").toLowerCase(),
+        contentId:attrs["content-id"] || attrs["contentid"] || "",
+        epgId:attrs["epg-id"] || attrs["epgid"] || "",
+        officialUrl:attrs["official-url"] || attrs["website"] || "",
+        slug:attrs["slug"] || "",
+        description:attrs["description"] || ""
       };
       continue;
     }
@@ -796,6 +951,14 @@ function parseM3U(text){
       current.userAgent = stream.userAgent || current.userAgent || pendingUserAgent;
       current.origin = stream.origin || current.origin || pendingOrigin;
       current.type = guessType(current);
+      if(!current.provider){
+        if(/jmp2\.uk\/plu-|pluto\.tv|service-stitcher/i.test(current.url)) current.provider = "pluto";
+        else if(/tubi|adrise\.io/i.test(current.url) || current.contentId) current.provider = "tubi";
+      }
+      if(current.provider === "pluto" && !current.epgId) current.epgId = getPlutoChannelId(current);
+      if(current.provider === "tubi" && !current.officialUrl && current.contentId){
+        current.officialUrl = buildTubiOfficialUrl(current);
+      }
       channels.push(current);
       current = null;
       pendingReferrer = "";
@@ -1258,6 +1421,7 @@ function createChannelItem(ch, visibleIndex){
   const logoHtml = ch.logo
     ? `<img src="${escapeHtml(ch.logo)}" alt="" class="${darkLogo ? "dark-logo" : ""}" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove();this.parentElement.textContent='${escapeHtml(getInitials(ch.name))}'">`
     : escapeHtml(getInitials(ch.name));
+  const hasSchedule = canShowSchedule(ch);
 
   item.innerHTML = `
     <div class="channel-number">${String(number).padStart(2, "0")}</div>
@@ -1267,6 +1431,7 @@ function createChannelItem(ch, visibleIndex){
       <p>${escapeHtml(ch.category)} · ${escapeHtml(ch.quality)}${ch.note ? ` · ${escapeHtml(ch.note)}` : ""}</p>
     </div>
     <button class="favorite-btn ${isFav ? "active" : ""}" type="button" title="Favorito" aria-label="Favorito">${isFav ? "★" : "☆"}</button>
+    <button class="schedule-btn" type="button" title="Ver programación" aria-label="Ver programación" ${hasSchedule ? "" : "disabled"}>▦</button>
     <div class="channel-arrow">›</div>`;
 
   item.addEventListener("click", () => loadChannel(ch));
@@ -1276,7 +1441,413 @@ function createChannelItem(ch, visibleIndex){
     event.stopPropagation();
     toggleFavorite(ch.url);
   });
+  const scheduleBtn = item.querySelector(".schedule-btn");
+  scheduleBtn.addEventListener("click", event => {
+    event.stopPropagation();
+    if(hasSchedule) openSchedule(ch);
+  });
   return item;
+}
+
+
+function canShowSchedule(ch){
+  return ch && (ch.provider === "pluto" || ch.provider === "tubi" || ch.officialUrl || ch.epgId);
+}
+
+function getPlutoChannelId(ch){
+  const values = [ch && ch.epgId, ch && ch.url, ch && ch.id].filter(Boolean).map(String);
+  for(const value of values){
+    const match = value.match(/(?:plu-|channels\/|live-tv\/)([a-f0-9]{24})/i) || value.match(/^([a-f0-9]{24})$/i);
+    if(match) return match[1];
+  }
+  return "";
+}
+
+function buildTubiOfficialUrl(ch){
+  const contentId = ch && ch.contentId;
+  if(!contentId) return "https://tubitv.com/es-mx/live";
+  const slug = ch.slug || slugify(ch.name);
+  return `https://tubitv.com/es-mx/live/${encodeURIComponent(contentId)}/${encodeURIComponent(slug)}`;
+}
+
+function getOfficialGuideUrl(ch){
+  if(ch.officialUrl) return ch.officialUrl;
+  if(ch.provider === "pluto"){
+    const id = getPlutoChannelId(ch);
+    return id ? `https://pluto.tv/latam/live-tv/${id}` : "https://pluto.tv/latam/live-tv";
+  }
+  if(ch.provider === "tubi") return buildTubiOfficialUrl(ch);
+  return ch.url || "#";
+}
+
+function slugify(value){
+  return String(value || "canal")
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+}
+
+function openSchedule(ch){
+  epgChannel = ch;
+  epgModal.classList.add("open");
+  epgModal.setAttribute("aria-hidden", "false");
+  playerStage.classList.add("guide-open");
+  renderEpgHeader(ch);
+  loadSchedule(ch, false);
+  setTimeout(() => epgClose.focus(), 50);
+}
+
+function closeSchedule(){
+  epgRequestId++;
+  epgModal.classList.remove("open");
+  epgModal.setAttribute("aria-hidden", "true");
+  epgChannel = null;
+}
+
+function renderEpgHeader(ch){
+  const darkLogo = ch.logoBackground === "black" || ch.logoBackground === "dark";
+  epgLogo.className = `epg-logo ${darkLogo ? "dark" : ""}`;
+  epgLogo.innerHTML = ch.logo
+    ? `<img src="${escapeHtml(ch.logo)}" alt="" class="${darkLogo ? "dark-logo" : ""}" referrerpolicy="no-referrer" onerror="this.remove();this.parentElement.textContent='${escapeHtml(getInitials(ch.name))}'">`
+    : escapeHtml(getInitials(ch.name));
+  epgProvider.textContent = `${(ch.provider || ch.sectionLabel || "CANAL").toUpperCase()} · PROGRAMACIÓN OFICIAL`;
+  epgTitle.textContent = ch.name;
+  epgOfficialLink.href = getOfficialGuideUrl(ch);
+}
+
+async function loadSchedule(ch, forceRefresh = false){
+  const requestId = ++epgRequestId;
+  const key = `${ch.provider}:${ch.contentId || getPlutoChannelId(ch) || ch.id || ch.name}`;
+  const cached = epgMemoryCache.get(key);
+  if(!forceRefresh && cached && Date.now() - cached.time < EPG_CACHE_TTL){
+    renderScheduleResult(ch, cached.result);
+    return;
+  }
+
+  epgStatus.textContent = "Consultando la guía oficial...";
+  epgList.innerHTML = `<div class="epg-spinner"></div>`;
+
+  try{
+    let result;
+    if(ch.provider === "pluto") result = await loadPlutoSchedule(ch);
+    else if(ch.provider === "tubi") result = await loadTubiSchedule(ch);
+    else result = { programs:[], message:"Este canal no tiene una fuente de programación configurada." };
+    if(requestId !== epgRequestId) return;
+    epgMemoryCache.set(key, { time:Date.now(), result });
+    renderScheduleResult(ch, result);
+  }catch(error){
+    if(requestId !== epgRequestId) return;
+    console.error("Error de programación:", error);
+    epgStatus.textContent = "No se pudo cargar la guía automáticamente.";
+    epgList.innerHTML = `<div class="epg-empty">La página oficial no entregó la programación a este navegador. Usa <b>Abrir guía oficial</b> para verla directamente. Este problema puede depender de la región, CORS o cambios en la página del proveedor.</div>`;
+  }
+}
+
+async function loadPlutoSchedule(ch){
+  const channelId = getPlutoChannelId(ch);
+  if(!channelId) throw new Error("No se encontró el identificador de Pluto TV");
+
+  const now = new Date();
+  const start = new Date(now.getTime() - 30 * 60 * 1000);
+  start.setUTCMinutes(start.getUTCMinutes() - start.getUTCMinutes() % 30, 0, 0);
+  const stop = new Date(start.getTime() + EPG_HOURS * 60 * 60 * 1000);
+  const params = `start=${encodeURIComponent(start.toISOString())}&stop=${encodeURIComponent(stop.toISOString())}`;
+  let lastError;
+
+  // API actual de Pluto TV: obtiene una sesión web y consulta únicamente este canal.
+  try{
+    const clientId = (crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`);
+    const bootParams = new URLSearchParams({
+      appName:"web",
+      appVersion:"8.0.0",
+      deviceVersion:"150.0.0",
+      deviceModel:"web",
+      deviceMake:"chrome",
+      deviceType:"web",
+      clientID:clientId,
+      clientModelNumber:"1.0.0",
+      serverSideAds:"false",
+      drmCapabilities:"widevine:L3"
+    });
+    const boot = await fetchOfficialJson(`${PLUTO_BOOT_API}?${bootParams.toString()}`, {
+      referrer:"https://pluto.tv/",
+      origin:"https://pluto.tv",
+      timeout:12000
+    });
+    const token = boot && boot.sessionToken;
+    if(token){
+      const guideParams = new URLSearchParams({
+        start:start.toISOString(),
+        channelIds:channelId,
+        duration:String(EPG_HOURS * 60)
+      });
+      const data = await fetchOfficialJson(`${PLUTO_GUIDE_V2_API}?${guideParams.toString()}`, {
+        referrer:"https://pluto.tv/",
+        origin:"https://pluto.tv",
+        timeout:13000,
+        headers:{ Authorization:`Bearer ${token}` }
+      });
+      const channelRoot = findPlutoChannelRoot(data, channelId);
+      const programs = normalizePrograms(channelRoot || data, { channelId });
+      if(programs.length){
+        return {
+          programs,
+          source:"Pluto TV",
+          message:`Programación oficial de las próximas ${EPG_HOURS} horas.`
+        };
+      }
+    }
+  }catch(error){
+    lastError = error;
+  }
+
+  // Compatibilidad con los servicios anteriores de la guía.
+  const urls = [
+    `${PLUTO_GUIDE_API}?${params}`,
+    `${PLUTO_LEGACY_GUIDE_API}?${params}`
+  ];
+  for(const url of urls){
+    try{
+      const data = await fetchOfficialJson(url, {
+        referrer:"https://pluto.tv/",
+        origin:"https://pluto.tv",
+        timeout:13000
+      });
+      const channelRoot = findPlutoChannelRoot(data, channelId);
+      const programs = normalizePrograms(channelRoot || data, { channelId });
+      if(programs.length){
+        return {
+          programs,
+          source:"Pluto TV",
+          message:`Programación oficial de las próximas ${EPG_HOURS} horas.`
+        };
+      }
+    }catch(error){
+      lastError = error;
+    }
+  }
+  throw lastError || new Error("Pluto TV no devolvió eventos");
+}
+
+function findPlutoChannelRoot(data, channelId){
+  const roots = [];
+  if(Array.isArray(data)) roots.push(...data);
+  if(data && Array.isArray(data.channels)) roots.push(...data.channels);
+  if(data && Array.isArray(data.data)) roots.push(...data.data);
+  return roots.find(item => {
+    const id = item && (item.id || item._id || item.channelId || item.channelID);
+    return String(id || "") === String(channelId);
+  }) || null;
+}
+
+async function loadTubiSchedule(ch){
+  const officialUrl = getOfficialGuideUrl(ch);
+  const html = await fetchOfficialText(officialUrl, {
+    referrer:"https://tubitv.com/",
+    origin:"https://tubitv.com",
+    timeout:13000
+  });
+
+  const meta = extractOfficialPageMeta(html);
+  if(meta.logo && !ch.logo){
+    ch.logo = meta.logo;
+    ch.logoBackground = "black";
+    renderEpgHeader(ch);
+    renderChannels();
+  }
+  if(meta.description && !ch.description) ch.description = meta.description;
+
+  const doc = new DOMParser().parseFromString(html, "text/html");
+  const parsedRoots = [];
+  doc.querySelectorAll('script[type="application/json"],script#__NEXT_DATA__,script[type="application/ld+json"]').forEach(script => {
+    const value = script.textContent.trim();
+    if(!value || (!value.startsWith("{") && !value.startsWith("["))) return;
+    try{ parsedRoots.push(JSON.parse(value)); }catch(error){}
+  });
+
+  const matchingRoots = [];
+  for(const root of parsedRoots){
+    matchingRoots.push(...findMatchingTubiRoots(root, ch));
+  }
+  const rootsToScan = matchingRoots.length ? matchingRoots : parsedRoots;
+  let programs = [];
+  for(const root of rootsToScan) programs.push(...normalizePrograms(root, { contentId:ch.contentId }));
+  programs = uniquePrograms(programs);
+
+  return {
+    programs,
+    source:"Tubi TV",
+    message:programs.length
+      ? "Programación recuperada desde la página oficial de Tubi."
+      : "Tubi cargó la página oficial, pero su guía no expuso eventos legibles en el HTML."
+  };
+}
+
+function findMatchingTubiRoots(root, ch){
+  const matches = [];
+  const contentId = String(ch.contentId || "");
+  const slug = String(ch.slug || "").toLowerCase();
+  const seen = new WeakSet();
+
+  function walk(value, depth){
+    if(!value || typeof value !== "object" || depth > 12 || seen.has(value)) return;
+    seen.add(value);
+    if(!Array.isArray(value)){
+      const scalar = Object.values(value).filter(v => typeof v === "string" || typeof v === "number").map(String);
+      if((contentId && scalar.includes(contentId)) || (slug && scalar.some(v => v.toLowerCase().includes(slug)))) matches.push(value);
+    }
+    for(const child of Object.values(value)) walk(child, depth + 1);
+  }
+  walk(root, 0);
+  return matches.slice(0, 20);
+}
+
+function normalizePrograms(root, context = {}){
+  const programs = [];
+  const seen = new WeakSet();
+  const now = Date.now();
+  const min = now - 12 * 60 * 60 * 1000;
+  const max = now + 36 * 60 * 60 * 1000;
+
+  function walk(value, depth){
+    if(!value || typeof value !== "object" || depth > 16 || seen.has(value)) return;
+    seen.add(value);
+
+    if(!Array.isArray(value)){
+      const start = parseFlexibleDate(value.start || value.startTime || value.start_time || value.startDate || value.airing_start || value.airingStart || value.begin || value.from);
+      const stop = parseFlexibleDate(value.stop || value.end || value.endTime || value.end_time || value.endDate || value.airing_end || value.airingEnd || value.to);
+      if(start && stop && stop > start && start < max && stop > min){
+        const episode = value.episode || value.program || value.content || value.asset || {};
+        const clip = episode.clip || {};
+        const series = episode.series || value.series || {};
+        const title = firstText(
+          value.title, value.name, value.programTitle, value.program_name,
+          series.name, series.title, clip.name, clip.title,
+          episode.seriesName, episode.title, episode.name
+        );
+        const subtitle = firstText(
+          value.subtitle, value.subTitle, value.description, value.summary,
+          episode.description, episode.summary,
+          title && episode.name !== title ? episode.name : ""
+        );
+        if(title){
+          programs.push({
+            start:new Date(start),
+            stop:new Date(stop),
+            title,
+            subtitle,
+            image:firstText(value.image, value.poster, episode.poster && (episode.poster.path || episode.poster.url))
+          });
+        }
+      }
+    }
+
+    for(const child of Object.values(value)) walk(child, depth + 1);
+  }
+  walk(root, 0);
+  return uniquePrograms(programs);
+}
+
+function parseFlexibleDate(value){
+  if(value == null || value === "") return 0;
+  if(typeof value === "number"){
+    const ms = value < 10_000_000_000 ? value * 1000 : value;
+    return Number.isFinite(ms) ? ms : 0;
+  }
+  const numeric = Number(value);
+  if(Number.isFinite(numeric) && String(value).trim() !== ""){
+    const ms = numeric < 10_000_000_000 ? numeric * 1000 : numeric;
+    if(ms > 1_000_000_000_000) return ms;
+  }
+  const parsed = Date.parse(String(value));
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function firstText(...values){
+  for(const value of values){
+    if(typeof value === "string" && value.trim()) return value.trim();
+    if(value && typeof value === "object"){
+      const nested = value.url || value.path || value.name || value.title;
+      if(typeof nested === "string" && nested.trim()) return nested.trim();
+    }
+  }
+  return "";
+}
+
+function uniquePrograms(programs){
+  const seen = new Set();
+  return programs
+    .filter(item => item && item.start instanceof Date && !isNaN(item.start) && item.stop instanceof Date && !isNaN(item.stop) && item.title)
+    .sort((a,b) => a.start - b.start)
+    .filter(item => {
+      const key = `${item.start.toISOString()}|${item.stop.toISOString()}|${item.title}`;
+      if(seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
+    .slice(0, 60);
+}
+
+function renderScheduleResult(ch, result){
+  const programs = Array.isArray(result.programs) ? result.programs : [];
+  epgStatus.textContent = `${result.message || "Programación oficial"} · Actualizada ${new Intl.DateTimeFormat("es-MX", {hour:"2-digit",minute:"2-digit"}).format(new Date())}`;
+  if(!programs.length){
+    epgList.innerHTML = `<div class="epg-empty">No fue posible previsualizar los títulos desde esta página oficial. Presiona <b>Abrir guía oficial</b> para consultar la programación completa de ${escapeHtml(ch.name)}.</div>`;
+    return;
+  }
+
+  const now = Date.now();
+  epgList.innerHTML = programs.map(program => {
+    const current = program.start.getTime() <= now && program.stop.getTime() > now;
+    const time = `${formatProgramTime(program.start)} – ${formatProgramTime(program.stop)}`;
+    return `<article class="epg-program ${current ? "current" : ""}">
+      <div class="epg-time">${current ? '<span class="epg-badge">Ahora</span><br>' : ""}${escapeHtml(time)}</div>
+      <div>
+        <div class="epg-program-title">${escapeHtml(program.title)}</div>
+        ${program.subtitle ? `<div class="epg-program-sub">${escapeHtml(program.subtitle)}</div>` : ""}
+      </div>
+    </article>`;
+  }).join("");
+
+  const currentItem = epgList.querySelector(".epg-program.current");
+  if(currentItem) setTimeout(() => currentItem.scrollIntoView({block:"center", behavior:"smooth"}), 50);
+}
+
+function formatProgramTime(date){
+  return new Intl.DateTimeFormat("es-MX", {hour:"2-digit",minute:"2-digit"}).format(date);
+}
+
+async function fetchOfficialJson(url, options = {}){
+  const text = await fetchOfficialText(url, options);
+  try{ return JSON.parse(text); }
+  catch(error){ throw new Error("La guía oficial no devolvió JSON válido"); }
+}
+
+async function fetchOfficialText(url, options = {}){
+  const timeout = Number(options.timeout || 10000);
+  const urls = [url];
+  if(!String(url).startsWith(PROXY_BASE)){
+    let proxy = PROXY_BASE + encodeURIComponent(url);
+    if(options.referrer) proxy += "&ref=" + encodeURIComponent(options.referrer);
+    if(options.origin) proxy += "&origin=" + encodeURIComponent(options.origin);
+    urls.push(proxy);
+  }
+
+  let lastError;
+  for(const candidate of urls){
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeout);
+    try{
+      const headers = {Accept:"application/json,text/html,text/plain,*/*", ...(options.headers || {})};
+      const response = await fetch(candidate, {cache:"no-store", signal:controller.signal, headers});
+      clearTimeout(timer);
+      if(!response.ok) throw new Error(`HTTP ${response.status}`);
+      return await response.text();
+    }catch(error){
+      clearTimeout(timer);
+      lastError = error;
+    }
+  }
+  throw lastError || new Error("No se pudo consultar la fuente oficial");
 }
 
 function getSectionChannels(requireUnlocked = true){
