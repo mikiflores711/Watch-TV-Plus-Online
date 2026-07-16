@@ -346,7 +346,7 @@ const PLAYLISTS = [
   { id:"pluto", label:"Pluto TV", file:"./pluto.m3u", isAdult:false },
   { id:"tubi", label:"Tubi TV", file:"./tubi.m3u", isAdult:false },
   { id:"vix", label:"ViX", file:"./vix.m3u", isAdult:false },
-  { id:"roku", label:"Roku Channel", file:"./roku.m3u", isAdult:false },
+  { id:"runtime", label:"Run Time", file:"./runtime.m3u", isAdult:false },
   { id:"espanol", label:"Español", file:"./espanol.m3u", isAdult:false },
   { id:"favorites", label:"Favoritos", file:null, isAdult:false, isFavorites:true },
   { id:"adult", label:"Adultos 18+", file:"./adult.m3u", isAdult:true }
@@ -561,7 +561,7 @@ async function loadAllPlaylists(){
 
   if(!allChannels.length){
     countPill.textContent = "No se cargaron canales";
-    channelList.innerHTML = `<div class="empty">No se pudieron cargar las listas. Coloca los archivos M3U junto a este HTML: mexico.m3u, pluto.m3u, tubi.m3u, vix.m3u, espanol.m3u y adult.m3u.</div>`;
+    channelList.innerHTML = `<div class="empty">No se pudieron cargar las listas. Coloca los archivos M3U junto a este HTML: mexico.m3u, pluto.m3u, tubi.m3u, vix.m3u, runtime.m3u, espanol.m3u y adult.m3u.</div>`;
     return;
   }
 
@@ -1060,21 +1060,8 @@ function removeDuplicateChannels(list){
 }
 
 function loadChannel(channel, closeOnMobile = true){
-  if(channel && (channel.provider === "roku" || /therokuchannel\.roku\.com\/watch\//i.test(channel.url || ""))){
-    currentChannel = channel;
-    currentUrl = channel.url;
-    mainTitle.textContent = channel.name;
-    topCategory.textContent = channel.category.toUpperCase();
-    topTitle.textContent = channel.name;
-    mainInfo.textContent = "Abriendo el canal en The Roku Channel...";
-    renderChannels();
-    const opened = window.open(channel.officialUrl || channel.url, "_blank", "noopener,noreferrer");
-    if(!opened) alert("Permite las ventanas emergentes para abrir The Roku Channel.");
-    if(closeOnMobile && window.matchMedia("(max-width:800px)").matches) setGuideOpen(false);
-    return;
-  }
 
-  if(channel && (channel.provider === "vix" || /vix\.com\/es-es\/canales\//i.test(channel.url || ""))){
+  if(channel && /vix\.com\/es-es\/canales\//i.test(channel.url || "")){
     currentChannel = channel;
     currentUrl = channel.url;
     mainTitle.textContent = channel.name;

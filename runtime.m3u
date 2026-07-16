@@ -1,0 +1,69 @@
+#EXTM3U
+#EXTINF:-1 tvg-id="runtime-001" tvg-name="Run Time Acción" group-title="24/7" provider="runtime",Run Time Acción
+https://stream.ads.ottera.tv/playlist.m3u8?network_id=2550
+#EXTINF:-1 tvg-id="runtime-002" tvg-name="Canal 6 CDMX" group-title="México" provider="runtime",Canal 6 CDMX
+https://stream.ads.ottera.tv/playlist.m3u8?network_id=6405
+#EXTINF:-1 tvg-id="runtime-003" tvg-name="Milenio Televisión" group-title="Noticias" provider="runtime",Milenio Televisión
+https://stream.ads.ottera.tv/playlist.m3u8?network_id=6403
+#EXTINF:-1 tvg-id="runtime-004" tvg-name="Azteca Uno (-1h)" group-title="México" provider="runtime",Azteca Uno (-1h)
+https://stream.ads.ottera.tv/playlist.m3u8?network_id=4833
+#EXTINF:-1 tvg-id="runtime-005" tvg-name="Imagen TV+ (-1h)" group-title="México" provider="runtime",Imagen TV+ (-1h)
+https://stream.ads.ottera.tv/playlist.m3u8?network_id=6149
+#EXTINF:-1 tvg-id="runtime-006" tvg-name="Curro Jiménez" group-title="24/7" provider="runtime",Curro Jiménez
+https://stream.ads.ottera.tv/playlist.m3u8?network_id=3435
+#EXTINF:-1 tvg-id="runtime-007" tvg-name="Cine Espanto" group-title="24/7" provider="runtime",Cine Espanto
+https://stream.ads.ottera.tv/playlist.m3u8?network_id=6126
+#EXTINF:-1 tvg-id="runtime-008" tvg-name="Sangre Fría" group-title="24/7" provider="runtime",Sangre Fría
+https://stream.ads.ottera.tv/playlist.m3u8?network_id=6130
+#EXTINF:-1 tvg-id="runtime-009" tvg-name="Run Time: México" group-title="24/7" provider="runtime",Run Time: México
+https://stream.ads.ottera.tv/playlist.m3u8?network_id=2154
+#EXTINF:-1 tvg-id="runtime-010" tvg-name="World Poker Tour" group-title="24/7" provider="runtime",World Poker Tour
+https://stream.ads.ottera.tv/playlist.m3u8?network_id=5504
+#EXTINF:-1 tvg-id="runtime-011" tvg-name="Run Time Comedia" group-title="24/7" provider="runtime",Run Time Comedia
+https://stream.ads.ottera.tv/playlist.m3u8?network_id=2551
+#EXTINF:-1 tvg-id="runtime-012" tvg-name="Run Time Crimen" group-title="24/7" provider="runtime",Run Time Crimen
+https://stream.ads.ottera.tv/playlist.m3u8?network_id=3533
+#EXTINF:-1 tvg-id="runtime-013" tvg-name="Corazón Fast" group-title="Entretenimiento" provider="runtime",Corazón Fast
+https://stream.ads.ottera.tv/playlist.m3u8?network_id=4826
+#EXTINF:-1 tvg-id="runtime-014" tvg-name="Run Time Romance" group-title="24/7" provider="runtime",Run Time Romance
+https://stream.ads.ottera.tv/playlist.m3u8?network_id=6119
+#EXTINF:-1 tvg-id="runtime-015" tvg-name="Run Time Familia" group-title="24/7" provider="runtime",Run Time Familia
+https://stream.ads.ottera.tv/playlist.m3u8?network_id=3528
+#EXTINF:-1 tvg-id="runtime-016" tvg-name="Clic Fast" group-title="Entretenimiento" provider="runtime",Clic Fast
+https://stream.ads.ottera.tv/playlist.m3u8?network_id=4827
+#EXTINF:-1 tvg-id="runtime-017" tvg-name="Pitufo TV" group-title="Infantil" provider="runtime",Pitufo TV
+https://stream.ads.ottera.tv/playlist.m3u8?network_id=5444
+#EXTINF:-1 tvg-id="runtime-018" tvg-name="Toon Goggles en Español" group-title="Infantil" provider="runtime",Toon Goggles en Español
+https://stream.ads.ottera.tv/playlist.m3u8?network_id=5443
+#EXTINF:-1 tvg-id="runtime-019" tvg-name="Azteca Deportes Network" group-title="Deportes" provider="runtime",Azteca Deportes Network
+https://azt-dep.otteravision.com/azt/dep/dep_720p_high.m3u8
+#EXTINF:-1 tvg-id="runtime-020" tvg-name="AYM Sports" group-title="Deportes" provider="runtime",AYM Sports
+https://stream.ads.ottera.tv/playlist.m3u8?network_id=5106
+#EXTINF:-1 tvg-id="runtime-021" tvg-name="Telediario Now" group-title="Noticias" provider="runtime",Telediario Now
+https://stream.ads.ottera.tv/playlist.m3u8?network_id=11014
+#EXTINF:-1 tvg-id="runtime-022" tvg-name="Run Time Films" group-title="24/7" provider="runtime",Run Time Films
+https://stream.ads.ottera.tv/playlist.m3u8?network_id=2153
+#EXTINF:-1 tvg-id="runtime-023" tvg-name="Run Time Español" group-title="24/7" provider="runtime",Run Time Español
+https://stream.ads.ottera.tv/playlist.m3u8?network_id=2649
+#EXTINF:-1 tvg-id="runtime-024" tvg-name="Run Time Cine y Series" group-title="24/7" provider="runtime",Run Time Cine y Series
+https://stream.ads.ottera.tv/playlist.m3u8?network_id=2152
+#EXTINF:-1 tvg-id="runtime-025" tvg-name="Run Time English" group-title="24/7" provider="runtime",Run Time English
+https://stream.ads.ottera.tv/playlist.m3u8?network_id=2648
+#EXTINF:-1 tvg-id="runtime-026" tvg-name="Run Time France" group-title="24/7" provider="runtime",Run Time France
+https://stream.ads.ottera.tv/playlist.m3u8?network_id=2160
+#EXTINF:-1 tvg-id="runtime-027" tvg-name="MasterChef México" group-title="24/7" provider="runtime",MasterChef México
+https://amg00627-banijay-amg00627c10-tcl-us-4286.playouts.now.amagi.tv/playlist.m3u8
+#EXTINF:-1 tvg-id="runtime-028" tvg-name="Trace Urban" group-title="Música" provider="runtime",Trace Urban
+https://cdn-uw2-prod.tsv2.amagi.tv/linear/amg01131-tracetv-traceurban-klowdtv/playlist.m3u8
+#EXTINF:-1 tvg-id="runtime-029" tvg-name="C4 en Alerta" group-title="Noticias" provider="runtime",C4 en Alerta
+https://stream.ads.ottera.tv/cl/260715d9bt2mp540kc73e67b00/1280x720_3071200_0_f.m3u8?i=728_6404
+#EXTINF:-1 tvg-id="runtime-030" tvg-name="Delito" group-title="Crimen" provider="runtime",Delito
+https://amg27876-amg27876c2-amgplt0209.playout.now3.amagi.tv/ts-us-e2-n1/playlist/amg27876-amg27876c2-amgplt0209/a6b739c8-8079-11f1-bcbe-6aac7246e461/162/1920x1080_4300000/index.m3u8
+#EXTINF:-1 tvg-id="runtime-031" tvg-name="Kivi: Docs & Historias" group-title="Documentales" provider="runtime",Kivi: Docs & Historias
+https://amg27876-amg27876c1-amgplt0209.playout.now3.amagi.tv/ts-us-w2-n2/playlist/amg27876-amg27876c1-amgplt0209/58718710-8078-11f1-b757-aaa34d10e8a3/118/1920x1080_4300000/index.m3u8
+#EXTINF:-1 tvg-id="runtime-032" tvg-name="Cine de Horror" group-title="Cine" provider="runtime",Cine de Horror
+https://amg02724-amg02724c2-runtime-latam-2586.playouts.now.amagi.tv/ts-us-e2-n2/playlist/amg02724-somosfast-cinedehorror-runtimelatam/cb543d1a786c648e9fd43e61cef044a5f9591fde1d6988693eb5518975d1073edce2a59caa08ff16388f1ede7f0a66413a3e951fda77118fd87eb141453c5728cfffe729a2c05616b7db083429b56a062a866a68ac39437ed0e21f48a238b6720a5aa82a66443d80b846ac7352db80148b61299bce8c37683f03409a5e5afba358b1ebe20b11dd65a1b01d559d2f42e09f43c8821da6d1d353cc5e8f23f547cb95f5ddd61085839b4b936ce6311f512178a68d7898cc2fdfb0fd6d3c8f7a3c490e0f90c9f1f75e4ef62d2d0dacac85ee35aa5d9fde6bd03462e144f23a873f847faf07b3de5eb2a2bfca41442b9bca5a6c22d28ecae3c910039147d887c4f82909f39e156857f663d92f2e4af997ac2691cd019fbb26dfc1037b2bc399449293c0e885d9bf6fac09ebe4d1b5181825096005824db0e80eb1488d22e1a47025554936eff015c1d18b0931611dd1d5068d171aeddada80d90b689e354c59bf36dd5e506e996236088f47ec89037c9b2f1c843624893e5fe413d29602afcdb1860235a1aca4289e3fb5a260b0e303db7c56562fbce82553494d3285a0364d784eca4be0dcddf2372734aca69db09008783030190458d0a2ff26cfc780080d06cd561165763b1e824b833a884e1a566e8135fb982458c9462d24eda27f7a5f6f9dc7f8c1a4ded84bb87a9c9ea869616b1733f36345156fd5b79f50b26d1829340ed6551129d1045243e49bcce9a68e6fc39916cf52010676cbaa7d2b6a5e7e7778f8fa09870491f971be9fda4ef3ec821c568032b77373f4b18c368187f3c4400184af590d589bda31c06039d512d526fab11ab9e167ed7d5638204325c99d25dbeaa98546af22a45b067aaa4baf9df7b6c5142e8df3641243c4d18a1d281b0203aacedd242176e9ae2ee55c9c9b3d088c8e514d2efd8e054883e47612987711082f6210e9dfa82c38b00adb7dc06f49c13d687ab59d6abbd1fb9b9ff6b0497d81b10f689bd86bcee010a0244aab2caef88b2f747add34f98f06ae83186bd0b084f7d1545a14883a968bac27e830a184e940fed0d5c9f27913514d44bcefc3ba458bf25a1efb4cd2437b4cc7cafca231b29a9d1768e658d7800545a72a31089afcb5579e6bf0cd111ecaab2519d97d39c4a0d8231fc32bee601175e3c28c6b749e965fdd1dd5c5b95f0cbf0918e555572ef92fadc9ec3f1d94d6793758e30f089b64c499892e3e5c9ad23775645d765663b7675323e3326fdf6a91ecf0be6525ce4cca3836b17da0d544e5c528ebe0cfe7a1f53206f6a55bf693e311b40b45fa69405a87964544513472f4ee44f4a9/127/1920x1080_5058864/index.m3u8
+#EXTINF:-1 tvg-id="runtime-033" tvg-name="Cine en Español" group-title="Cine" provider="runtime",Cine en Español
+https://amg02724-amg02724c1-runtime-latam-2587.playouts.now.amagi.tv/ts-us-e2-n2/playlist/amg02724-somosfast-cineenespanol-runtimelatam/cb543d1a786c648e9fd43e61cef044a5f9591fde1d6988693eb5518975d1073edce2a59caa08ff16388f1ede7f0a66413a3e951fda77118fd87eb141453c5728cfffe729a2c05616b7db083429b56a062a866a68ac39437ed0e21f48a238b6720a5aa82a66443d80b846ac7352db80148b61299bce8c37683f03409a5e5afba358b1ebb708418b69a4e41e559d2f42e19f43c8821da6d2865b995e8074a71794c3f1d8874483829b249365f7357b494872b48f639ac551b795cf2769dc391f4f1051e9b480be6008c6161312a8a48b886cf1459ad265993663f240b95f943c8f5caf0b8ce85aeff8e8880c126fe48c7049138dc9eccaf73c38b826dca7ead67c35d9d51c6a48c46897737e68dead8544ca9355a5b72584a660526d93c60bc8cbe8f785da9859a335d8cee2993e5b3c056e66d7738cb437a243af7ba7c0072452597ba19343c195cd4c356342f4e334b54241c1b1e087da1832c9652457e96bdc296c06ab30696fee39f68a6619e34e0b952502f55938853095d24bc7b2d5f10f36b084ac289b68eba518a09568c83d661d68c6f12351514973c4d1761f3f7dd646e1c1f5ef7604059e9ca797f276082b18347721aeb8ae1af88ac92d6f54ab1323372647169556813c87594d017ac84fd0aa0c27d153762eb1f13b580f6ec39eebebedb5ce4aa10db0a59c69754d3301b423775604bde7d90ab3691b2b340cd7413517e85d30288999c4f1ebe304afcc3edf520e176bc4fe1944056d7d62079ee20dbd3df08613e3e8a030cbeb9d007a8633ad121590c4ae0f928cd19d3a65f6b95411669edd55ae1944f532e407a9f155f59567ed7d5638204325c99d25dbeaa98546af22a45b067aaa4baf9df7b6c5142e8df3641243c4d18a1d281b0203aacedd242176e9ae2ee55c9c9b3d088c8e514d2efd8e054883e47612987711082f6210e9dfa82c38b00adb7dc06f49c13d687ab59d6abbd1fb9b9ff6b0497d81b10f689bd86bcee010a0244aab2caef88b2f747add34f98f06ae83186bd0b084f7d1545a14883a968bac27e830a184e940fed0d5c9f27913514d44bcefc3ba458bf25a1efb4cd2437b4cc7cafca231b29a9d1768e658d7800545a72a31089afcb5579e6bf0cd111ecaab2519d97d39c4a0d8231fc32bee601175e3c28c6b749e965fdd1dd5c5b95f0cbf0918e555572ef92fadc9ec3f1d94d6793758e30f089b64c499892e3e5c9ad23775645d765663b7675323e3326fdf6a91ecf0be6525ce4cca3836b17da0d544e5c528ebe0cfe7a1f53207fea1ec770cfa58b9df602a7b4ca4a566da1f07010741270813/96/1920x1080_5058864/index.m3u8
+#EXTINF:-1 tvg-id="runtime-034" tvg-name="Survivor México" group-title="Reality" provider="runtime",Survivor México
+https://amg00627-amg00627c11-runtime-latam-2615.playouts.now.amagi.tv/ts-us-e2-n2/playlist/amg00627-banijayfast-survivormexico-runtimelatam/cb543d167c6c64899bd43e6fd0ef49a3f9591fde1d6988693eb5518975d1073edce2a59caa08ff16388f1ede7f0a66413a3e951fda77118fd87eb141453c5728cfffe729a2c05616b7db083429b56a062a866a68ac39437ed0e21f48a238b6720a5aa82a66443d80b846ac7352db80148b61299bce8c37683f03409a5e5afba358b1ebe70811da39a6e749559d2f42ee9f43c8821da689815f965e8f70a0409ec1f48387198a809b7a9364e63d0d2a6017d9d620969c0ab58ccb3e6b98252e474f51bef2cba94c3ad345160bfca99fba30fa49bde349866427a93f9b408a238f65be7bc48b2ff0f7c2b5304236aad05e6f339fe9a99cfe2627af63faaf9bbe191dc8ac501232ca62d6362e3684c2db068bc70095b331baba68103db2fa2ff2af97b3c391ae6fb10090ad9efb314f5a116768e70df8f107bf2ed968babc704b3d1d1ed5f03ec083cf573367708b8155d16172d3bc8f86cc052fc57041308203dd55111eaf5e0d2cbf5993f0297fb636188c233cf84147e62898e902db8981916c5eb6d1d752fe1d84df63e0d332854c1f7c2f96c0cb3e2f3d152f7df56c4a1bee7da6b5e7e46f0003e385b594a27d1977f493cf6ef18fc97f899ac8693c1bc4412f63756a78fe9b0adebe72212321c417c70fc87ac77549ce44105e2f394fbef8cbe6a4dec345a57ec0859a534a680933eb6b576f06d7c77e21990e25232a7df994cfcd14a430754adfbac494857cc79f65e515670c6ac6ff286200466a59c7fafa67fa51f89a11b59a850982bfcd5a728c32a70e078d90f258b8bcd1891f54d09d5e1731c38867dd25798e57f53b98de75efb5572d15280f1d91d91aac09f997b1ef1fb700e10f0f77e17dfbbbe6b0dd691fa7b242213c0450582e0726625cf68a9b344048edba26f454a9be06fe0c07654d32b4e8375788ec780b8f752f30d7c7e5bfed9b535e9a14b71faf470ca950012b9bbc1be291bdfeffc7221437d0b8af43acb2cae6e8d3d92d6a047c3af9990cb5160edb4f3e61dc57d9688727597bbcb6535ff4c6b038/83/1920x1080_6046040/index.m3u8
