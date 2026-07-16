@@ -346,6 +346,7 @@ const PLAYLISTS = [
   { id:"pluto", label:"Pluto TV", file:"./pluto.m3u", isAdult:false },
   { id:"tubi", label:"Tubi TV", file:"./tubi.m3u", isAdult:false },
   { id:"vix", label:"ViX", file:"./vix.m3u", isAdult:false },
+  { id:"roku", label:"Roku Channel", file:"./roku.m3u", isAdult:false },
   { id:"espanol", label:"Español", file:"./espanol.m3u", isAdult:false },
   { id:"favorites", label:"Favoritos", file:null, isAdult:false, isFavorites:true },
   { id:"adult", label:"Adultos 18+", file:"./adult.m3u", isAdult:true }
@@ -953,6 +954,7 @@ function parseM3U(text){
         if(/jmp2\.uk\/plu-|pluto\.tv|service-stitcher/i.test(current.url)) current.provider = "pluto";
         else if(/tubi|adrise\.io/i.test(current.url) || current.contentId) current.provider = "tubi";
         else if(/vix\.com\/es-es\/canales\//i.test(current.url)) current.provider = "vix";
+        else if(/therokuchannel\.roku\.com\/watch\//i.test(current.url)) current.provider = "roku";
       }
       if(current.provider === "pluto" && !current.epgId) current.epgId = getPlutoChannelId(current);
       if(current.provider === "tubi" && !current.officialUrl && current.contentId){
@@ -1058,6 +1060,20 @@ function removeDuplicateChannels(list){
 }
 
 function loadChannel(channel, closeOnMobile = true){
+  if(channel && (channel.provider === "roku" || /therokuchannel\.roku\.com\/watch\//i.test(channel.url || ""))){
+    currentChannel = channel;
+    currentUrl = channel.url;
+    mainTitle.textContent = channel.name;
+    topCategory.textContent = channel.category.toUpperCase();
+    topTitle.textContent = channel.name;
+    mainInfo.textContent = "Abriendo el canal en The Roku Channel...";
+    renderChannels();
+    const opened = window.open(channel.officialUrl || channel.url, "_blank", "noopener,noreferrer");
+    if(!opened) alert("Permite las ventanas emergentes para abrir The Roku Channel.");
+    if(closeOnMobile && window.matchMedia("(max-width:800px)").matches) setGuideOpen(false);
+    return;
+  }
+
   if(channel && (channel.provider === "vix" || /vix\.com\/es-es\/canales\//i.test(channel.url || ""))){
     currentChannel = channel;
     currentUrl = channel.url;
@@ -1466,7 +1482,7 @@ function createChannelItem(ch, visibleIndex){
 
 
 function canShowSchedule(ch){
-  return ch && (ch.provider === "pluto" || ch.provider === "tubi" || ch.provider === "vix" || ch.officialUrl || ch.epgId);
+  return ch && (ch.provider === "pluto" || ch.provider === "tubi" || ch.provider === "vix" || ch.provider === "roku" || ch.officialUrl || ch.epgId);
 }
 
 function getPlutoChannelId(ch){
@@ -1493,6 +1509,7 @@ function getOfficialGuideUrl(ch){
   }
   if(ch.provider === "tubi") return buildTubiOfficialUrl(ch);
   if(ch.provider === "vix") return ch.officialUrl || ch.url || "https://vix.com/es-es/canales";
+  if(ch.provider === "roku") return ch.officialUrl || ch.url || "https://therokuchannel.roku.com/";
   return ch.url || "#";
 }
 
