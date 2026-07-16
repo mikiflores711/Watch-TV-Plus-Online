@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Prueba Canal 5 · HLS Proxy V2</title>
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;background:#080a0f;color:#fff;font-family:Arial,sans-serif}
+  main{max-width:980px;margin:auto;padding:20px}
+  h1{font-size:24px}
+  .card{background:#11151e;border:1px solid #293142;border-radius:14px;padding:16px;margin-top:14px}
+  label{display:block;font-size:13px;color:#b8c0d0;margin-bottom:7px}
+  input{width:100%;height:44px;border:1px solid #34405a;border-radius:9px;background:#090c12;color:#fff;padding:0 12px}
+  .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+  button{height:42px;border:0;border-radius:9px;padding:0 16px;font-weight:800;cursor:pointer}
+  .primary{background:#6d3bea;color:#fff}
+  .secondary{background:#222a39;color:#fff}
+  video{width:100%;aspect-ratio:16/9;background:#000;border-radius:12px;margin-top:14px}
+  pre{white-space:pre-wrap;word-break:break-word;background:#05070b;padding:12px;border-radius:10px;min-height:120px;color:#cfe0ff}
+  .note{font-size:13px;line-height:1.5;color:#b9c2d2}
+</style>
+</head>
+<body>
+<main>
+  <h1>Prueba Canal 5 — HLS Proxy V2</h1>
+
+  <div class="card">
+    <label for="worker">URL de tu Worker</label>
+    <input id="worker" value="https://hls-proxy-tv-plus.mikimc-business.workers.dev">
+
+    <label for="stream" style="margin-top:12px">URL original del canal</label>
+    <input id="stream" value="http://190.11.225.124:5000/live/canal5_hd/playlist.m3u8">
+
+    <div class="row">
+      <button class="primary" id="play">Probar reproducción</button>
+      <button class="secondary" id="debug">Probar diagnóstico</button>
+      <button class="secondary" id="stop">Detener</button>
+    </div>
+
+    <video id="video" controls playsinline></video>
+  </div>
+
+  <div class="card">
+    <div class="note">
+      Si el diagnóstico devuelve HTTP 403 desde el servidor original, el origen
+      está bloqueando las IP de Cloudflare. En ese caso, el código del Worker no
+      puede evitar ese bloqueo y hará falta un proxy alojado en un VPS.
+    </div>
+    <pre id="log">Listo para probar.</pre>
+  </div>
+</main>
+
+<script>
+const video = document.getElementById("video");
+const workerInput = document.getElementById("worker");
+const streamInput = document.getElementById("stream");
+const log = document.getElementById("log");
+let hls = null;
+
+function workerBase(){
+  return workerInput.value.trim().replace(/\/+$/, "");
+}
+
+function proxyUrl(){
+  return workerBase() + "/proxy?url=" + encodeURIComponent(streamInput.value.trim());
+}
+
+function write(message){
+  log.textContent = typeof message === "string"
+    ? message
+    : JSON.stringify(message, null, 2);
+}
+
+document.getElementById("play").addEventListener("click", async () => {
+  if(hls){ hls.destroy(); hls = null; }
+  video.removeAttribute("src");
+  video.load();
+
+  const url = proxyUrl();
+  write("Intentando reproducir:\n" + url);
+
+  if(window.Hls && Hls.isSupported()){
+    hls = new Hls({
+      enableWorker:true,
+      lowLatencyMode:false,
+      manifestLoadingMaxRetry:3,
+      levelLoadingMaxRetry:3,
+      fragLoadingMaxRetry:3
+    });
+
+    hls.on(Hls.Events.MANIFEST_PARSED, () => {
+      write("✓ Manifiesto cargado y analizado.\nIntentando iniciar video...");
+      video.play().catch(error => {
+        write("El navegador pidió interacción para reproducir:\n" + error.message);
+      });
+    });
+
+    hls.on(Hls.Events.ERROR, (_, data) => {
+      write({
+        event:"HLS_ERROR",
+        type:data.type,
+        details:data.details,
+        fatal:data.fatal,
+        response:data.response || null,
+        url:data.url || null
+      });
+    });
+
+    hls.loadSource(url);
+    hls.attachMedia(video);
+    return;
+  }
+
+  if(video.canPlayType("application/vnd.apple.mpegurl")){
+    video.src = url;
+    await video.play();
+    return;
+  }
+
+  write("Este navegador no admite HLS.");
+});
+
+document.getElementById("debug").addEventListener("click", async () => {
+  const url = workerBase() + "/debug?url=" +
+    encodeURIComponent(streamInput.value.trim());
+
+  write("Consultando diagnóstico...");
+  try{
+    const response = await fetch(url, { cache:"no-store" });
+    const text = await response.text();
+    write("HTTP " + response.status + "\n\n" + text);
+  }catch(error){
+    write("Error de red:\n" + error.message);
+  }
+});
+
+document.getElementById("stop").addEventListener("click", () => {
+  if(hls){ hls.destroy(); hls = null; }
+  video.pause();
+  video.removeAttribute("src");
+  video.load();
+  write("Reproducción detenida.");
+});
+</script>
+</body>
+</html>
