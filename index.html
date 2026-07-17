@@ -319,8 +319,8 @@ const USE_PROXY_FOR_ALL = false; // Automático: primero directo y después prox
 const PLAYBACK_FALLBACK_TIMEOUT = 14000;
 const FAVORITES_KEY = "watch_tv_plus_favorites_v2";
 const ADULT_UNLOCK_KEY = "watch_tv_plus_adult_unlocked_v2";
-const MAX_RENDER_DEFAULT = 900;
-const MAX_RENDER_WITH_SEARCH = 2500;
+const MAX_RENDER_DEFAULT = Number.POSITIVE_INFINITY;
+const MAX_RENDER_WITH_SEARCH = Number.POSITIVE_INFINITY;
 
 /*
   LOGOTIPOS ORIGINALES:
@@ -348,6 +348,9 @@ const PLAYLISTS = [
   { id:"vix", label:"ViX", file:"./vix.m3u", isAdult:false },
   { id:"runtime", label:"Run Time", file:"./runtime.m3u", isAdult:false },
   { id:"espanol", label:"Español", file:"./espanol.m3u", isAdult:false },
+  { id:"plex", label:"Plex", file:"./plex_mx.m3u", isAdult:false },
+  { id:"roku", label:"Roku TV", file:"./roku_all.m3u", isAdult:false },
+  { id:"lg", label:"LG Channels", file:"./LG_Channels_mx.m3u", isAdult:false },
   { id:"favorites", label:"Favoritos", file:null, isAdult:false, isFavorites:true },
   { id:"adult", label:"Adultos 18+", file:"./adult.m3u", isAdult:true }
 ];
@@ -561,7 +564,7 @@ async function loadAllPlaylists(){
 
   if(!allChannels.length){
     countPill.textContent = "No se cargaron canales";
-    channelList.innerHTML = `<div class="empty">No se pudieron cargar las listas. Coloca los archivos M3U junto a este HTML: mexico.m3u, pluto.m3u, tubi.m3u, vix.m3u, runtime.m3u, espanol.m3u y adult.m3u.</div>`;
+    channelList.innerHTML = `<div class="empty">No se pudieron cargar las listas. Coloca los archivos M3U junto a este HTML: mexico.m3u, pluto.m3u, tubi.m3u, vix.m3u, runtime.m3u, espanol.m3u, plex_mx.m3u, roku_all.m3u, LG_Channels_mx.m3u y adult.m3u.</div>`;
     return;
   }
 
@@ -1413,18 +1416,12 @@ function renderChannels(){
     return;
   }
 
-  const limit = search ? MAX_RENDER_WITH_SEARCH : MAX_RENDER_DEFAULT;
-  const shown = filtered.slice(0, limit);
-  sectionInfo.textContent = filtered.length > shown.length ? `Mostrando ${shown.length} de ${filtered.length}` : `${shown.length} canales`;
+  // Se muestran todos los canales de la sección, sin recortes ni mensajes para usar el buscador.
+  const shown = filtered;
+  sectionInfo.textContent = `${shown.length} canales`;
 
   const frag = document.createDocumentFragment();
   shown.forEach((ch, index) => frag.appendChild(createChannelItem(ch, index)));
-  if(filtered.length > shown.length){
-    const more = document.createElement("div");
-    more.className = "empty";
-    more.innerHTML = `Hay ${filtered.length - shown.length} canales más. Usa el buscador para encontrarlos.`;
-    frag.appendChild(more);
-  }
   channelList.appendChild(frag);
 }
 
