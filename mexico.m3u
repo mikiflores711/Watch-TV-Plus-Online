@@ -23,12 +23,8 @@ https://s5.mexside.net:1936/envio2/envio2/playlist.m3u8
 https://video2.getstreamhosting.com:19360/8092/8092.m3u8
 #EXTINF:-1 tvg-id="CaliforniaMediosTV.mx@SD" tvg-name="California Medios TV (720p)" group-title="General",California Medios TV (720p)
 https://s5.mexside.net:1936/medios/medios/playlist.m3u8
-#EXTINF:-1 tvg-id="Canal5.mx@SD" tvg-name="Canal 5 (720p)" group-title="General",Canal 5 (720p) [Geo-blocked]
-http://45.5.119.43:4000/play/a05o/index.m3u8
 #EXTINF:-1 tvg-id="Canal5TVCozumel.mx@SD" tvg-name="Canal 5 TV Cozumel (1080p)" group-title="General",Canal 5 TV Cozumel (1080p)
 https://video0.rogohosting.com:19360/tvcozumel/tvcozumel.m3u8
-#EXTINF:-1 tvg-id="Canal10Cancun.mx@SD" tvg-name="Canal 10 Cancún (720p)" group-title="General",Canal 10 Cancún (720p) [Not 24/7]
-http://stream2.dynalias.com:1935/live/tvlive1/playlist.m3u8
 #EXTINF:-1 tvg-id="XHTTGTDT.mx@SD" tvg-name="Canal 10 Chiapas (720p)" group-title="General",Canal 10 Chiapas (720p)
 https://5ca9af4645e15.streamlock.net/chiapas/videochiapas/playlist.m3u8
 #EXTINF:-1 tvg-id="Canal10Durango.mx@SD" tvg-name="Canal 10 Durango (1080p)" group-title="General",Canal 10 Durango (1080p)
@@ -80,8 +76,6 @@ https://video.cdmx.gob.mx/redes/stream.m3u8
 https://stream8.mexiserver.com:19360/conectatvx/conectatvx.m3u8
 #EXTINF:-1 tvg-id="CreaLaTV.mx@SD" tvg-name="CreaLaTV (1080p)" group-title="General",CreaLaTV (1080p)
 https://stream.crealatv.com/live.m3u8
-#EXTINF:-1 tvg-id="DePeliculaLatinAmerica.mx@SD" tvg-name="De Pelicula Latin America" group-title="Cine y Series",De Pelicula Latin America
-http://181.119.93.83:8000/play/a1jw/index.m3u8
 #EXTINF:-1 tvg-id="DespiertaTV.mx@SD" tvg-name="Despierta TV (1080p)" group-title="General",Despierta TV (1080p) [Not 24/7]
 https://video2.lhdserver.es/despiertatv/live.m3u8
 #EXTINF:-1 tvg-id="EclipseTV.mx@SD" tvg-name="Eclipse TV (720p)" group-title="General",Eclipse TV (720p)
@@ -139,8 +133,6 @@ https://srspsn.live/live/livestream.m3u8
 https://srspsn2.live/live/livestream.m3u8
 #EXTINF:-1 tvg-id="RadioyTelevisionCrisoldelaAlegria.mx@SD" tvg-name="Radio y Televisión Crisol de la Alegría (1080p)" group-title="Religión",Radio y Televisión Crisol de la Alegría (1080p) [Not 24/7]
 https://omegaingenieria.com:19360/CRisolTVdigital-Live_abr/CRisolTVdigital-Live_abr.m3u8
-#EXTINF:-1 tvg-id="Radiotele.mx@SD" tvg-name="Radiotele Morelia (352p)" group-title="General",Radiotele Morelia (352p)
-http://linkrt.ddns.net:8080/hls/rtmorelia_MID.m3u8
 #EXTINF:-1 tvg-id="RalyTV.mx@SD" tvg-name="Raly TV (720p)" group-title="General",Raly TV (720p)
 https://cloudvideo.servers10.com:8081/8072/index.m3u8
 #EXTINF:-1 tvg-id="RCGTV.mx@SD" tvg-name="RCG TV (1080p)" group-title="General",RCG TV (1080p)
@@ -184,8 +176,6 @@ https://58fe359775f31.streamlock.net/tvuv/myStream/playlist.m3u8
 https://5ca3e84a76d30.streamlock.net/teleyucatan/videoteleyucatan/playlist.m3u8
 #EXTINF:-1 tvg-id="TeleFormula.mx@SD" tvg-name="TeleFórmula (720p)" group-title="Noticias",TeleFórmula (720p)
 https://mdstrm.com/live-stream-playlist/62f2c855f7981b5a5a2d8763.m3u8
-#EXTINF:-1 tvg-id="TelehitMusica.mx@SD" tvg-name="Telehit Musica" group-title="Música",Telehit Musica
-http://190.61.55.34:2401/play/a06t/index.m3u8
 #EXTINF:-1 tvg-id="XEWHTDT.mx@SD" tvg-name="Telemax (XEWH-TDT) (1080p)" group-title="General",Telemax (XEWH-TDT) (1080p)
 https://s5.mexside.net:1936/telemax/telemax/playlist.m3u8
 #EXTINF:-1 tvg-id="TeleplaySureste.mx@SD" tvg-name="Teleplay Sureste (720p)" group-title="General",Teleplay Sureste (720p)
@@ -196,8 +186,6 @@ https://player.tvstream.mx/livestream/teleplay/livesd/playlist.m3u8
 https://mdstrm.com/live-stream-playlist/57b4dc126338448314449d0c.m3u8
 #EXTINF:-1 tvg-id="TlaxcalaTV.mx@SD" tvg-name="Tlaxcala Televisión (360p)" group-title="General",Tlaxcala Televisión (360p) [Not 24/7]
 https://vid26.mega00.com:5443/live/streams/qNmc7nulmq8zPYZE1582752735050.m3u8
-#EXTINF:-1 tvg-id="TransmediaTelevisionMorelia.mx@SD" tvg-name="Transmedia Televisión Morelia (614p)" group-title="General",Transmedia Televisión Morelia (614p) [Geo-blocked]
-http://streamingcws20.com:1935/tmtv/videotmtv/playlist.m3u8
 #EXTINF:-1 tvg-id="TransmediaTelevisionMorelia.mx@SD" tvg-name="Transmedia Televisión Morelia (614p)" group-title="General",Transmedia Televisión Morelia (614p) [Geo-blocked]
 https://5ca3e84a76d30.streamlock.net/tmtv/videotmtv/playlist.m3u8
 #EXTINF:-1 tvg-id="TRCTV.mx@SD" tvg-name="TRC Televisión (720p)" group-title="General",TRC Televisión (720p)
@@ -264,20 +252,8 @@ https://5ca3e84a76d30.streamlock.net/tv4gto/tv4gto.smil/.m3u8
 https://5ca3e84a76d30.streamlock.net/tv43gto/tv43gto.smil/.m3u8
 #EXTINF:-1 tvg-id="TVCuatro44.mx@SD" tvg-name="TV Cuatro 4.4 (1080p)" group-title="General",TV Cuatro 4.4 (1080p)
 https://5ca3e84a76d30.streamlock.net/tv44gto/tv44gto.smil/.m3u8
-#EXTINF:-1 tvg-id="UnivisionLatinAmerica.mx@Panregional" tvg-name="Univision Latin America (1080p)" group-title="General",Univision Latin America (1080p)
-http://138.121.15.230:9002/UNIVISION/index.m3u8
-#EXTINF:-1 tvg-id="LasEstrellasLatinAmerica.mx@SD" tvg-name="Las Estrellas Latin America (1080p)" group-title="General",Las Estrellas Latin America (1080p)
-#EXTVLCOPT:http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36
-http://bantel-cdn1.iptvperu.tv:1935/btnscrtn/Canal_Las_Estrellas.stream/playlist.m3u8
-#EXTINF:-1 tvg-id="TlnovelasLatinAmerica.mx@SD" tvg-name="Tlnovelas Latin America (1080p)" group-title="Cine y Series",Tlnovelas Latin America (1080p)
-#EXTVLCOPT:http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36
-http://bantel-cdn1.iptvperu.tv:1935/btnscrtn/TL_Novelas.stream/playlist.m3u8
-#EXTINF:-1 tvg-id="Canal5.mx@SD" tvg-name="Canal 5 (1080p)" group-title="General",Canal 5 (1080p)
-http://190.11.225.124:5000/live/canal5_hd/playlist.m3u8
 #EXTINF:-1 tvg-id="TVMigrante.mx@SD" tvg-name="TV Migrante (720p)" group-title="General",TV Migrante (720p)
 https://s5.mexside.net:1936/tvmigrante/tvmigrante/playlist.m3u8
-#EXTINF:-1 tvg-id="Panico.mx@SD" tvg-name="Panico (576p)" group-title="Cine y Series",Panico (576p)
-http://181.78.8.199:8000/play/a0bt/index.m3u8
 #EXTINF:-1 tvg-id="XEIPNTDT.mx@SD" tvg-name="XEIPN-TDT (720p)" group-title="General",XEIPN-TDT (720p)
 https://s5.mexside.net:1936/stream/stream/index.m3u8
 #EXTINF:-1 tvg-id="PopcornCentral.mx@SD" tvg-name="Popcorn Central (1080p)" group-title="Cine y Series",Popcorn Central (1080p)
@@ -290,51 +266,3 @@ https://5ca9af4645e15.streamlock.net/grd/videogrd/playlist.m3u8
 https://5ca3e84a76d30.streamlock.net/cbtv/videoc3b3t3v3/playlist.m3u8
 #EXTINF:-1 tvg-id="ImagenTV.mx@SD" tvg-name="Imagen TV (1080p)" group-title="General",Imagen TV (1080p)
 https://igd-it-runtime.otteravision.com/igd/it/it.m3u8
-#EXTINF:-1 tvg-id="OnceNinasyNinos.mx@SD" tvg-name="Once Ninas y Ninos (576p)" group-title="Infantil",Once Ninas y Ninos (576p)
-http://45.189.62.33:8002/play/a0p7/index.m3u8
-#EXTINF:-1 tvg-id="LaMejorTV.mx@SD" tvg-name="La Mejor TV (576p)" group-title="Música",La Mejor TV (576p)
-http://45.189.62.33:8002/play/a0ls/index.m3u8
-#EXTINF:-1 tvg-id="ExaTV.mx@SD" tvg-name="Exa TV (576p)" group-title="Música",Exa TV (576p)
-http://45.189.62.33:8002/play/a0lr/index.m3u8
-#EXTINF:-1 tvg-id="Azteca7.mx@SD" tvg-name="Azteca 7 (1080p)" group-title="General",Azteca 7 (1080p)
-http://45.189.62.33:8002/play/a0fm/index.m3u8
-#EXTINF:-1 tvg-id="AztecaUno.mx@SD" tvg-name="Azteca Uno (1080p)" group-title="General",Azteca Uno (1080p)
-http://45.189.62.33:8002/play/a0cc/index.m3u8
-#EXTINF:-1 tvg-id="ADN40.mx@SD" tvg-name="ADN 40 (1080p)" group-title="Noticias",ADN 40 (1080p)
-http://45.189.62.33:8002/play/a0ob/index.m3u8
-#EXTINF:-1 tvg-id="APlus.mx@SD" tvg-name="A+ (1080p)" group-title="General",A+ (1080p)
-http://45.189.62.33:8002/play/a0oc/index.m3u8
-#EXTINF:-1 tvg-id="XEIPNTDT.mx@SD" tvg-name="XEIPN-TDT (720p)" group-title="General",XEIPN-TDT (720p)
-http://45.189.62.33:8002/play/a0bq/index.m3u8
-#EXTINF:-1 tvg-id="TUDN.mx@SD" tvg-name="TUDN (1080p)" group-title="Deportes",TUDN (1080p)
-https://streamvidex.qzz.io/videx/tudnmx/index.m3u8
-#EXTINF:-1 tvg-id="Golden.mx@Panregional" tvg-name="Golden (720p)" group-title="Cine y Series",Golden (720p)
-http://177.234.249.135:8888/Golden/index.m3u8
-#EXTINF:-1 tvg-id="GoldenEdge.mx@Panregional" tvg-name="Golden Edge (720p)" group-title="Cine y Series",Golden Edge (720p)
-http://177.234.249.135:8888/GoldenEdge/index.m3u8
-#EXTINF:-1 tvg-id="UnivisionLatinAmerica.mx" tvg-name="Univision Latin America (1080p)" group-title="General",Univision Latin America (1080p)
-http://177.234.249.135:8888/Univision/index.m3u8
-#EXTINF:-1 tvg-id="LasEstrellasLatinAmerica.mx@SD" tvg-name="Las Estrellas Latin America (1080p)" group-title="General",Las Estrellas Latin America (1080p)
-http://177.234.249.135:8888/LasEstrellas/index.m3u8
-#EXTINF:-1 tvg-id="TlnovelasLatinAmerica.mx@SD" tvg-name="Tlnovelas Latin America (1080p)" group-title="Cine y Series",Tlnovelas Latin America (1080p)
-http://177.234.249.135:8888/Telenovelas/index.m3u8
-#EXTINF:-1 tvg-id="DistritoComedia.mx@SD" tvg-name="Distrito Comedia (1080p)" group-title="Cine y Series",Distrito Comedia (1080p)
-http://177.234.249.135:8888/DistritoComedia/index.m3u8
-#EXTINF:-1 tvg-id="XEIPNTDT.mx@SD" tvg-name="XEIPN-TDT (720p)" group-title="General",XEIPN-TDT (720p)
-http://177.245.131.133:8080/ONCE/index.m3u8
-#EXTINF:-1 tvg-id="SonyChannel.mx@SD" tvg-name="Sony Channel (720p)" group-title="Cine y Series",Sony Channel (720p)
-http://177.245.131.133:8080/SONY/index.m3u8
-#EXTINF:-1 tvg-id="CanaldelCongreso451.mx@SD" tvg-name="Canal del Congreso 45.1 (720p)" group-title="Noticias",Canal del Congreso 45.1 (720p)
-http://177.245.131.133:8080/CONGRESO/index.m3u8
-#EXTINF:-1 tvg-id="Azteca7.mx@SD" tvg-name="Azteca 7 (720p)" group-title="General",Azteca 7 (720p)
-http://177.245.131.133:8080/AZTECA7/index.m3u8
-#EXTINF:-1 tvg-id="NationalGeographic.mx@SD" tvg-name="National Geographic (1080p)" group-title="Cine y Series",National Geographic (1080p)
-http://138.121.15.230:9002/NAT-GEO/index.m3u8
-#EXTINF:-1 tvg-id="TVUNAM.mx@SD" tvg-name="TV UNAM (720p)" group-title="Educación y Cultura",TV UNAM (720p)
-http://177.245.131.133:8080/UNAM/index.m3u8
-#EXTINF:-1 tvg-id="GoldenEdge.mx@Panregional" tvg-name="Golden Edge (1080p)" group-title="Cine y Series",Golden Edge (1080p)
-http://138.186.23.7:8082/GOLDENEDGE/index.m3u8
-#EXTINF:-1 tvg-id="LuchaPlus.tubi" tvg-name="Lucha Plus" group-title="Deportes",Lucha Plus (Tubi - enlace temporal)
-#EXTVLCOPT:http-referrer=https://tubitv.com/
-#EXTVLCOPT:http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36
-https://b.tubi1.apollo.adrise.io/live/lucha-plus-cqz3hy/848x480.m3u8?app_mode=DEFAULT_MODE&platform=WEB&now_pos=0&tb.sid=33b2c96e-998f-4fcc-b381-03885493ae0c&ap.sid=1782553e-5cfe-426e-9f2e-6e64f6d6f27e&ap.pt=2&ap.playback_start_ts=1784083396&ap.ss=e6be86e974be64a381829c00c86a047c&gdpr=0&device_id=2c094545-010f-4870-b11a-159373d0bdda&pub_id=97aaa37629afe5fdb96ff972fe469998&app_id=tubitv&language=es&content_id=400000291&playback_start_ts=1784083395&ap.route=ZMXQ0Q89Xt2XqSy7gwTvCv-UCSw&content_type=mp4&vpaid_enabled=false
