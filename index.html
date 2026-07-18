@@ -744,6 +744,231 @@ button:focus-visible,input:focus-visible,select:focus-visible{
   .main-info{display:none!important}
 }
 
+/* =====================================================
+   CORRECCIÓN DE FLECHAS, TARJETAS, TÍTULOS Y LOGOTIPOS
+   ===================================================== */
+
+/* Mantiene siempre visibles las dos flechas */
+.carousel-block{
+  position:relative !important;
+  display:grid !important;
+  grid-template-columns:36px minmax(0,1fr) 36px !important;
+  align-items:center !important;
+  width:100% !important;
+  max-width:100% !important;
+  min-width:0 !important;
+  gap:7px !important;
+  overflow:visible !important;
+}
+
+.carousel-block > .carousel-arrow.left{
+  grid-column:1 !important;
+  grid-row:1 !important;
+}
+
+.carousel-block > .section-tabs,
+.carousel-block > .channel-list{
+  grid-column:2 !important;
+  grid-row:1 !important;
+  width:100% !important;
+  max-width:100% !important;
+  min-width:0 !important;
+}
+
+.carousel-block > .carousel-arrow.right{
+  grid-column:3 !important;
+  grid-row:1 !important;
+  justify-self:end !important;
+}
+
+.carousel-arrow{
+  position:relative !important;
+  inset:auto !important;
+  z-index:90 !important;
+  display:grid !important;
+  place-items:center !important;
+  flex:none !important;
+  width:36px !important;
+  min-width:36px !important;
+  height:36px !important;
+  margin:0 !important;
+  padding:0 0 3px !important;
+  border-radius:50% !important;
+  border:1px solid rgba(255,255,255,.25) !important;
+  background:rgba(19,22,30,.96) !important;
+  color:#fff !important;
+  font-size:28px !important;
+  line-height:1 !important;
+  box-shadow:0 5px 18px rgba(0,0,0,.5) !important;
+}
+
+.carousel-arrow:hover,
+.carousel-arrow:focus-visible{
+  background:#2b303c !important;
+  border-color:#fff !important;
+  outline:2px solid #fff !important;
+  outline-offset:2px !important;
+  transform:scale(1.06);
+}
+
+/* Evita que las listas empujen la flecha derecha */
+.section-tabs,
+.channel-list{
+  min-width:0 !important;
+  max-width:100% !important;
+  scrollbar-width:none !important;
+  overscroll-behavior-x:contain;
+}
+
+.section-tabs::-webkit-scrollbar,
+.channel-list::-webkit-scrollbar{
+  display:none !important;
+}
+
+/* Separación uniforme de los canales */
+.channel-list{
+  gap:clamp(7px,.85vw,11px) !important;
+  padding:2px 3px 4px !important;
+  scroll-padding-inline:5px;
+}
+
+/* Tarjetas un poco más pequeñas y con margen estable */
+.channel-item{
+  --compact-card-w:clamp(100px,10.1vw,140px);
+
+  flex:0 0 var(--compact-card-w) !important;
+  width:var(--compact-card-w) !important;
+  min-width:var(--compact-card-w) !important;
+  max-width:var(--compact-card-w) !important;
+  margin:0 !important;
+  padding:0 !important;
+  overflow:visible !important;
+}
+
+/* Cuadro del logotipo */
+.channel-logo{
+  position:relative !important;
+  display:grid !important;
+  place-items:center !important;
+  width:100% !important;
+  height:clamp(68px,10.8vh,96px) !important;
+  padding:0 !important;
+  overflow:hidden !important;
+  border:2px solid var(--section-color) !important;
+  border-radius:10px !important;
+  background:linear-gradient(145deg,#4d5058,#272a31) !important;
+}
+
+/* Hace que el logotipo siempre se vea completo */
+.channel-logo img,
+.channel-logo img.dark-logo{
+  position:absolute !important;
+  inset:5px !important;
+  display:block !important;
+  width:calc(100% - 10px) !important;
+  height:calc(100% - 10px) !important;
+  max-width:calc(100% - 10px) !important;
+  max-height:calc(100% - 10px) !important;
+  margin:auto !important;
+  padding:0 !important;
+  object-fit:contain !important;
+  object-position:center center !important;
+  background:transparent !important;
+  image-rendering:auto !important;
+}
+
+/* Etiqueta EN VIVO más pequeña */
+.card-live{
+  z-index:4 !important;
+  top:4px !important;
+  right:4px !important;
+  padding:3px 5px !important;
+  border-radius:5px !important;
+  font-size:6px !important;
+  line-height:1 !important;
+}
+
+/* Título fuera del cuadro, sin romper el margen */
+.channel-text{
+  width:100% !important;
+  min-width:0 !important;
+  max-width:100% !important;
+  height:18px !important;
+  padding:4px 2px 0 !important;
+  overflow:hidden !important;
+  text-align:center !important;
+}
+
+.channel-text h3{
+  display:block !important;
+  width:100% !important;
+  min-width:0 !important;
+  max-width:100% !important;
+  margin:0 !important;
+  color:#fff !important;
+  font-size:clamp(8px,.78vw,10.5px) !important;
+  font-weight:700 !important;
+  line-height:1.15 !important;
+  white-space:nowrap !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+}
+
+/* Mantiene el canal seleccionado dentro de su margen */
+.channel-item:hover .channel-logo,
+.channel-item:focus-visible .channel-logo{
+  transform:scale(1.02) !important;
+}
+
+.channel-item.active .channel-logo{
+  transform:scale(1.015) !important;
+  box-shadow:
+    0 0 0 2px #fff,
+    0 0 18px var(--section-color) !important;
+}
+
+/* Resoluciones pequeñas y ONN TV Box */
+@media (max-width:900px){
+  .carousel-block{
+    grid-template-columns:32px minmax(0,1fr) 32px !important;
+    gap:5px !important;
+  }
+
+  .carousel-arrow{
+    width:32px !important;
+    min-width:32px !important;
+    height:32px !important;
+    font-size:25px !important;
+  }
+
+  .channel-item{
+    --compact-card-w:clamp(96px,13vw,125px);
+  }
+
+  .channel-logo{
+    height:clamp(65px,10.5vh,88px) !important;
+  }
+}
+
+@media (orientation:landscape) and (max-height:600px){
+  .channel-item{
+    --compact-card-w:clamp(94px,10.2vw,128px);
+  }
+
+  .channel-logo{
+    height:clamp(62px,10.5vh,80px) !important;
+  }
+
+  .channel-text{
+    height:16px !important;
+    padding-top:3px !important;
+  }
+
+  .channel-text h3{
+    font-size:8px !important;
+  }
+}
+  
 </style>
 </head>
 <body>
@@ -2411,6 +2636,49 @@ function escapeHtml(text){
 }
 
 init();
+
+  <script>
+(function () {
+  const channelList = document.getElementById("channelList");
+  if (!channelList) return;
+
+  function shortenChannelTitles() {
+    const mobile = window.innerWidth <= 700;
+    const maximum = mobile ? 15 : 19;
+
+    channelList.querySelectorAll(".channel-text h3").forEach(title => {
+      const completeName =
+        title.dataset.completeName ||
+        title.textContent.trim();
+
+      title.dataset.completeName = completeName;
+      title.title = completeName;
+      title.setAttribute("aria-label", completeName);
+
+      const shortened = completeName.length > maximum
+        ? completeName.slice(0, maximum - 1).trimEnd() + "…"
+        : completeName;
+
+      if (title.textContent !== shortened) {
+        title.textContent = shortened;
+      }
+    });
+  }
+
+  const observer = new MutationObserver(() => {
+    requestAnimationFrame(shortenChannelTitles);
+  });
+
+  observer.observe(channelList, {
+    childList: true,
+    subtree: true
+  });
+
+  window.addEventListener("resize", shortenChannelTitles);
+  shortenChannelTitles();
+})();
+</script>
+  
 </script>
 </body>
 </html>
