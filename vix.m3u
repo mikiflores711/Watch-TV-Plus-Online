@@ -23,6 +23,8 @@ https://d1g1ht9t48jsre.cloudfront.net/v1/master/3722c60a815c199d9c0ef36c5b73da68
 https://aka-live1050.delivery.roku.com/c811b72a-67be-483a-a5ef-a8de42d496ec/t2-origin/out/v1/live.m3u8
 #EXTINF:-1 channel-id="c51c18ade0bd5b68b5e9bfa83410e372" tvg-id="c51c18ade0bd5b68b5e9bfa83410e372" tvg-chno="1004" tvg-name="ViX Jajaja" tvg-logo="https://images.sr.roku.com/idType/roku-trc/context/trc/id/c51c18ade0bd5b68b5e9bfa83410e372/https%3A%2F%2Fimage.roku.com%2Fbh-uploads%2Fproduction%2FinfoHUDLogo%2F1678481111596_JAJAJA_HUD_Logo_260x147.png" group-title="TV & Entertainment",ViX Jajaja
 https://aka-live1050.delivery.roku.com/e9b4484d-1030-4cf7-9a19-6de8b2a5e096/t2-origin/out/v1/live.m3u8
+#EXTINF:-1 channel-id="017397f76bae510a8a9800c4b94eaa40" tvg-id="017397f76bae510a8a9800c4b94eaa40" tvg-chno="991" tvg-name="ViX Cine Club" tvg-logo="https://images.sr.roku.com/idType/roku-trc/context/trc/id/017397f76bae510a8a9800c4b94eaa40/https%3A%2F%2Fimage.roku.com%2Fbh-uploads%2Fproduction%2FinfoHUDLogo%2F1704751574192_CineClub_RokuHub_260x147_White.png" group-title="Comedy",ViX Cine Club
+https://aka-live1050.delivery.roku.com/0f232fec-f2cc-45e0-8876-af34537103d4/t2-origin/out/v1/live.m3u8
 #EXTINF:-1 tvg-id="vix-011" tvg-name="El Chavo" group-title="TV & Entertainment" provider="vix" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/a/ab/El_Chavo_%28simple_logo%29.svg",El Chavo
 https://live20.bozztv.com/giatvplayout7/giatv-211465/playlist.m3u8
 #EXTINF:-1 tvg-id="vix-012" tvg-name="Como Dice el Dicho" group-title="Series" provider="vix" tvg-logo="https://images.vix.com/prd/channel/620578052c4f1e83d7f84410/3619af4946202836a2b28f01f84aa178?tr=q-30&w=1280",Como Dice el Dicho
