@@ -217,6 +217,38 @@ button{color:inherit}
   .channel-logo{width:34px;height:34px}
   .guide-footer{padding-top:6px}
 }
+
+
+/* ===== DISEÑO HORIZONTAL TIPO NETFLIX ===== */
+html,body{overflow:auto;background:#020306}
+.tv-app,.player-shell{height:auto;min-height:100dvh}
+.player-stage{height:auto;min-height:100dvh;display:flex;flex-direction:column;overflow:visible;cursor:default;background:#020306;padding-bottom:28px}
+#player{position:relative;inset:auto;width:100%;height:min(58vw,64dvh);min-height:320px;order:1;background:#000}
+.video-vignette{position:absolute;top:0;left:0;right:0;height:min(58vw,64dvh);pointer-events:none}
+.guide-toggle{display:none!important}
+.now-playing{position:absolute;top:18px;left:20px;bottom:auto;z-index:22;opacity:1!important;transform:none!important;max-width:min(520px,calc(100% - 40px));padding:13px 16px;border:1px solid rgba(255,255,255,.18);border-left:4px solid #ef4444;border-radius:12px;background:rgba(5,7,11,.82);backdrop-filter:blur(12px)}
+.watching-label{color:#ff6b6b}.top-live-badge{display:inline-flex;margin-left:7px;background:#ef233c;color:#fff;border-radius:99px;padding:3px 8px;font-size:9px;letter-spacing:.4px}
+.controls-wrap{position:relative;left:auto;right:auto;bottom:auto;order:2;opacity:1!important;transform:none!important;pointer-events:auto!important;padding:12px 18px 8px;background:#020306}
+.controls-bar{width:min(520px,calc(100% - 20px));margin:auto;justify-content:center;border-radius:14px;background:#0b0d12;min-height:56px}
+.play-btn{background:#ef233c;border-radius:50%;width:44px;height:44px;min-width:44px;padding:0}.play-btn #playText{display:none}
+.right-tools{margin-left:0}.pill.live{background:#ef233c;color:#fff;padding:0 13px}.ctrl-btn.small{width:42px;height:42px;border-radius:10px}
+.guide-panel{position:relative;inset:auto;width:100%;transform:none!important;pointer-events:auto!important;order:3;padding:8px 18px 0;background:#020306;display:flex;flex-direction:column;overflow:visible}
+.guide-head{display:flex;align-items:end;justify-content:space-between;gap:18px;margin-bottom:12px}.guide-title{font-size:25px;margin-top:3px}.guide-brand{color:#ef233c}
+.guide-tools{display:grid;grid-template-columns:minmax(210px,1fr) 170px 120px;gap:8px;width:min(760px,70vw);margin:0}.search-input,.filter-select{height:42px;border-radius:10px;background:#11141b}
+.carousel-block{position:relative;width:100%;display:flex;align-items:center;gap:8px}.sections-block{margin-bottom:12px}.channels-block{align-items:stretch}
+.carousel-arrow{flex:0 0 44px;width:44px;height:44px;border-radius:50%;border:1px solid rgba(255,255,255,.16);background:#151820;color:#fff;font-size:34px;line-height:1;cursor:pointer;z-index:4}.carousel-arrow:hover{background:#252a35}
+.section-tabs{flex:1;display:flex;gap:9px;overflow-x:auto;scrollbar-width:none;padding:5px 2px;margin:0}.section-tabs::-webkit-scrollbar{display:none}
+.tab-btn{border:1px solid var(--section-color);color:var(--section-color);background:rgba(255,255,255,.025);padding:9px 15px;border-radius:999px;font-size:12px;text-transform:none;letter-spacing:0}.tab-btn.active{background:var(--section-color);color:#07080d;box-shadow:0 0 20px color-mix(in srgb,var(--section-color) 42%,transparent)}
+.channel-list{flex:1;display:flex;gap:15px;overflow-x:auto;overflow-y:hidden;padding:7px 3px 14px;scrollbar-width:none}.channel-list::-webkit-scrollbar{display:none}
+.channel-item{flex:0 0 clamp(150px,15vw,210px);display:flex;flex-direction:column;min-height:0;padding:0;border:2px solid var(--section-color);border-radius:14px;overflow:hidden;background:#101319;gap:0;transition:transform .18s ease,box-shadow .18s ease}.channel-item:hover,.channel-item:focus-visible{transform:translateY(-4px) scale(1.02);background:#151922;box-shadow:0 10px 28px color-mix(in srgb,var(--section-color) 30%,transparent)}.channel-item.active{background:#151922;box-shadow:0 0 0 2px #fff,0 0 24px var(--section-color)}
+.channel-item::after,.channel-number,.channel-arrow{display:none}.channel-logo{position:relative;width:100%;height:118px;border:0;border-radius:0;background:linear-gradient(145deg,#3c4048,#22262d);display:grid;place-items:center;overflow:hidden}.channel-logo img{width:100%;height:100%;object-fit:contain;padding:12px;background:transparent}.card-live{position:absolute;right:7px;top:7px;background:#ef233c;color:#fff;border-radius:7px;padding:4px 7px;font-size:8px;font-weight:900}
+.channel-text{width:100%;padding:10px 11px 8px;min-height:64px}.channel-text h3{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.channel-text p{font-size:10px;color:var(--section-color);margin-top:6px}.section-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--section-color);margin-right:5px}
+.card-actions{display:flex;justify-content:flex-end;gap:3px;padding:0 7px 7px}.favorite-btn,.schedule-btn{width:28px;height:28px;background:rgba(255,255,255,.06)}
+.empty{min-width:100%;align-self:center}.guide-footer{margin:2px 52px 0;padding-top:8px}.small-help{display:block;color:#878d99;font-size:10px}.adult-notice{margin-bottom:8px}
+.epg-modal{position:fixed}
+@media(max-width:850px){#player{height:46vh;min-height:250px}.video-vignette{height:46vh}.guide-head{align-items:stretch;flex-direction:column}.guide-tools{width:100%;grid-template-columns:1fr 1fr}.guide-tools .search-input{grid-column:1/-1}.guide-panel{padding:8px 9px}.controls-wrap{padding-left:9px;padding-right:9px}.carousel-arrow{flex-basis:36px;width:36px;height:36px}.channel-item{flex-basis:145px}.channel-logo{height:100px}.now-playing{top:10px;left:10px;max-width:calc(100% - 20px)}.watching-title{font-size:18px}}
+@media(max-width:520px){#player{height:39vh;min-height:220px}.video-vignette{height:39vh}.guide-tools{grid-template-columns:1fr}.guide-tools .search-input{grid-column:auto}.channel-item{flex-basis:132px}.channel-logo{height:92px}.carousel-arrow{flex-basis:32px;width:32px;height:32px;font-size:27px}.guide-footer{margin:0 37px}.main-info{display:none}.now-playing{padding:9px 11px}.watching-label{font-size:8px}.watching-title{font-size:15px}}
+
 </style>
 </head>
 <body>
@@ -230,42 +262,44 @@ button{color:inherit}
 
       <aside class="guide-panel" id="guidePanel" aria-label="Guía de canales">
         <div class="guide-head">
-          <div class="guide-brand">Watch TV Plus</div>
-          <button class="close-guide" id="closeGuide" type="button" aria-label="Cerrar lista">×</button>
-        </div>
-
-        <div class="guide-title-row">
-          <button class="section-step" id="prevSection" type="button" aria-label="Sección anterior">‹</button>
-          <div class="guide-title-box">
-            <div class="guide-kicker">Canales en vivo</div>
+          <div>
+            <div class="guide-brand">Watch TV Plus</div>
             <h1 class="guide-title" id="guideTitle">México</h1>
           </div>
-          <button class="section-step" id="nextSection" type="button" aria-label="Sección siguiente">›</button>
+          <div class="guide-tools">
+            <input id="searchInput" class="search-input" type="search" placeholder="Buscar en todas las secciones..." autocomplete="off" />
+            <select id="categoryFilter" class="filter-select" aria-label="Categoría"><option value="all">Todas las categorías</option></select>
+            <select id="typeFilter" class="filter-select" aria-label="Tipo de canal"><option value="all">Todo</option><option value="video">TV</option><option value="audio">Radio</option></select>
+          </div>
         </div>
 
-        <div class="section-tabs" id="sectionTabs"></div>
+        <div id="adultNotice" class="adult-notice" style="display:none;">Sección exclusiva para mayores de 18 años.</div>
 
-        <div id="adultNotice" class="adult-notice" style="display:none;">Sección exclusiva para mayores de 18 años. El acceso queda guardado únicamente en este navegador.</div>
-
-        <div class="guide-tools">
-          <input id="searchInput" class="search-input" type="search" placeholder="Buscar canal..." autocomplete="off" />
-          <select id="categoryFilter" class="filter-select" aria-label="Categoría"><option value="all">Todas las categorías</option></select>
-        </div>
-        <div class="filter-row">
-          <select id="typeFilter" class="filter-select" aria-label="Tipo de canal"><option value="all">Todo</option><option value="video">TV</option><option value="audio">Radio</option></select>
-          <div class="small-help" id="sectionInfo">Usa la estrella para guardar favoritos.</div>
+        <div class="carousel-block sections-block">
+          <button class="carousel-arrow left" id="sectionsLeft" type="button" aria-label="Desplazar secciones a la izquierda">‹</button>
+          <div class="section-tabs" id="sectionTabs"></div>
+          <button class="carousel-arrow right" id="sectionsRight" type="button" aria-label="Desplazar secciones a la derecha">›</button>
         </div>
 
-        <div class="channel-list" id="channelList"><div class="empty">Cargando canales...</div></div>
+        <div class="carousel-block channels-block">
+          <button class="carousel-arrow left" id="channelsLeft" type="button" aria-label="Desplazar canales a la izquierda">‹</button>
+          <div class="channel-list" id="channelList"><div class="empty">Cargando canales...</div></div>
+          <button class="carousel-arrow right" id="channelsRight" type="button" aria-label="Desplazar canales a la derecha">›</button>
+        </div>
 
         <div class="guide-footer">
           <div class="count-pill" id="countPill">Cargando listas...</div>
+          <div class="small-help" id="sectionInfo">Desliza para ver más canales</div>
           <button class="reload-btn" id="reloadBtn" type="button">Recargar</button>
         </div>
+
+        <button class="section-step sr-only" id="prevSection" type="button">Anterior</button>
+        <button class="section-step sr-only" id="nextSection" type="button">Siguiente</button>
+        <button class="close-guide sr-only" id="closeGuide" type="button">Cerrar</button>
       </aside>
 
       <div class="now-playing">
-        <div class="watching-label">ESTÁS VIENDO · <span id="topCategory">CANAL</span></div>
+        <div class="watching-label">REPRODUCIENDO AHORA · <span id="topCategory">TV</span> <span class="top-live-badge">EN VIVO</span></div>
         <h2 class="watching-title" id="topTitle">Selecciona un canal</h2>
         <p class="main-info" id="mainInfo">Cargando listas M3U...</p>
         <h2 class="sr-only" id="mainTitle">Selecciona un canal</h2>
@@ -273,18 +307,16 @@ button{color:inherit}
 
       <div class="controls-wrap">
         <div class="controls-bar">
-          <button class="ctrl-btn" id="openGuideBtn" type="button" title="Lista de canales">☰</button>
           <button class="ctrl-btn play-btn" id="playBtn" type="button"><span id="playIcon">▶</span><span id="playText">Play</span></button>
-          <div class="volume-wrap">
-            <button class="ctrl-btn small" id="muteBtn" type="button">🔊</button>
-            <input class="slider" id="volumeBar" type="range" min="0" max="100" value="100" aria-label="Volumen" />
-          </div>
+          <div class="pill live"><span class="live-dot"></span> EN VIVO</div>
           <div class="right-tools">
-            <div class="pill live"><span class="live-dot"></span> DIRECTO</div>
-            <button class="pill" id="proxyStatus" type="button" title="Cambiar ruta de reproducción">AUTO</button>
-            <button class="ctrl-btn small" id="pipBtn" type="button" title="Imagen en imagen">▣</button>
-            <button class="ctrl-btn small" id="fullBtn" type="button" title="Pantalla completa">⤢</button>
+            <button class="ctrl-btn small" id="pipBtn" type="button" title="Ventana pequeña">▣</button>
+            <button class="ctrl-btn small" id="fullBtn" type="button" title="Pantalla completa">⛶</button>
           </div>
+          <button class="sr-only" id="openGuideBtn" type="button">Canales</button>
+          <button class="sr-only" id="muteBtn" type="button">Silencio</button>
+          <input class="sr-only" id="volumeBar" type="range" min="0" max="100" value="100" />
+          <button class="sr-only" id="proxyStatus" type="button">AUTO</button>
         </div>
       </div>
 
@@ -342,17 +374,17 @@ const PLUTO_GUIDE_API = "https://service-channels.clusters.pluto.tv/v1/guide";
 const PLUTO_LEGACY_GUIDE_API = "https://api.pluto.tv/v2/channels";
 
 const PLAYLISTS = [
-  { id:"mexico", label:"México", file:"./mexico.m3u", isAdult:false },
-  { id:"pluto", label:"Pluto TV", file:"./pluto.m3u", isAdult:false },
-  { id:"tubi", label:"Tubi TV", file:"./tubi.m3u", isAdult:false },
-  { id:"vix", label:"ViX", file:"./vix.m3u", isAdult:false },
-  { id:"runtime", label:"Run Time", file:"./runtime.m3u", isAdult:false },
-  { id:"espanol", label:"Español", file:"./espanol.m3u", isAdult:false },
-  { id:"plex", label:"Plex", file:"./plex_mx.m3u", isAdult:false },
-  { id:"roku", label:"Roku TV", file:"./roku_all.m3u", isAdult:false },
-  { id:"lg", label:"LG Channels", file:"./LG_Channels_mx.m3u", isAdult:false },
-  { id:"favorites", label:"Favoritos", file:null, isAdult:false, isFavorites:true },
-  { id:"adult", label:"Adultos 18+", file:"./adult.m3u", isAdult:true }
+  { id:"mexico", label:"México", file:"./mexico.m3u", isAdult:false, color:"#22c55e" },
+  { id:"pluto", label:"Pluto TV", file:"./pluto.m3u", isAdult:false, color:"#f97316" },
+  { id:"tubi", label:"Tubi TV", file:"./tubi.m3u", isAdult:false, color:"#ec4899" },
+  { id:"vix", label:"ViX", file:"./vix.m3u", isAdult:false, color:"#a855f7" },
+  { id:"runtime", label:"Run Time", file:"./runtime.m3u", isAdult:false, color:"#ef4444" },
+  { id:"espanol", label:"Español", file:"./espanol.m3u", isAdult:false, color:"#eab308" },
+  { id:"plex", label:"Plex", file:"./plex_mx.m3u", isAdult:false, color:"#f59e0b" },
+  { id:"roku", label:"Roku TV", file:"./roku_all.m3u", isAdult:false, color:"#8b5cf6" },
+  { id:"lg", label:"LG Channels", file:"./LG_Channels_mx.m3u", isAdult:false, color:"#06b6d4" },
+  { id:"favorites", label:"Favoritos", file:null, isAdult:false, isFavorites:true, color:"#facc15" },
+  { id:"adult", label:"Adultos 18+", file:"./adult.m3u", isAdult:true, color:"#dc2626" }
 ];
 
 const playerStage = document.getElementById("playerStage");
@@ -384,6 +416,10 @@ const reloadBtn = document.getElementById("reloadBtn");
 const adultNotice = document.getElementById("adultNotice");
 const sectionTabs = document.getElementById("sectionTabs");
 const sectionInfo = document.getElementById("sectionInfo");
+const sectionsLeft = document.getElementById("sectionsLeft");
+const sectionsRight = document.getElementById("sectionsRight");
+const channelsLeft = document.getElementById("channelsLeft");
+const channelsRight = document.getElementById("channelsRight");
 const epgModal = document.getElementById("epgModal");
 const epgBackdrop = document.getElementById("epgBackdrop");
 const epgClose = document.getElementById("epgClose");
@@ -431,6 +467,7 @@ function buildTabs(){
     btn.className = "tab-btn" + (pl.id === activeSection ? " active" : "") + (pl.isAdult ? " adult-tab" : "");
     btn.dataset.section = pl.id;
     btn.textContent = pl.label;
+    btn.style.setProperty("--section-color", pl.color || "#8b5cf6");
     btn.addEventListener("click", () => setSection(pl.id));
     sectionTabs.appendChild(btn);
   });
@@ -452,6 +489,10 @@ function bindEvents(){
   closeGuide.addEventListener("click", () => setGuideOpen(false));
   prevSection.addEventListener("click", () => stepSection(-1));
   nextSection.addEventListener("click", () => stepSection(1));
+  sectionsLeft.addEventListener("click", () => sectionTabs.scrollBy({ left:-420, behavior:"smooth" }));
+  sectionsRight.addEventListener("click", () => sectionTabs.scrollBy({ left:420, behavior:"smooth" }));
+  channelsLeft.addEventListener("click", () => channelList.scrollBy({ left:-Math.max(320, channelList.clientWidth * .75), behavior:"smooth" }));
+  channelsRight.addEventListener("click", () => channelList.scrollBy({ left:Math.max(320, channelList.clientWidth * .75), behavior:"smooth" }));
   epgClose.addEventListener("click", closeSchedule);
   epgBackdrop.addEventListener("click", closeSchedule);
   epgRefresh.addEventListener("click", () => epgChannel && loadSchedule(epgChannel, true));
@@ -464,14 +505,7 @@ function bindEvents(){
 }
 
 function setGuideOpen(open){
-  playerStage.classList.toggle("guide-open", !!open);
-  if(open){
-    showPlayerUI();
-    setTimeout(() => {
-      const active = channelList.querySelector(".channel-item.active") || channelList.querySelector(".channel-item");
-      if(active) active.scrollIntoView({ block:"center", behavior:"smooth" });
-    }, 80);
-  }
+  playerStage.classList.add("guide-open", "show-ui");
 }
 
 function stepSection(direction){
@@ -1394,7 +1428,7 @@ function renderChannels(){
   const search = searchInput.value.trim().toLowerCase();
   const category = categoryFilter.value;
   const type = typeFilter.value;
-  const source = getSectionChannels(true);
+  const source = search ? allChannels.filter(ch => !ch.isAdult || adultUnlocked) : getSectionChannels(true);
 
   if(activeSection === "adult" && !adultUnlocked){
     channelList.innerHTML = `<div class="empty">Sección bloqueada. Presiona <b>Adultos 18+</b> y confirma que eres mayor de edad.</div>`;
@@ -1430,40 +1464,38 @@ function createChannelItem(ch, visibleIndex){
   item.className = "channel-item" + (ch.url === currentUrl ? " active" : "");
   item.tabIndex = 0;
   item.dataset.url = ch.url;
+  const playlist = PLAYLISTS.find(pl => pl.id === ch.section);
+  const sectionColor = playlist?.color || "#8b5cf6";
+  item.style.setProperty("--section-color", sectionColor);
   const isFav = isFavorite(ch.url);
-  const number = ch.channelNumber || visibleIndex + 1;
-  const darkLogo = ch.logoBackground === "black" || ch.logoBackground === "dark";
   const logoHtml = ch.logo
-    ? `<img src="${escapeHtml(ch.logo)}" alt="" class="${darkLogo ? "dark-logo" : ""}" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove();this.parentElement.textContent='${escapeHtml(getInitials(ch.name))}'">`
+    ? `<img src="${escapeHtml(ch.logo)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove();this.parentElement.textContent='${escapeHtml(getInitials(ch.name))}'">`
     : escapeHtml(getInitials(ch.name));
   const hasSchedule = canShowSchedule(ch);
 
   item.innerHTML = `
-    <div class="channel-number">${String(number).padStart(2, "0")}</div>
-    <div class="channel-logo ${darkLogo ? "dark" : ""}">${logoHtml}</div>
+    <div class="channel-logo">${logoHtml}<span class="card-live">EN VIVO</span></div>
     <div class="channel-text">
       <h3>${escapeHtml(ch.name)}</h3>
-      <p>${escapeHtml(ch.category)} · ${escapeHtml(ch.quality)}${ch.note ? ` · ${escapeHtml(ch.note)}` : ""}</p>
+      <p><span class="section-dot"></span>${escapeHtml(ch.sectionLabel)} · ${escapeHtml(ch.category)}</p>
     </div>
-    <button class="favorite-btn ${isFav ? "active" : ""}" type="button" title="Favorito" aria-label="Favorito">${isFav ? "★" : "☆"}</button>
-    <button class="schedule-btn" type="button" title="Ver programación" aria-label="Ver programación" ${hasSchedule ? "" : "disabled"}>▦</button>
-    <div class="channel-arrow">›</div>`;
+    <div class="card-actions">
+      <button class="favorite-btn ${isFav ? "active" : ""}" type="button" title="Favorito">${isFav ? "★" : "☆"}</button>
+      <button class="schedule-btn" type="button" title="Programación" ${hasSchedule ? "" : "disabled"}>▦</button>
+    </div>`;
 
-  item.addEventListener("click", () => loadChannel(ch));
-  item.addEventListener("focus", () => item.scrollIntoView({ block:"nearest" }));
-  const favBtn = item.querySelector(".favorite-btn");
-  favBtn.addEventListener("click", event => {
+  item.addEventListener("click", () => loadChannel(ch, false));
+  item.addEventListener("focus", () => item.scrollIntoView({ inline:"nearest", block:"nearest" }));
+  item.querySelector(".favorite-btn").addEventListener("click", event => {
     event.stopPropagation();
     toggleFavorite(ch.url);
   });
-  const scheduleBtn = item.querySelector(".schedule-btn");
-  scheduleBtn.addEventListener("click", event => {
+  item.querySelector(".schedule-btn").addEventListener("click", event => {
     event.stopPropagation();
     if(hasSchedule) openSchedule(ch);
   });
   return item;
 }
-
 
 function canShowSchedule(ch){
   return ch && (ch.provider === "pluto" || ch.provider === "tubi" || ch.provider === "vix" || ch.provider === "roku" || ch.officialUrl || ch.epgId);
@@ -1834,8 +1866,7 @@ function setSection(section){
   activeSection = section;
   document.querySelectorAll(".tab-btn[data-section]").forEach(btn => btn.classList.toggle("active", btn.dataset.section === activeSection));
   adultNotice.style.display = activeSection === "adult" ? "block" : "none";
-  searchInput.value = "";
-  searchInput.placeholder = "Buscar canal...";
+  searchInput.placeholder = "Buscar en todas las secciones...";
   categoryFilter.value = "all";
   buildCategories();
   renderChannels();
