@@ -250,34 +250,76 @@ html,body{overflow:auto;background:#020306}
 @media(max-width:520px){#player{height:39vh;min-height:220px}.video-vignette{height:39vh}.guide-tools{grid-template-columns:1fr}.guide-tools .search-input{grid-column:auto}.channel-item{flex-basis:132px}.channel-logo{height:92px}.carousel-arrow{flex-basis:32px;width:32px;height:32px;font-size:27px}.guide-footer{margin:0 37px}.main-info{display:none}.now-playing{padding:9px 11px}.watching-label{font-size:8px}.watching-title{font-size:15px}}
 
 
-/* ===== REDISEÑO PROFESIONAL PARA TV / ONN TV BOX ===== */
-:root{--tv-gap:18px;--tv-radius:22px}
-html,body{background:#000;overscroll-behavior:none}
-body{font-family:Inter,Arial,Helvetica,sans-serif}
-.player-stage{padding:10px 28px 30px;gap:0;background:radial-gradient(circle at 50% -20%,#20232b 0,#090a0d 36%,#000 70%)}
-#player{height:min(55.5vw,68dvh);min-height:360px;border:1px solid rgba(255,255,255,.22);border-radius:var(--tv-radius);overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,.72);background:#050608}
-#player video{object-fit:contain!important}
-.video-vignette{top:10px;left:28px;right:28px;height:min(55.5vw,68dvh);border-radius:var(--tv-radius);background:linear-gradient(180deg,rgba(0,0,0,.03) 48%,rgba(0,0,0,.86) 100%)}
-.now-playing{top:26px;left:44px;max-width:520px;display:grid;grid-template-columns:116px minmax(0,1fr);gap:0;padding:0;border:1px solid rgba(255,104,150,.65);border-left:1px solid rgba(255,104,150,.65);border-radius:15px;background:rgba(2,3,5,.92);overflow:hidden;box-shadow:0 12px 32px rgba(0,0,0,.48);opacity:0!important;transform:translateY(-12px)!important;transition:.28s ease;pointer-events:none}
-.player-stage.show-ui .now-playing{opacity:1!important;transform:none!important}
-.now-logo{width:116px;height:88px;display:grid;place-items:center;background:linear-gradient(145deg,#45484f,#202228);color:#fff;font-size:24px;font-weight:900;border-right:1px solid rgba(255,104,150,.45);overflow:hidden}
-.now-logo img{width:100%;height:100%;object-fit:contain;padding:9px;background:transparent}
-.now-copy{min-width:0;padding:11px 15px 9px}.watching-label{font-size:12px;color:#ff4458;letter-spacing:.6px}.watching-title{font-size:22px;margin-top:7px}.now-meta{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:10px;color:#d9dce3}.top-live-badge{margin:0;padding:3px 11px;background:#ff2638}.main-info{display:none}
-.controls-wrap{position:absolute;left:50%;right:auto;bottom:calc(32dvh + 32px);padding:0;background:transparent;transform:translate(-50%,12px)!important;opacity:0!important;pointer-events:none!important;transition:.28s ease;z-index:25}
-.player-stage.show-ui .controls-wrap{opacity:1!important;transform:translate(-50%,0)!important;pointer-events:auto!important}
-.controls-bar{width:auto;min-height:74px;padding:8px 22px;gap:18px;border:0;background:rgba(4,5,7,.58);backdrop-filter:blur(13px);border-radius:999px;box-shadow:none}
-.play-btn{width:68px;height:68px;min-width:68px;border:3px solid #ff3348;background:rgba(10,11,14,.74);font-size:28px}.play-btn:focus-visible{box-shadow:0 0 0 4px #fff,0 0 0 8px #ff3348}
-.pill.live{background:transparent;font-size:17px;padding:0 14px}.live-dot{background:#ff273b;box-shadow:0 0 12px #ff273b}.ctrl-btn.small{width:50px;height:50px;border-radius:50%;font-size:22px;background:transparent}.ctrl-btn.small:focus-visible{background:#fff;color:#000;box-shadow:0 0 0 4px #ff3348}
-.guide-panel{padding:16px 32px 0;background:transparent}.guide-head{display:grid;grid-template-columns:auto minmax(280px,1fr);align-items:center;margin-bottom:10px}.guide-brand{display:none}.guide-title{font-size:0}.guide-title::after{content:"Destacados";display:inline-flex;align-items:center;height:40px;padding:0 24px;border:2px solid #ffd400;border-radius:999px;color:#fff;font-size:17px;font-weight:900}.guide-title::before{content:"★";font-size:20px;color:#ffd400;margin-right:10px}
-.guide-tools{width:min(760px,58vw);justify-self:end;grid-template-columns:minmax(260px,1fr) 180px 130px}.search-input,.filter-select{height:43px;border:1px solid rgba(255,255,255,.16);background:#10131a;border-radius:9px;font-size:12px}.search-input:focus,.filter-select:focus{border-color:#fff;box-shadow:0 0 0 3px #ff3348}
-.carousel-block{gap:12px}.sections-block{margin-bottom:14px}.carousel-arrow{flex:0 0 58px;width:58px;height:58px;background:#17191f;border:1px solid rgba(255,255,255,.22);font-size:44px}.carousel-arrow:focus-visible{outline:none;background:#fff;color:#000;box-shadow:0 0 0 4px #ff3348}
-.section-tabs{gap:12px;padding:8px 2px}.tab-btn{min-height:42px;padding:0 22px;border-width:2px;font-size:14px;font-weight:900}.tab-btn:focus-visible{outline:none;transform:scale(1.07);box-shadow:0 0 0 4px #fff}.tab-btn.active{color:#020305}
-.channel-list{gap:18px;padding:10px 4px 24px}.channel-item{flex:0 0 clamp(175px,13.4vw,230px);border-width:2px;border-radius:16px;background:#090b0f;overflow:visible}.channel-item:hover,.channel-item:focus-visible{transform:scale(1.075);z-index:5;box-shadow:0 0 0 4px #fff,0 14px 36px rgba(0,0,0,.72)}.channel-item.active{box-shadow:0 0 0 3px #fff,0 0 0 6px var(--section-color)}
-.channel-logo{height:145px;border-radius:14px;background:linear-gradient(145deg,#51545b,#24272d);border:0;overflow:hidden}.channel-logo img{padding:14px}.card-live{top:9px;right:9px;padding:5px 9px;font-size:9px}.channel-text{padding:10px 4px 0;min-height:48px}.channel-text h3{text-align:center;font-size:14px;text-transform:uppercase}.channel-text p{display:none}.card-actions{position:absolute;left:6px;top:6px;padding:0;opacity:0;transition:.18s}.channel-item:focus-within .card-actions,.channel-item:hover .card-actions{opacity:1}.favorite-btn,.schedule-btn{background:rgba(0,0,0,.65);backdrop-filter:blur(6px)}
-.guide-footer{display:none}.adult-notice{margin:0 72px 10px}.epg-modal{position:fixed}
-@media (min-width:1200px){body{font-size:16px}.player-stage{padding-left:42px;padding-right:42px}.video-vignette{left:42px;right:42px}.guide-panel{padding-left:42px;padding-right:42px}}
-@media (max-width:900px){.player-stage{padding:6px 10px 22px}.video-vignette{left:10px;right:10px;top:6px}.now-playing{left:18px;top:16px;grid-template-columns:84px 1fr}.now-logo{width:84px;height:70px}.watching-title{font-size:17px}.guide-head{grid-template-columns:1fr}.guide-title{margin-bottom:8px}.guide-tools{width:100%;justify-self:stretch}.controls-wrap{bottom:calc(39vh + 18px)}.channel-item{flex-basis:160px}.channel-logo{height:115px}}
-@media (max-width:600px){#player{height:42vh;min-height:230px}.video-vignette{height:42vh}.now-playing{max-width:calc(100% - 36px)}.now-copy{padding:8px 10px}.watching-label{font-size:9px}.watching-title{font-size:15px}.now-meta{margin-top:5px}.controls-wrap{bottom:calc(58vh - 6px)}.controls-bar{min-height:58px;padding:5px 12px;gap:8px}.play-btn{width:52px;height:52px;min-width:52px}.pill.live{font-size:12px}.ctrl-btn.small{width:42px;height:42px}.guide-panel{padding:12px 8px 0}.guide-tools{grid-template-columns:1fr}.guide-title::after{height:35px;font-size:14px}.carousel-arrow{flex-basis:40px;width:40px;height:40px;font-size:31px}.tab-btn{min-height:36px;padding:0 14px;font-size:12px}.channel-item{flex-basis:140px}.channel-logo{height:98px}.channel-text h3{font-size:11px}}
+
+/* ===== AJUSTE FINAL: REPRODUCTOR INMERSIVO + DISEÑO TV ===== */
+:root{--player-h:min(58vw,64dvh)}
+.player-stage{transition:background .25s ease}
+#player{height:var(--player-h)!important;min-height:360px;border:1px solid rgba(255,255,255,.16);border-radius:22px;overflow:hidden;width:calc(100% - 52px);margin:16px 26px 0;box-shadow:0 22px 70px rgba(0,0,0,.48)}
+.video-vignette{top:16px!important;left:26px!important;right:26px!important;width:auto!important;height:var(--player-h)!important;border-radius:22px;overflow:hidden}
+
+/* Información superior dentro del reproductor */
+.now-playing{top:28px!important;left:38px!important;max-width:min(510px,calc(100% - 76px))!important;border:1px solid rgba(255,65,92,.65)!important;border-left:1px solid rgba(255,65,92,.65)!important;border-radius:14px!important;background:linear-gradient(90deg,rgba(5,6,10,.96),rgba(5,6,10,.83))!important;box-shadow:0 14px 38px rgba(0,0,0,.5)!important;padding:12px 16px!important}
+
+/* Controles dentro del reproductor, siempre arriba del buscador */
+.controls-wrap{position:absolute!important;z-index:24!important;left:50%!important;right:auto!important;top:calc(var(--player-h) - 72px)!important;bottom:auto!important;transform:translate(-50%,-50%)!important;padding:0!important;background:transparent!important;transition:opacity .25s ease,transform .25s ease!important}
+.controls-bar{width:auto!important;min-width:350px!important;min-height:66px!important;padding:9px 18px!important;border-radius:18px!important;background:rgba(7,9,14,.88)!important;border:1px solid rgba(255,255,255,.16)!important;box-shadow:0 15px 42px rgba(0,0,0,.56)!important;backdrop-filter:blur(16px)!important}
+.play-btn{width:56px!important;height:56px!important;min-width:56px!important;border:3px solid #ff4055!important;background:rgba(10,12,18,.92)!important}
+.ctrl-btn.small{width:46px!important;height:46px!important;border-radius:12px!important}
+.pill.live{height:42px!important;background:transparent!important;font-size:13px!important;padding:0 15px!important}
+
+/* La guía comienza después del reproductor: nunca se encima */
+.guide-panel{padding:20px 34px 30px!important;margin-top:0!important;background:#020306!important}
+.guide-head{margin-bottom:14px!important;align-items:center!important}
+.guide-brand,.guide-title{display:none!important}
+.guide-tools{width:min(900px,78vw)!important;margin:0 auto!important;grid-template-columns:minmax(280px,1fr) 210px 150px!important}
+.search-input,.filter-select{height:48px!important;border-radius:12px!important;background:#11151d!important;border-color:rgba(255,255,255,.13)!important;font-size:13px!important}
+.sections-block{margin:4px 0 22px!important}
+.channels-block{margin-top:0!important}
+.carousel-arrow{width:54px!important;height:54px!important;flex-basis:54px!important;background:#171a21!important;border:1px solid rgba(255,255,255,.2)!important;font-size:38px!important}
+.carousel-arrow:focus-visible,.tab-btn:focus-visible,.channel-item:focus-visible,.ctrl-btn:focus-visible,.search-input:focus-visible,.filter-select:focus-visible{outline:3px solid #fff!important;outline-offset:4px!important}
+.tab-btn{min-height:44px!important;padding:0 20px!important;font-size:13px!important;font-weight:900!important}
+
+/* Tarjetas: logo ocupa todo el cuadro; título queda debajo, fuera del cuadro */
+.channel-list{gap:18px!important;padding:8px 4px 22px!important}
+.channel-item{flex:0 0 clamp(160px,14vw,220px)!important;display:flex!important;flex-direction:column!important;border:0!important;background:transparent!important;border-radius:0!important;overflow:visible!important;box-shadow:none!important;padding:0!important;transform:none!important}
+.channel-item:hover,.channel-item:focus-visible{background:transparent!important;box-shadow:none!important;transform:translateY(-4px)!important}
+.channel-logo{width:100%!important;aspect-ratio:1/1!important;height:auto!important;border-radius:16px!important;border:2px solid var(--section-color)!important;background:linear-gradient(145deg,#4b4f58,#242831)!important;box-shadow:0 12px 28px rgba(0,0,0,.35)!important;overflow:hidden!important}
+.channel-logo img{width:100%!important;height:100%!important;object-fit:contain!important;padding:14px!important;background:transparent!important}
+.channel-item.active .channel-logo{box-shadow:0 0 0 4px #fff,0 0 30px var(--section-color)!important}
+.channel-text{padding:12px 5px 0!important;min-height:auto!important;text-align:center!important}
+.channel-text h3{font-size:15px!important;color:#fff!important;line-height:1.25!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+.channel-text p,.card-actions{display:none!important}
+.card-live{top:9px!important;right:9px!important;border-radius:8px!important;padding:5px 8px!important;font-size:9px!important}
+
+/* Modo inmersivo: al ocultar controles, desaparece toda la interfaz y el video llena la pantalla */
+.player-stage.immersive{height:100dvh!important;min-height:100dvh!important;overflow:hidden!important;padding:0!important;background:#000!important}
+.player-stage.immersive #player{position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;min-height:100dvh!important;margin:0!important;border:0!important;border-radius:0!important;z-index:1!important}
+.player-stage.immersive .video-vignette,.player-stage.immersive .now-playing,.player-stage.immersive .controls-wrap,.player-stage.immersive .guide-panel{opacity:0!important;visibility:hidden!important;pointer-events:none!important}
+.player-stage.immersive{cursor:none!important}
+.player-stage:not(.immersive){cursor:default!important}
+
+@media(max-width:900px){
+  :root{--player-h:52dvh}
+  #player{width:calc(100% - 20px);margin:10px 10px 0;min-height:280px;border-radius:16px}
+  .video-vignette{top:10px!important;left:10px!important;right:10px!important;height:var(--player-h)!important;border-radius:16px}
+  .now-playing{top:18px!important;left:18px!important;max-width:calc(100% - 36px)!important}
+  .controls-wrap{top:calc(var(--player-h) - 58px)!important}
+  .controls-bar{min-width:300px!important;min-height:58px!important;padding:7px 12px!important}
+  .play-btn{width:48px!important;height:48px!important;min-width:48px!important}
+  .guide-panel{padding:16px 12px 24px!important}
+  .guide-tools{width:100%!important;grid-template-columns:1fr 1fr!important}
+  .guide-tools .search-input{grid-column:1/-1!important}
+  .channel-item{flex-basis:150px!important}
+}
+@media(max-width:560px){
+  :root{--player-h:43dvh}
+  .controls-bar{min-width:270px!important}
+  .pill.live{font-size:11px!important;padding:0 8px!important}
+  .guide-tools{grid-template-columns:1fr!important}
+  .guide-tools .search-input{grid-column:auto!important}
+  .channel-item{flex-basis:132px!important}
+  .channel-text h3{font-size:13px!important}
+}
 
 </style>
 </head>
@@ -329,14 +371,10 @@ body{font-family:Inter,Arial,Helvetica,sans-serif}
       </aside>
 
       <div class="now-playing">
-        <div class="now-logo" id="nowLogo">TV</div>
-        <div class="now-copy">
-          <div class="watching-label">▶ REPRODUCIENDO AHORA</div>
-          <h2 class="watching-title" id="topTitle">Selecciona un canal</h2>
-          <div class="now-meta"><span id="topCategory">TV</span><span class="top-live-badge">EN VIVO</span></div>
-          <p class="main-info" id="mainInfo">Cargando listas M3U...</p>
-          <h2 class="sr-only" id="mainTitle">Selecciona un canal</h2>
-        </div>
+        <div class="watching-label">REPRODUCIENDO AHORA · <span id="topCategory">TV</span> <span class="top-live-badge">EN VIVO</span></div>
+        <h2 class="watching-title" id="topTitle">Selecciona un canal</h2>
+        <p class="main-info" id="mainInfo">Cargando listas M3U...</p>
+        <h2 class="sr-only" id="mainTitle">Selecciona un canal</h2>
       </div>
 
       <div class="controls-wrap">
@@ -438,7 +476,6 @@ const pipBtn = document.getElementById("pipBtn");
 const fullBtn = document.getElementById("fullBtn");
 const proxyStatus = document.getElementById("proxyStatus");
 const topCategory = document.getElementById("topCategory");
-const nowLogo = document.getElementById("nowLogo");
 const topTitle = document.getElementById("topTitle");
 const mainTitle = document.getElementById("mainTitle");
 const mainInfo = document.getElementById("mainInfo");
@@ -532,7 +569,7 @@ function bindEvents(){
   epgBackdrop.addEventListener("click", closeSchedule);
   epgRefresh.addEventListener("click", () => epgChannel && loadSchedule(epgChannel, true));
 
-  ["mousemove", "touchstart", "click", "pointermove"].forEach(eventName => {
+  ["mousemove", "touchstart", "click", "wheel"].forEach(eventName => {
     playerStage.addEventListener(eventName, showPlayerUI, { passive:true });
   });
   playerStage.addEventListener("mouseleave", () => hidePlayerUI(700));
@@ -553,63 +590,50 @@ function stepSection(direction){
 function handleKeyboard(event){
   showPlayerUI();
   if(epgModal.classList.contains("open")){
-    if(event.key === "Escape" || event.key === "Backspace"){ event.preventDefault(); closeSchedule(); }
+    if(event.key === "Escape" || event.key === "Backspace"){
+      event.preventDefault();
+      closeSchedule();
+    }
     return;
   }
-
-  const active = document.activeElement;
-  const tag = active && active.tagName;
+  const tag = document.activeElement && document.activeElement.tagName;
   const typing = tag === "INPUT" || tag === "SELECT" || tag === "TEXTAREA";
-  if(typing) return;
 
-  const tabs = [...sectionTabs.querySelectorAll(".tab-btn")];
-  const cards = [...channelList.querySelectorAll(".channel-item")];
-  const controls = [playBtn,pipBtn,fullBtn].filter(Boolean);
-  const inTabs = tabs.includes(active);
-  const inCards = cards.includes(active);
-  const inControls = controls.includes(active);
-
-  if(event.key === "Escape" || event.key === "Backspace"){
+  if(event.key === "Escape" || (!typing && event.key === "Backspace")){
     event.preventDefault();
-    if(document.fullscreenElement) document.exitFullscreen().catch(()=>{});
-    else searchInput.focus();
+    setGuideOpen(!playerStage.classList.contains("guide-open"));
     return;
   }
 
-  if(inTabs){
-    let i=tabs.indexOf(active);
-    if(event.key === "ArrowLeft"){event.preventDefault();tabs[Math.max(0,i-1)].focus();}
-    else if(event.key === "ArrowRight"){event.preventDefault();tabs[Math.min(tabs.length-1,i+1)].focus();}
-    else if(event.key === "ArrowUp"){event.preventDefault();searchInput.focus();}
-    else if(event.key === "ArrowDown" && cards.length){event.preventDefault();cards[0].focus();}
-    else if(event.key === "Enter"){event.preventDefault();active.click();}
+  if(!playerStage.classList.contains("guide-open")){
+    if(event.key === "Enter") setGuideOpen(true);
+    if(event.key === " " && !typing){ event.preventDefault(); togglePlay(); }
+    if((event.key === "m" || event.key === "M") && !typing) toggleMute();
+    if((event.key === "f" || event.key === "F") && !typing) toggleFullscreen();
     return;
   }
 
-  if(inCards){
-    let i=cards.indexOf(active);
-    if(event.key === "ArrowLeft"){event.preventDefault();cards[Math.max(0,i-1)].focus();}
-    else if(event.key === "ArrowRight"){event.preventDefault();cards[Math.min(cards.length-1,i+1)].focus();}
-    else if(event.key === "ArrowUp" && tabs.length){event.preventDefault();(tabs.find(t=>t.classList.contains("active"))||tabs[0]).focus();}
-    else if(event.key === "ArrowDown"){event.preventDefault();playBtn.focus();}
-    else if(event.key === "Enter"){event.preventDefault();active.click();}
-    return;
-  }
+  if(typing) return;
+  const items = [...channelList.querySelectorAll(".channel-item")];
+  if(!items.length) return;
+  let index = items.indexOf(document.activeElement);
+  if(index < 0) index = Math.max(0, items.findIndex(item => item.classList.contains("active")));
 
-  if(inControls){
-    let i=controls.indexOf(active);
-    if(event.key === "ArrowLeft"){event.preventDefault();controls[Math.max(0,i-1)].focus();}
-    else if(event.key === "ArrowRight"){event.preventDefault();controls[Math.min(controls.length-1,i+1)].focus();}
-    else if(event.key === "ArrowDown" && tabs.length){event.preventDefault();(tabs.find(t=>t.classList.contains("active"))||tabs[0]).focus();}
-    else if(event.key === "ArrowUp"){event.preventDefault();}
-    else if(event.key === "Enter"){event.preventDefault();active.click();}
-    return;
+  if(event.key === "ArrowDown"){
+    event.preventDefault();
+    items[Math.min(items.length - 1, index + 1)].focus();
+  }else if(event.key === "ArrowUp"){
+    event.preventDefault();
+    items[Math.max(0, index - 1)].focus();
+  }else if(event.key === "ArrowLeft"){
+    event.preventDefault();
+    stepSection(-1);
+  }else if(event.key === "ArrowRight"){
+    event.preventDefault();
+    stepSection(1);
+  }else if(event.key === "Enter" && document.activeElement.classList.contains("channel-item")){
+    document.activeElement.click();
   }
-
-  if(event.key === "ArrowDown" && tabs.length){event.preventDefault();(tabs.find(t=>t.classList.contains("active"))||tabs[0]).focus();}
-  else if(event.key === "Enter"){event.preventDefault();playBtn.focus();}
-  else if(event.key === " "){event.preventDefault();togglePlay();}
-  else if(event.key === "f" || event.key === "F") toggleFullscreen();
 }
 
 async function loadAllPlaylists(){
@@ -1152,7 +1176,6 @@ function loadChannel(channel, closeOnMobile = true){
     mainTitle.textContent = channel.name;
     topCategory.textContent = channel.category.toUpperCase();
     topTitle.textContent = channel.name;
-    updateNowPlayingLogo(channel);
     mainInfo.textContent = "Abriendo el canal en ViX oficial...";
     renderChannels();
     window.open(channel.officialUrl || channel.url, "_blank", "noopener,noreferrer");
@@ -1166,7 +1189,6 @@ function loadChannel(channel, closeOnMobile = true){
   mainInfo.textContent = `${channel.sectionLabel} · ${channel.category} · Preparando señal...`;
   topCategory.textContent = channel.category.toUpperCase();
   topTitle.textContent = channel.name;
-  updateNowPlayingLogo(channel);
   renderChannels();
 
   playbackSequence += 1;
@@ -1176,16 +1198,6 @@ function loadChannel(channel, closeOnMobile = true){
 
   if(closeOnMobile && window.matchMedia("(max-width:800px)").matches) setGuideOpen(false);
   showPlayerUI();
-}
-
-function updateNowPlayingLogo(channel){
-  if(!nowLogo || !channel) return;
-  nowLogo.classList.toggle("dark", String(channel.logoBackground || "").toLowerCase() === "black");
-  if(channel.logo){
-    nowLogo.innerHTML = `<img src="${escapeHtml(channel.logo)}" alt="" referrerpolicy="no-referrer" onerror="this.remove();this.parentElement.textContent='${escapeHtml(getInitials(channel.name))}'">`;
-  }else{
-    nowLogo.textContent = getInitials(channel.name);
-  }
 }
 
 function buildPlaybackCandidates(channel){
@@ -1452,15 +1464,21 @@ async function toggleFullscreen(){
 }
 function showPlayerUI(){
   playerStage.classList.add("show-ui");
+  playerStage.classList.remove("immersive");
   clearTimeout(hideTimer);
-  hideTimer = setTimeout(() => hidePlayerUI(), 4200);
+  hideTimer = setTimeout(() => hidePlayerUI(), 4500);
 }
 function hidePlayerUI(delay = 0){
   clearTimeout(hideTimer);
   hideTimer = setTimeout(() => {
-    const active = document.activeElement;
-    const controlsFocused = active && (active.closest?.(".controls-wrap") || active.closest?.(".now-playing"));
-    if(!controlsFocused) playerStage.classList.remove("show-ui");
+    const video = getPlayerVideo();
+    const typing = ["INPUT","SELECT","TEXTAREA"].includes(document.activeElement?.tagName);
+    const modalOpen = epgModal.classList.contains("open");
+    if(video && !video.paused && !typing && !modalOpen){
+      playerStage.classList.remove("show-ui");
+      playerStage.classList.add("immersive");
+      window.scrollTo({top:0, behavior:"smooth"});
+    }
   }, delay);
 }
 
