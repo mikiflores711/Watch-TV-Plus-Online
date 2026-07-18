@@ -321,6 +321,429 @@ html,body{overflow:auto;background:#020306}
   .channel-text h3{font-size:13px!important}
 }
 
+
+
+/* =========================================================
+   VERSIÓN RESPONSIVE OVERLAY — PC / ANDROID TV / ONN TV BOX
+   El reproductor ocupa toda la pantalla y la interfaz flota encima.
+   ========================================================= */
+:root{
+  --overlay-side:clamp(10px,2vw,28px);
+  --overlay-bottom-h:clamp(205px,34vh,282px);
+  --overlay-gap:clamp(5px,.8vh,9px);
+}
+
+html,body{
+  width:100%!important;
+  height:100%!important;
+  min-height:100%!important;
+  overflow:hidden!important;
+  overscroll-behavior:none;
+  background:#000!important;
+}
+
+.tv-app,.player-shell,.player-stage{
+  width:100%!important;
+  height:100dvh!important;
+  min-height:100dvh!important;
+  max-height:100dvh!important;
+  overflow:hidden!important;
+}
+
+.player-stage{
+  position:relative!important;
+  display:block!important;
+  padding:0!important;
+  margin:0!important;
+  background:#000!important;
+  isolation:isolate;
+}
+
+#player{
+  position:absolute!important;
+  inset:0!important;
+  z-index:0!important;
+  width:100%!important;
+  height:100%!important;
+  min-height:0!important;
+  margin:0!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+  background:#000!important;
+}
+
+#player video{
+  width:100%!important;
+  height:100%!important;
+  object-fit:contain!important;
+  background:#000!important;
+}
+
+.video-vignette{
+  position:absolute!important;
+  inset:0!important;
+  z-index:2!important;
+  width:100%!important;
+  height:100%!important;
+  border-radius:0!important;
+  pointer-events:none!important;
+  background:
+    linear-gradient(180deg,rgba(0,0,0,.16) 0%,rgba(0,0,0,0) 28%,rgba(0,0,0,0) 53%,rgba(0,0,0,.93) 100%),
+    linear-gradient(90deg,rgba(0,0,0,.13),transparent 23%,transparent 77%,rgba(0,0,0,.13))!important;
+  opacity:1;
+  transition:opacity .38s ease!important;
+}
+
+/* Información del canal arriba. Al ocultarse sube. */
+.now-playing{
+  position:absolute!important;
+  z-index:50!important;
+  top:clamp(10px,1.7vh,20px)!important;
+  left:var(--overlay-side)!important;
+  bottom:auto!important;
+  width:min(380px,calc(100vw - (var(--overlay-side) * 2)))!important;
+  max-width:none!important;
+  min-height:64px!important;
+  padding:9px 13px!important;
+  border:1px solid rgba(255,56,88,.72)!important;
+  border-left:1px solid rgba(255,56,88,.72)!important;
+  border-radius:12px!important;
+  background:linear-gradient(90deg,rgba(4,5,8,.96),rgba(8,8,12,.84))!important;
+  box-shadow:0 14px 38px rgba(0,0,0,.46)!important;
+  backdrop-filter:blur(14px);
+  opacity:1!important;
+  visibility:visible!important;
+  transform:translateY(0)!important;
+  pointer-events:none!important;
+  transition:transform .52s cubic-bezier(.22,.75,.16,1),opacity .32s ease!important;
+}
+.watching-label{font-size:9px!important;letter-spacing:1.1px!important}
+.watching-title{font-size:clamp(16px,1.8vw,21px)!important;margin-top:4px!important}
+.main-info{font-size:9px!important;margin-top:4px!important}
+.top-live-badge{padding:2px 7px!important;font-size:8px!important}
+
+/* Controles: flotan justo arriba del buscador. */
+.controls-wrap{
+  position:absolute!important;
+  z-index:55!important;
+  left:50%!important;
+  right:auto!important;
+  top:auto!important;
+  bottom:calc(var(--overlay-bottom-h) + 7px)!important;
+  width:auto!important;
+  padding:0!important;
+  margin:0!important;
+  background:transparent!important;
+  opacity:1!important;
+  visibility:visible!important;
+  pointer-events:auto!important;
+  transform:translate(-50%,0)!important;
+  transition:transform .50s cubic-bezier(.22,.75,.16,1),opacity .30s ease!important;
+}
+.controls-bar{
+  width:auto!important;
+  min-width:250px!important;
+  min-height:46px!important;
+  padding:5px 10px!important;
+  margin:0!important;
+  gap:8px!important;
+  justify-content:center!important;
+  border-radius:15px!important;
+  background:rgba(7,8,12,.88)!important;
+  border:1px solid rgba(255,255,255,.15)!important;
+  box-shadow:0 13px 38px rgba(0,0,0,.52)!important;
+  backdrop-filter:blur(16px);
+}
+.play-btn{
+  width:40px!important;
+  height:40px!important;
+  min-width:40px!important;
+  border:2px solid #ff4055!important;
+  border-radius:50%!important;
+  background:rgba(9,11,17,.96)!important;
+}
+.ctrl-btn.small{width:34px!important;height:34px!important;border-radius:9px!important}
+.pill.live{height:34px!important;padding:0 9px!important;font-size:10px!important;background:transparent!important}
+
+/* Panel inferior superpuesto, compacto y sin scroll vertical. */
+.guide-panel{
+  position:absolute!important;
+  z-index:40!important;
+  inset:auto 0 0 0!important;
+  width:100%!important;
+  height:var(--overlay-bottom-h)!important;
+  max-height:var(--overlay-bottom-h)!important;
+  min-height:0!important;
+  padding:7px var(--overlay-side) max(7px,env(safe-area-inset-bottom))!important;
+  margin:0!important;
+  display:grid!important;
+  grid-template-rows:34px 37px minmax(0,1fr)!important;
+  gap:var(--overlay-gap)!important;
+  overflow:hidden!important;
+  background:linear-gradient(180deg,rgba(0,0,0,0) 0%,rgba(0,0,0,.70) 9%,rgba(0,0,0,.94) 25%,#000 100%)!important;
+  opacity:1!important;
+  visibility:visible!important;
+  pointer-events:auto!important;
+  transform:translateY(0)!important;
+  transition:transform .56s cubic-bezier(.22,.75,.16,1),opacity .34s ease!important;
+}
+
+.guide-head{
+  grid-row:1!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  min-height:0!important;
+  height:34px!important;
+  margin:0 45px!important;
+  gap:8px!important;
+}
+.guide-head>div:first-child,.guide-brand,.guide-title{display:none!important}
+.guide-tools{
+  width:min(740px,70vw)!important;
+  height:34px!important;
+  display:grid!important;
+  grid-template-columns:minmax(230px,1fr) 166px 105px!important;
+  gap:6px!important;
+  margin:0!important;
+}
+.search-input,.filter-select{
+  height:34px!important;
+  min-height:34px!important;
+  padding:0 10px!important;
+  border-radius:8px!important;
+  font-size:10px!important;
+  background:rgba(16,19,27,.95)!important;
+}
+
+.sections-block{
+  grid-row:2!important;
+  width:100%!important;
+  height:37px!important;
+  min-height:37px!important;
+  margin:0!important;
+  gap:6px!important;
+}
+.section-tabs{
+  height:37px!important;
+  padding:1px 2px!important;
+  gap:7px!important;
+  align-items:center!important;
+}
+.tab-btn{
+  height:31px!important;
+  min-height:31px!important;
+  padding:0 13px!important;
+  font-size:10px!important;
+  border-width:1.5px!important;
+}
+
+.channels-block{
+  grid-row:3!important;
+  width:100%!important;
+  min-height:0!important;
+  height:100%!important;
+  margin:0!important;
+  gap:7px!important;
+  align-items:stretch!important;
+}
+.channel-list{
+  height:100%!important;
+  min-height:0!important;
+  padding:2px 3px 0!important;
+  gap:11px!important;
+  align-items:flex-start!important;
+  overflow-x:auto!important;
+  overflow-y:hidden!important;
+}
+.channel-item{
+  --compact-card-w:clamp(103px,10.6vw,148px);
+  flex:0 0 var(--compact-card-w)!important;
+  width:var(--compact-card-w)!important;
+  min-width:var(--compact-card-w)!important;
+  height:auto!important;
+  min-height:0!important;
+  padding:0!important;
+  margin:0!important;
+  display:flex!important;
+  flex-direction:column!important;
+  gap:0!important;
+  overflow:visible!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  transform:none!important;
+}
+.channel-item:hover,.channel-item:focus-visible,.channel-item.active{
+  background:transparent!important;
+  box-shadow:none!important;
+  transform:translateY(-1px)!important;
+}
+.channel-logo{
+  position:relative!important;
+  width:100%!important;
+  height:clamp(72px,11.5vh,103px)!important;
+  aspect-ratio:auto!important;
+  border:2px solid var(--section-color)!important;
+  border-radius:10px!important;
+  overflow:hidden!important;
+  background:linear-gradient(145deg,#4b4f58,#252831)!important;
+  box-shadow:0 7px 18px rgba(0,0,0,.38)!important;
+  transition:transform .18s ease,box-shadow .18s ease!important;
+}
+.channel-logo img{
+  width:100%!important;
+  height:100%!important;
+  object-fit:contain!important;
+  padding:6px!important;
+  background:transparent!important;
+}
+.channel-item:focus-visible .channel-logo,.channel-item:hover .channel-logo{
+  transform:scale(1.025)!important;
+  box-shadow:0 0 0 2px #fff,0 9px 24px rgba(0,0,0,.52)!important;
+}
+.channel-item.active .channel-logo{
+  transform:scale(1.018)!important;
+  box-shadow:0 0 0 3px #fff,0 0 22px var(--section-color)!important;
+}
+.channel-text{
+  width:100%!important;
+  min-height:0!important;
+  padding:5px 3px 0!important;
+  text-align:center!important;
+  overflow:visible!important;
+}
+.channel-text h3{
+  font-size:clamp(9px,.85vw,11px)!important;
+  line-height:1.15!important;
+  color:#fff!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+.channel-text p,.card-actions{display:none!important}
+.card-live{top:5px!important;right:5px!important;padding:3px 5px!important;border-radius:6px!important;font-size:6.5px!important}
+
+.carousel-arrow{
+  flex:0 0 34px!important;
+  width:34px!important;
+  height:34px!important;
+  min-width:34px!important;
+  border-radius:50%!important;
+  font-size:27px!important;
+  background:rgba(18,21,28,.92)!important;
+  border:1px solid rgba(255,255,255,.19)!important;
+}
+.channels-block .carousel-arrow{align-self:center!important}
+.guide-footer,.adult-notice{display:none!important}
+
+/* Persiana hacia abajo y tarjeta hacia arriba. */
+.player-stage.immersive .guide-panel{
+  visibility:visible!important;
+  opacity:0!important;
+  transform:translateY(112%)!important;
+  pointer-events:none!important;
+}
+.player-stage.immersive .controls-wrap{
+  visibility:visible!important;
+  opacity:0!important;
+  transform:translate(-50%,calc(var(--overlay-bottom-h) + 90px))!important;
+  pointer-events:none!important;
+}
+.player-stage.immersive .now-playing{
+  visibility:visible!important;
+  opacity:0!important;
+  transform:translateY(-145%)!important;
+}
+.player-stage.immersive .video-vignette{opacity:0!important}
+.player-stage.immersive #player{
+  position:absolute!important;
+  inset:0!important;
+  width:100%!important;
+  height:100%!important;
+  min-height:0!important;
+  margin:0!important;
+  border:0!important;
+  border-radius:0!important;
+}
+.player-stage.immersive{cursor:none!important}
+.player-stage:not(.immersive){cursor:default!important}
+
+button:focus-visible,input:focus-visible,select:focus-visible{
+  outline:2px solid #fff!important;
+  outline-offset:2px!important;
+}
+
+/* Resoluciones de laptop con poca altura, como 1280×720. */
+@media (max-height:760px){
+  :root{--overlay-bottom-h:clamp(188px,32.5vh,235px)}
+  .guide-panel{grid-template-rows:31px 34px minmax(0,1fr)!important;padding-top:5px!important}
+  .guide-head,.guide-tools{height:31px!important}
+  .search-input,.filter-select{height:31px!important;min-height:31px!important}
+  .sections-block,.section-tabs{height:34px!important;min-height:34px!important}
+  .tab-btn{height:28px!important;min-height:28px!important;padding:0 11px!important;font-size:9px!important}
+  .channel-logo{height:clamp(63px,10.8vh,82px)!important}
+  .controls-wrap{bottom:calc(var(--overlay-bottom-h) + 4px)!important}
+  .controls-bar{min-height:42px!important;padding:4px 8px!important}
+  .play-btn{width:36px!important;height:36px!important;min-width:36px!important}
+  .ctrl-btn.small{width:31px!important;height:31px!important}
+  .pill.live{height:31px!important;font-size:9px!important}
+}
+
+/* Pantallas grandes/TV: no hacer los elementos excesivamente grandes. */
+@media (min-width:1500px) and (min-height:800px){
+  :root{--overlay-bottom-h:clamp(235px,32vh,295px)}
+  .channel-item{--compact-card-w:clamp(125px,9.4vw,160px)}
+  .channel-logo{height:clamp(90px,11.5vh,112px)!important}
+}
+
+/* Tablet y móvil. */
+@media (max-width:850px){
+  :root{--overlay-bottom-h:clamp(215px,39vh,290px);--overlay-side:9px}
+  .now-playing{width:min(330px,calc(100vw - 18px))!important;top:9px!important}
+  .guide-head{margin:0 36px!important}
+  .guide-tools{width:100%!important;grid-template-columns:minmax(150px,1fr) 130px 78px!important}
+  .channel-item{--compact-card-w:110px}
+  .channel-logo{height:76px!important}
+  .carousel-arrow{flex-basis:30px!important;width:30px!important;height:30px!important;min-width:30px!important;font-size:24px!important}
+}
+
+@media (max-width:560px){
+  :root{--overlay-bottom-h:clamp(225px,44vh,300px)}
+  .guide-panel{grid-template-rows:62px 33px minmax(0,1fr)!important}
+  .guide-head{height:62px!important;margin:0 32px!important}
+  .guide-tools{height:62px!important;grid-template-columns:1fr 1fr!important}
+  .guide-tools .search-input{grid-column:1/-1!important}
+  .search-input,.filter-select{height:29px!important;min-height:29px!important}
+  .channel-item{--compact-card-w:96px}
+  .channel-logo{height:68px!important}
+  .main-info{display:none!important}
+}
+
+/* Formato horizontal de ONN/Android TV con poca altura. */
+@media (orientation:landscape) and (max-height:600px){
+  :root{--overlay-bottom-h:clamp(170px,35vh,205px)}
+  .guide-panel{grid-template-rows:28px 31px minmax(0,1fr)!important;padding-top:4px!important;padding-bottom:4px!important}
+  .guide-head,.guide-tools{height:28px!important}
+  .search-input,.filter-select{height:28px!important;min-height:28px!important;font-size:8px!important}
+  .sections-block,.section-tabs{height:31px!important;min-height:31px!important}
+  .tab-btn{height:25px!important;min-height:25px!important;padding:0 9px!important;font-size:8px!important}
+  .channel-item{--compact-card-w:92px}
+  .channel-logo{height:58px!important}
+  .channel-text{padding-top:3px!important}
+  .channel-text h3{font-size:8px!important}
+  .controls-wrap{bottom:calc(var(--overlay-bottom-h) + 3px)!important}
+  .controls-bar{min-width:220px!important;min-height:36px!important;padding:3px 7px!important}
+  .play-btn{width:31px!important;height:31px!important;min-width:31px!important}
+  .ctrl-btn.small{width:28px!important;height:28px!important}
+  .pill.live{height:28px!important;font-size:8px!important}
+  .now-playing{min-height:50px!important;padding:7px 10px!important}
+  .watching-title{font-size:15px!important}
+  .main-info{display:none!important}
+}
+
 </style>
 </head>
 <body>
@@ -588,7 +1011,12 @@ function stepSection(direction){
 }
 
 function handleKeyboard(event){
+  const wasImmersive = playerStage.classList.contains("immersive");
   showPlayerUI();
+  if(wasImmersive && ["ArrowUp","ArrowDown","ArrowLeft","ArrowRight","Enter"].includes(event.key)){
+    event.preventDefault();
+    return;
+  }
   if(epgModal.classList.contains("open")){
     if(event.key === "Escape" || event.key === "Backspace"){
       event.preventDefault();
@@ -1477,7 +1905,7 @@ function hidePlayerUI(delay = 0){
     if(video && !video.paused && !typing && !modalOpen){
       playerStage.classList.remove("show-ui");
       playerStage.classList.add("immersive");
-      window.scrollTo({top:0, behavior:"smooth"});
+      window.scrollTo(0, 0);
     }
   }, delay);
 }
