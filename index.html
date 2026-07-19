@@ -7,10 +7,9 @@
   content="width=device-width, initial-scale=1, viewport-fit=cover"
 >
 
-<title>Watch TV Plus · Pluto compatible</title>
+<title>Watch TV Plus · Hls.js</title>
 
-<!-- Reproducción híbrida: Hls.js prioritario para jmp2.uk/Pluto, Shaka y HLS nativo como respaldo. -->
-<script src="https://cdn.jsdelivr.net/npm/shaka-player@latest/dist/shaka-player.compiled.js"></script>
+<!-- Reproductor principal: Hls.js. HLS nativo se usa como respaldo en dispositivos compatibles. -->
 <script src="https://cdn.jsdelivr.net/npm/hls.js@latest/dist/hls.min.js"></script>
 
 <style>
@@ -1224,10 +1223,8 @@ const mainInfo =
    ESTADO
    ===================================================== */
 
-let player = null;          // Instancia de Shaka Player
-let hlsPlayer = null;       // Respaldo Hls.js para HLS difícil y jmp2.uk
-let playbackEngine = "";   // shaka, hlsjs o native
-let shakaSupported = false;
+let hlsPlayer = null;       // Reproductor principal para HLS y enlaces jmp2.uk
+let playbackEngine = "";   // hlsjs o native
 let activeSection = "mexico";
 let currentChannel = null;
 let currentUrl = "";
@@ -1258,11 +1255,6 @@ async function init(){
   bindEvents();
   showInterface();
 
-  if(window.shaka){
-    shaka.polyfill.installAll();
-    shakaSupported = shaka.Player.isBrowserSupported();
-  }
-
   const hlsJsSupported = Boolean(window.Hls && Hls.isSupported());
   const nativeVideo = document.createElement("video");
   const nativeHlsSupported = Boolean(
@@ -1270,9 +1262,9 @@ async function init(){
     nativeVideo.canPlayType("application/x-mpegURL")
   );
 
-  if(!shakaSupported && !hlsJsSupported && !nativeHlsSupported){
+  if(!hlsJsSupported && !nativeHlsSupported){
     mainInfo.textContent = "Este navegador no dispone de un motor compatible con HLS.";
-    channelList.innerHTML = `<div class="empty-message">No fue posible iniciar Shaka Player, Hls.js ni la reproducción HLS nativa.</div>`;
+    channelList.innerHTML = `<div class="empty-message">No fue posible iniciar Hls.js ni la reproducción HLS nativa.</div>`;
     return;
   }
 
@@ -2400,14 +2392,10 @@ function addPlaybackCandidate(list, seen, engine, mode, url){
   });
 }
 
-function addHlsRoute(list, seen, route, preferHlsJs = false){
-  const engines = preferHlsJs
-    ? ["hlsjs", "native", "shaka"]
-    : ["shaka", "hlsjs", "native"];
-
-  engines.forEach(engine => {
-    addPlaybackCandidate(list, seen, engine, route.mode, route.url);
-  });
+function addHlsRoute(list, seen, route){
+  /* Hls.js es el motor principal. El reproductor nativo queda como respaldo. */
+  addPlaybackCandidate(list, seen, "hlsjs", route.mode, route.url);
+  addPlaybackCandidate(list, seen, "native", route.mode, route.url);
 }
 
 function buildPlaybackCandidates(channel){
@@ -2416,9 +2404,6 @@ function buildPlaybackCandidates(channel){
   const sourceUrl = String(channel && channel.url || "").trim();
   const sourceIsHls = isHlsUrl(sourceUrl);
   const plutoId = extractPlutoChannelId(channel);
-  const isJmpPluto = Boolean(
-    plutoId && /jmp2\.uk\/plu-|pluto\.tv|stitcher/i.test(sourceUrl)
-  );
 
   const pageUsesHttps = location.protocol === "https:";
   const streamUsesHttp = sourceUrl.startsWith("http://");
@@ -2431,44 +2416,51 @@ function buildPlaybackCandidates(channel){
   const proxyRoute = { mode:"proxy", url:buildProxyUrl(channel, sourceUrl) };
 
   if(sourceIsHls){
-    /* jmp2.uk suele ser más tolerante con Hls.js que con Shaka. */
+    /* La versión que funcionaba daba prioridad total a Hls.js para jmp2.uk. */
     if(directAllowed && !requiresHeaders){
-      addHlsRoute(candidates, seen, directRoute, isJmpPluto);
+      addHlsRoute(candidates, seen, directRoute);
     }
 
-    addHlsRoute(candidates, seen, proxyRoute, true);
+    /* El Worker reescribe manifiestos, sublistas, claves y segmentos. */
+    addHlsRoute(candidates, seen, proxyRoute);
 
+    /* Algunos servidores aceptan la ruta directa aun cuando la lista declare cabeceras. */
     if(directAllowed && requiresHeaders){
-      addHlsRoute(candidates, seen, directRoute, isJmpPluto);
+      addHlsRoute(candidates, seen, directRoute);
     }
 
-    /* Si jmp2.uk deja de resolver, se intenta el canal oficial de Pluto por su ID. */
+    /* Respaldo de Pluto construido a partir del channel-id. */
     if(plutoId){
       const officialUrl = buildOfficialPlutoUrl(channel);
-      const officialDirect = { mode:"Pluto oficial", url:officialUrl };
-      const officialProxy = {
-        mode:"Pluto oficial por proxy",
-        url:buildProxyUrl(channel, officialUrl)
-      };
-
-      addHlsRoute(candidates, seen, officialDirect, true);
-      addHlsRoute(candidates, seen, officialProxy, true);
+      if(officialUrl){
+        addHlsRoute(candidates, seen, {
+          mode:"Pluto oficial",
+          url:officialUrl
+        });
+        addHlsRoute(candidates, seen, {
+          mode:"Pluto oficial por proxy",
+          url:buildProxyUrl(channel, officialUrl)
+        });
+      }
     }
   }else{
-    /* MP4, MP3 y otros formatos: primero reproducción nativa, después Shaka. */
+    /* MP4, MP3 y otros formatos se reproducen con el elemento de video nativo. */
     if(directAllowed && !requiresHeaders){
       addPlaybackCandidate(candidates, seen, "native", "directo", sourceUrl);
-      addPlaybackCandidate(candidates, seen, "shaka", "directo", sourceUrl);
     }
-
     addPlaybackCandidate(candidates, seen, "native", "proxy", proxyRoute.url);
-    addPlaybackCandidate(candidates, seen, "shaka", "proxy", proxyRoute.url);
+    if(directAllowed && requiresHeaders){
+      addPlaybackCandidate(candidates, seen, "native", "directo", sourceUrl);
+    }
   }
 
   return candidates.filter(candidate => {
-    if(candidate.engine === "shaka") return shakaSupported;
-    if(candidate.engine === "hlsjs") return Boolean(window.Hls && Hls.isSupported());
-    if(candidate.engine === "native" && candidate.isHls) return canUseNativeHls();
+    if(candidate.engine === "hlsjs"){
+      return Boolean(window.Hls && Hls.isSupported());
+    }
+    if(candidate.engine === "native" && candidate.isHls){
+      return canUseNativeHls();
+    }
     return true;
   });
 }
@@ -2494,17 +2486,7 @@ function createPlaybackVideoElement(){
 
 function engineLabel(engine){
   if(engine === "hlsjs") return "Hls.js";
-  if(engine === "native") return "reproductor nativo";
-  return "Shaka Player";
-}
-
-function mimeTypeForShaka(url){
-  const value = String(url || "").toLowerCase();
-  if(isHlsUrl(value)) return "application/x-mpegurl";
-  if(value.includes(".mpd")) return "application/dash+xml";
-  if(value.includes(".mp4")) return "video/mp4";
-  if(value.includes(".mp3")) return "audio/mpeg";
-  return undefined;
+  return "reproductor nativo";
 }
 
 async function startPlaybackCandidate(index, sequence){
@@ -2542,10 +2524,8 @@ async function startPlaybackCandidate(index, sequence){
   try{
     if(candidate.engine === "hlsjs"){
       await loadWithHlsJs(candidate, video, sequence);
-    }else if(candidate.engine === "native"){
-      await loadWithNativeVideo(candidate, video, sequence);
     }else{
-      await loadWithShaka(candidate, video, sequence);
+      await loadWithNativeVideo(candidate, video, sequence);
     }
 
     if(sequence !== playbackSequence) return;
@@ -2570,57 +2550,6 @@ async function startPlaybackCandidate(index, sequence){
     console.error(`${label} no pudo cargar la ruta:`, error);
     tryNextCandidate(sequence, error && error.message || "error de carga");
   }
-}
-
-async function loadWithShaka(candidate, video, sequence){
-  if(!shakaSupported || !window.shaka){
-    throw new Error("Shaka Player no está disponible");
-  }
-
-  player = new shaka.Player();
-  await player.attach(video);
-
-  player.configure({
-    preferredAudioLanguage:"es",
-    abr:{ enabled:true },
-    streaming:{
-      bufferingGoal:18,
-      rebufferingGoal:2,
-      bufferBehind:20,
-      lowLatencyMode:true,
-      retryParameters:{
-        maxAttempts:3,
-        baseDelay:700,
-        backoffFactor:2,
-        fuzzFactor:.5,
-        timeout:10000
-      }
-    },
-    manifest:{
-      retryParameters:{
-        maxAttempts:3,
-        baseDelay:700,
-        backoffFactor:2,
-        fuzzFactor:.5,
-        timeout:10000
-      }
-    }
-  });
-
-  player.addEventListener("error", event => {
-    const error = event && event.detail;
-    console.error("Shaka Player error:", error);
-
-    if(
-      sequence === playbackSequence &&
-      (!error || error.severity === shaka.util.Error.Severity.CRITICAL)
-    ){
-      tryNextCandidate(sequence, `Shaka ${error && error.code || "error"}`);
-    }
-  });
-
-  const mimeType = mimeTypeForShaka(candidate.url);
-  await player.load(candidate.url, null, mimeType);
 }
 
 function loadWithHlsJs(candidate, video, sequence){
@@ -2807,7 +2736,7 @@ function showPlaybackError(reason = "sin respuesta"){
 
   const plutoId = extractPlutoChannelId(currentChannel);
   mainInfo.textContent = plutoId
-    ? `No se pudo abrir esta señal (${reason}). Se probaron jmp2.uk, proxy, Hls.js, Shaka y la ruta oficial de Pluto.`
+    ? `No se pudo abrir esta señal (${reason}). Se probaron jmp2.uk, el proxy, Hls.js, HLS nativo y la ruta oficial de Pluto.`
     : `No se pudo reproducir este canal (${reason}). El servidor puede estar caído, bloqueado por CORS o requerir autorización.`;
 
   updatePlayButton();
@@ -2827,14 +2756,6 @@ async function destroyPlayer(){
     hlsPlayer = null;
   }
 
-  if(player){
-    try{
-      await player.destroy();
-    }catch(error){
-      console.log("Error cerrando Shaka Player:", error);
-    }
-    player = null;
-  }
 
   const video = getVideoElement();
   if(video){
