@@ -9,8 +9,7 @@
 
 <title>Watch TV Plus</title>
 
-<script src="https://cdn.jsdelivr.net/npm/clappr@latest/dist/clappr.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@clappr/hlsjs-playback@latest/dist/hlsjs-playback.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/shaka-player@latest/dist/shaka-player.compiled.js"></script>
 
 <style>
 :root{
@@ -920,7 +919,7 @@ select:focus-visible{
   <main class="player-shell">
     <section class="player-stage" id="playerStage">
 
-      <div id="player"></div>
+      <div id="player"><video id="videoElement" playsinline preload="auto"></video></div>
       <div class="video-vignette"></div>
 
       <article class="now-playing">
@@ -1243,6 +1242,7 @@ let playbackSequence = 0;
 let playbackCandidates = [];
 let playbackCandidateIndex = 0;
 let playbackStarted = false;
+let playbackFailureInProgress = false;
 
 /* =====================================================
    INICIO
@@ -1252,6 +1252,21 @@ async function init(){
   buildSectionTabs();
   bindEvents();
   showInterface();
+
+  if(!window.shaka){
+    mainInfo.textContent = "No se pudo cargar Shaka Player. Revisa la conexión a internet.";
+    channelList.innerHTML = `<div class="empty-message">No se pudo iniciar el reproductor Shaka Player.</div>`;
+    return;
+  }
+
+  shaka.polyfill.installAll();
+
+  if(!shaka.Player.isBrowserSupported()){
+    mainInfo.textContent = "Este navegador o TV Box no es compatible con Shaka Player.";
+    channelList.innerHTML = `<div class="empty-message">El dispositivo no admite las funciones multimedia necesarias para Shaka Player.</div>`;
+    return;
+  }
+
   await loadAllPlaylists();
 }
 
@@ -2352,7 +2367,25 @@ function buildProxyUrl(channel){
   return url;
 }
 
-function startPlaybackCandidate(
+function createShakaVideoElement(){
+  const playerContainer = document.getElementById("player");
+  playerContainer.innerHTML = "";
+
+  const video = document.createElement("video");
+  video.id = "videoElement";
+  video.autoplay = true;
+  video.playsInline = true;
+  video.preload = "auto";
+  video.controls = false;
+  video.setAttribute("playsinline", "");
+  video.setAttribute("webkit-playsinline", "");
+  video.setAttribute("aria-label", "Reproductor de televisión en vivo");
+
+  playerContainer.appendChild(video);
+  return video;
+}
+
+async function startPlaybackCandidate(
   index,
   sequence
 ){
@@ -2373,89 +2406,99 @@ function startPlaybackCandidate(
 
   playbackCandidateIndex = index;
   playbackStarted = false;
+  playbackFailureInProgress = false;
 
   clearTimeout(playbackTimer);
-  destroyPlayer();
+  await destroyPlayer();
+
+  if(sequence !== playbackSequence || !currentChannel){
+    return;
+  }
 
   mainInfo.textContent =
-    `${currentChannel.sectionLabel} · Intentando ${candidate.mode}...`;
+    `${currentChannel.sectionLabel} · Shaka Player intentando ${candidate.mode}...`;
 
-  const plugins = [];
+  const video = createShakaVideoElement();
+  syncVideoEvents(sequence);
 
-  if(window.HlsjsPlayback){
-    plugins.push(
-      window.HlsjsPlayback
-    );
-  }
+  try{
+    player = new shaka.Player();
+    await player.attach(video);
 
-  const config = {
-    source:candidate.url,
-    parentId:"#player",
-    plugins,
-    autoPlay:true,
-    mute:false,
-    width:"100%",
-    height:"100%",
-    hideMediaControl:true,
-    playback:{
-      hlsjsConfig:{
-        enableWorker:true,
+    player.configure({
+      preferredAudioLanguage:"es",
+      streaming:{
+        bufferingGoal:20,
+        rebufferingGoal:2,
+        bufferBehind:15,
         lowLatencyMode:true,
-        liveSyncDurationCount:3,
-        maxBufferLength:24,
-        manifestLoadingMaxRetry:4,
-        manifestLoadingRetryDelay:1000,
-        levelLoadingMaxRetry:4,
-        levelLoadingRetryDelay:1000,
-        fragLoadingMaxRetry:4,
-        fragLoadingRetryDelay:1000
+        retryParameters:{
+          maxAttempts:4,
+          baseDelay:1000,
+          backoffFactor:2,
+          fuzzFactor:.5,
+          timeout:0
+        }
+      },
+      manifest:{
+        retryParameters:{
+          maxAttempts:4,
+          baseDelay:1000,
+          backoffFactor:2,
+          fuzzFactor:.5,
+          timeout:0
+        }
       }
-    },
-    events:{
-      onReady(){
-        syncVideoEvents(sequence);
-      },
+    });
 
-      onPlay(){
-        markPlaybackSuccess(
-          sequence,
-          candidate.mode
-        );
-      },
+    player.addEventListener("error", event => {
+      const error = event && event.detail;
+      console.error("Shaka Player error:", error);
 
-      onPause(){
-        updatePlayButton();
-      },
-
-      onError(){
+      if(
+        sequence === playbackSequence &&
+        (!error || error.severity === shaka.util.Error.Severity.CRITICAL)
+      ){
         tryNextCandidate(sequence);
       }
+    });
+
+    playbackTimer = setTimeout(() => {
+      if(
+        sequence === playbackSequence &&
+        !playbackStarted
+      ){
+        tryNextCandidate(sequence);
+      }
+    },PLAYBACK_TIMEOUT);
+
+    await player.load(candidate.url);
+
+    if(sequence !== playbackSequence){
+      return;
     }
-  };
 
-  const mimeType =
-    inferMimeType(currentChannel.url);
+    playbackStarted = true;
+    playbackFailureInProgress = false;
+    clearTimeout(playbackTimer);
 
-  if(mimeType){
-    config.mimeType = mimeType;
+    mainInfo.textContent =
+      `${currentChannel.sectionLabel} · Señal cargada con Shaka Player por ${candidate.mode}`;
+
+    try{
+      await video.play();
+    }catch(error){
+      console.log("Reproducción automática bloqueada:", error);
+      mainInfo.textContent =
+        `${currentChannel.sectionLabel} · Señal lista; presiona reproducir`;
+    }
+
+    updatePlayButton();
+    showInterface();
+  }catch(error){
+    console.error("No se pudo cargar con Shaka Player:", error);
+    tryNextCandidate(sequence);
   }
-
-  player =
-    new Clappr.Player(config);
-
-  playbackTimer = setTimeout(() => {
-    if(
-      sequence === playbackSequence &&
-      !playbackStarted
-    ){
-      tryNextCandidate(sequence);
-    }
-  },PLAYBACK_TIMEOUT);
-
-  setTimeout(
-    updatePlayButton,
-    650
-  );
 }
 
 function syncVideoEvents(sequence){
@@ -2495,6 +2538,13 @@ function syncVideoEvents(sequence){
     updatePlayButton
   );
 
+  video.addEventListener("waiting", () => {
+    if(sequence === playbackSequence && currentChannel){
+      mainInfo.textContent =
+        `${currentChannel.sectionLabel} · Almacenando señal en búfer...`;
+    }
+  });
+
   video.addEventListener("error", () => {
     tryNextCandidate(sequence);
   });
@@ -2509,20 +2559,25 @@ function markPlaybackSuccess(
   }
 
   playbackStarted = true;
+  playbackFailureInProgress = false;
   clearTimeout(playbackTimer);
 
   mainInfo.textContent =
-    `${currentChannel.sectionLabel} · Reproduciendo por ${mode}`;
+    `${currentChannel.sectionLabel} · Shaka Player reproduciendo por ${mode}`;
 
   updatePlayButton();
   showInterface();
 }
 
 function tryNextCandidate(sequence){
-  if(sequence !== playbackSequence){
+  if(
+    sequence !== playbackSequence ||
+    playbackFailureInProgress
+  ){
     return;
   }
 
+  playbackFailureInProgress = true;
   clearTimeout(playbackTimer);
 
   const nextIndex =
@@ -2535,7 +2590,11 @@ function tryNextCandidate(sequence){
     playbackCandidateIndex =
       nextIndex;
 
+    mainInfo.textContent =
+      `La ruta actual falló; Shaka Player probará ${playbackCandidates[nextIndex].mode}...`;
+
     setTimeout(() => {
+      playbackFailureInProgress = false;
       startPlaybackCandidate(
         nextIndex,
         sequence
@@ -2549,47 +2608,41 @@ function tryNextCandidate(sequence){
 }
 
 function showPlaybackError(){
+  playbackFailureInProgress = false;
+  clearTimeout(playbackTimer);
+
   mainInfo.textContent =
-    "No se pudo reproducir este canal. El enlace puede estar vencido, bloqueado o requerir autorización.";
+    "Shaka Player no pudo reproducir este canal. El enlace puede estar vencido, bloqueado por CORS, requerir autorización o usar un formato no compatible.";
 
   updatePlayButton();
 }
 
-function destroyPlayer(){
+async function destroyPlayer(){
   clearTimeout(playbackTimer);
 
   if(player){
     try{
-      player.destroy();
-    }catch(error){}
+      await player.destroy();
+    }catch(error){
+      console.log("Error cerrando Shaka Player:", error);
+    }
 
     player = null;
+  }
+
+  const video = getVideoElement();
+  if(video){
+    try{
+      video.pause();
+      video.removeAttribute("src");
+      video.load();
+    }catch(error){}
   }
 
   const playerContainer =
     document.getElementById("player");
 
   playerContainer.innerHTML = "";
-}
-
-function inferMimeType(url){
-  const value =
-    String(url || "")
-      .toLowerCase();
-
-  if(value.includes(".m3u8")){
-    return "application/vnd.apple.mpegurl";
-  }
-
-  if(value.includes(".mp4")){
-    return "video/mp4";
-  }
-
-  if(value.includes(".mp3")){
-    return "audio/mpeg";
-  }
-
-  return "";
 }
 
 /* =====================================================
