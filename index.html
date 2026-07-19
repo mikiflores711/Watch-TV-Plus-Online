@@ -92,7 +92,7 @@ body{overflow-x:hidden;}
       <div class="brand-logo">TV</div>
       <div>
         <h1>Watch TV Plus</h1>
-        <p>Listas actualizadas · Reproductor fijo arriba · Favoritos</p>
+        <p>Listas actualizadas · Pluto TV compatible · Favoritos</p>
       </div>
     </div>
     <div class="count-pill" id="countPill">Cargando...</div>
@@ -160,8 +160,14 @@ const PLAYLISTS = [
   { id:"mexico", label:"México", file:"./mexico.m3u", isAdult:false },
   { id:"pluto", label:"Pluto TV", file:"./pluto.m3u", isAdult:false },
   { id:"espanol", label:"Español", file:"./espanol.m3u", isAdult:false },
-  { id:"ingles", label:"Inglés", file:"./ingles.m3u", isAdult:false },
-  { id:"mundial", label:"Mundial", file:"./mundial.m3u", isAdult:false },
+  { id:"lg", label:"LG Channels", file:"./LG_Channels_mx.m3u", isAdult:false },
+  { id:"vix", label:"ViX", file:"./vix.m3u", isAdult:false },
+  { id:"tubi", label:"Tubi TV", file:"./tubi.m3u", isAdult:false },
+  { id:"runtime", label:"Run Time", file:"./runtime.m3u", isAdult:false },
+  { id:"tv", label:"TV", file:"./tv.m3u", isAdult:false },
+  { id:"plex", label:"Plex TV", file:"./plex_mx.m3u", isAdult:false },
+  { id:"roku", label:"Roku TV", file:"./roku_all.m3u", isAdult:false },
+  { id:"rakuten", label:"Rakuten TV", file:"./rakutentv.m3u", isAdult:false },
   { id:"favorites", label:"Favoritos", file:null, isAdult:false, isFavorites:true },
   { id:"adult", label:"Adultos 18+", file:"./adult.m3u", isAdult:true }
 ];
@@ -577,7 +583,7 @@ function setSection(section){
   activeSection = section;
   document.querySelectorAll(".tab-btn[data-section]").forEach(btn => btn.classList.toggle("active", btn.dataset.section === activeSection));
   adultNotice.style.display = activeSection === "adult" ? "block" : "none";
-  searchInput.placeholder = activeSection === "mundial" ? "Buscar en Mundial..." : "Buscar canal...";
+  searchInput.placeholder = `Buscar en ${PLAYLISTS.find(pl => pl.id === activeSection)?.label || "canales"}...`;
   buildCategories();
   renderChannels();
 }
