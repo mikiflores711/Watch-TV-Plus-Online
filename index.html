@@ -134,11 +134,11 @@ button{cursor:pointer}
   align-items:center;
   gap:10px;
   padding:7px 12px 7px 7px;
-  border:1px solid rgba(255,255,255,.2);
+  border:1px solid rgba(255,255,255,.28);
   border-radius:13px;
-  background:linear-gradient(110deg,rgba(15,15,23,.92),rgba(31,31,43,.8));
-  box-shadow:0 10px 30px rgba(0,0,0,.42);
-  backdrop-filter:blur(12px);
+  background:rgba(0,0,0,.16);
+  box-shadow:0 5px 18px rgba(0,0,0,.18);
+  backdrop-filter:blur(2px);
   opacity:0;
   transform:translateY(-9px);
   pointer-events:none;
@@ -161,10 +161,10 @@ button{cursor:pointer}
 }
 .player-channel-logo img{width:100%;height:100%;padding:4px;object-fit:contain;background:transparent}
 .player-channel-copy{min-width:0}
-.player-channel-title{font-size:clamp(14px,3.4vw,19px);font-weight:900;line-height:1.12;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.player-channel-title{font-size:clamp(14px,3.4vw,19px);font-weight:900;line-height:1.12;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 2px 6px rgba(0,0,0,.95)}
 .player-channel-details{margin-top:6px;display:flex;align-items:center;gap:6px;min-width:0;color:#c8c8d2;font-size:10px;white-space:nowrap;overflow:hidden}
 .player-channel-details span{overflow:hidden;text-overflow:ellipsis}
-.player-channel-details .number-badge{flex:0 0 auto;padding:3px 7px;border-radius:999px;background:var(--blue);color:#fff;font-weight:900}
+.player-channel-details .number-badge{flex:0 0 auto;padding:3px 8px;border:1px solid rgba(255,255,255,.72);border-radius:999px;background:transparent;color:#fff;font-weight:900;text-shadow:0 1px 4px rgba(0,0,0,.9)}
 .player-channel-details .meta-text{min-width:0}
 
 .player-favorite-btn{
@@ -206,8 +206,30 @@ button{cursor:pointer}
 }
 .player-stage.show-ui::after{opacity:1}
 
-/* Los controles originales de Clappr permanecen disponibles y se ocultan solos. */
-#player .media-control{z-index:70!important}
+/* Controles originales de Clappr sincronizados con la tarjeta y favoritos. */
+#player .media-control{
+  z-index:70!important;
+  opacity:0!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+  transform:translateY(18px)!important;
+  transition:opacity .24s ease,transform .24s ease,visibility .24s ease!important;
+}
+.player-stage.show-ui #player .media-control{
+  opacity:1!important;
+  visibility:visible!important;
+  pointer-events:auto!important;
+  transform:translateY(0)!important;
+}
+
+/* TV en vivo: ocultar barra de progreso y tiempos. */
+#player .media-control [data-seekbar],
+#player .media-control .bar-container[data-seekbar],
+#player .media-control .media-control-center-panel,
+#player .media-control [data-position],
+#player .media-control [data-duration]{
+  display:none!important;
+}
 
 .status-strip{
   display:none;
@@ -409,47 +431,6 @@ button{cursor:pointer}
 }
 
 
-.action-sheet{
-  position:fixed;
-  inset:0;
-  z-index:1000;
-  display:none;
-  align-items:flex-end;
-  justify-content:center;
-  padding:16px;
-  background:rgba(0,0,0,.56);
-  backdrop-filter:blur(4px);
-}
-.action-sheet.open{display:flex}
-.action-sheet-panel{
-  width:min(100%,520px);
-  overflow:hidden;
-  border:1px solid rgba(255,255,255,.14);
-  border-radius:18px;
-  background:#242432;
-  box-shadow:0 18px 55px rgba(0,0,0,.58);
-}
-.action-sheet-title{padding:17px 18px 10px;font-size:17px;font-weight:900}
-.action-sheet-copy{padding:0 18px 13px;color:#bdbdc8;font-size:12px;line-height:1.45}
-.sheet-action{
-  width:100%;
-  min-height:52px;
-  display:flex;
-  align-items:center;
-  gap:12px;
-  padding:0 18px;
-  border:0;
-  border-top:1px solid rgba(255,255,255,.08);
-  background:transparent;
-  color:#fff;
-  text-align:left;
-  font-weight:800;
-}
-.sheet-action:hover,.sheet-action:focus-visible{background:#303040}
-.sheet-action .sheet-icon{width:30px;height:30px;display:grid;place-items:center;border-radius:8px;background:#343447;font-size:18px}
-.sheet-action.cancel{justify-content:center;color:#bdbdc8}
-.install-help{display:none;margin:0 18px 16px;padding:11px 12px;border-radius:10px;background:#191923;color:#d4d4dc;font-size:12px;line-height:1.5}
-.install-help.show{display:block}
 
 .toast{
   position:fixed;
@@ -594,6 +575,147 @@ body{
   .player-stage{height:42dvh;min-height:145px;aspect-ratio:auto}
 }
 
+
+
+/* =====================================================
+   AJUSTES FINALES: INFORMACIÓN TRANSPARENTE, BÚSQUEDA
+   SUPERIOR Y CONTROLES SINCRONIZADOS PARA TV EN VIVO
+   ===================================================== */
+.topbar{
+  position:relative;
+  overflow:hidden;
+}
+
+.brand{
+  flex:0 1 190px;
+  transition:width .24s ease,flex-basis .24s ease,opacity .18s ease,transform .24s ease;
+}
+
+.top-actions{
+  min-width:0;
+  margin-left:auto;
+}
+
+.top-search{
+  width:0;
+  min-width:0;
+  height:38px;
+  display:flex;
+  align-items:center;
+  overflow:hidden;
+  opacity:0;
+  transform:translateX(8px);
+  pointer-events:none;
+  border:1px solid transparent;
+  border-radius:999px;
+  background:#272734;
+  transition:width .26s ease,opacity .18s ease,transform .26s ease,border-color .18s ease;
+}
+
+.topbar.search-open .top-search{
+  width:clamp(145px,40vw,360px);
+  opacity:1;
+  transform:none;
+  pointer-events:auto;
+  border-color:rgba(255,255,255,.16);
+}
+
+.topbar.search-open .brand{
+  width:0;
+  flex-basis:0;
+  opacity:0;
+  transform:translateX(-12px);
+  pointer-events:none;
+}
+
+.top-search-input{
+  width:100%;
+  min-width:0;
+  height:100%;
+  padding:0 4px 0 14px;
+  border:0;
+  outline:0;
+  background:transparent;
+  color:#fff;
+  font-size:13px;
+}
+.top-search-input::placeholder{color:#9f9fab}
+.top-search-clear{
+  flex:0 0 35px;
+  width:35px;
+  height:35px;
+  border:0;
+  border-radius:50%;
+  background:transparent;
+  color:#c8c8d1;
+  font-size:24px;
+  line-height:1;
+}
+.top-search-clear:hover,.top-search-clear:focus-visible{background:rgba(255,255,255,.08);color:#fff}
+.search-btn.active{background:rgba(63,112,255,.2);color:#9bb3ff}
+
+/* La tarjeta deja ver la imagen del canal detrás de ella. */
+.player-channel-card{
+  background:rgba(0,0,0,.035);
+  border-color:rgba(255,255,255,.3);
+  box-shadow:none;
+  backdrop-filter:none;
+  -webkit-backdrop-filter:none;
+}
+.player-channel-logo{background:rgba(16,16,22,.24)}
+.player-channel-details .number-badge{
+  padding:3px 8px;
+  border:1px solid rgba(255,255,255,.78);
+  background:transparent;
+  box-shadow:none;
+}
+
+/* Sombra mínima: evita oscurecer el reproductor completo. */
+.player-stage::after{
+  background:linear-gradient(180deg,rgba(0,0,0,.18),transparent 27%,transparent 76%,rgba(0,0,0,.22));
+}
+
+/* Clappr: tarjeta, estrella y controles obedecen la misma clase show-ui. */
+#player .media-control{
+  display:block!important;
+  opacity:0!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+  transform:translateY(20px)!important;
+  transition:opacity .23s ease,transform .23s ease,visibility .23s ease!important;
+}
+.player-stage.show-ui #player .media-control{
+  opacity:1!important;
+  visibility:visible!important;
+  pointer-events:auto!important;
+  transform:translateY(0)!important;
+}
+
+/* TV en vivo: se quitan la línea de tiempo, posición y duración. */
+#player [data-seekbar],
+#player [data-position],
+#player [data-duration],
+#player .media-control-center-panel,
+#player .seek-bar,
+#player .seekbar,
+#player .bar-container[data-seekbar]{
+  display:none!important;
+  width:0!important;
+  min-width:0!important;
+}
+#player .media-control-left-panel{margin-right:auto!important}
+#player .media-control-right-panel{margin-left:auto!important}
+
+/* Los elementos superpuestos no bloquean los botones de Clappr. */
+.player-channel-card{pointer-events:none}
+.player-favorite-btn{pointer-events:none}
+.player-stage.show-ui .player-favorite-btn{pointer-events:auto}
+
+@media (max-width:520px){
+  .topbar.search-open .top-search{width:clamp(135px,54vw,230px)}
+  .topbar.search-open .icon-btn{width:37px;height:37px}
+}
+
 </style>
 </head>
 <body>
@@ -601,13 +723,17 @@ body{
   <header class="topbar">
     <div class="brand"><img src="https://raw.githubusercontent.com/mikiflores711/Watch-TV-Plus/refs/heads/main/Watch%20TV%20Plus1.png" alt="Watch TV Plus"></div>
     <div class="top-actions" aria-label="Acciones">
-      <button class="icon-btn" id="shareToggle" type="button" aria-label="Compartir o agregar a inicio" title="Compartir o agregar a inicio">
+      <button class="icon-btn" id="shareToggle" type="button" aria-label="Compartir página" title="Compartir página">
         <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><path d="m8.7 10.7 6.6-4.1M8.7 13.3l6.6 4.1"></path></svg>
       </button>
       <a class="icon-btn donate-btn" id="donateBtn" href="https://link.mercadopago.com.mx/versoestudiodonativo" target="_blank" rel="noopener noreferrer" aria-label="Donar" title="Donar">
         <img src="https://raw.githubusercontent.com/mikiflores711/Watch-TV-Plus/refs/heads/main/Donar%20icono.png" alt="">
       </a>
-      <button class="icon-btn search-btn" id="searchToggle" type="button" aria-label="Buscar canales" title="Buscar canales">
+      <div class="top-search" id="topSearchWrap" role="search">
+        <input class="top-search-input" id="searchInput" type="search" placeholder="Buscar canal..." autocomplete="off" aria-label="Buscar canales">
+        <button class="top-search-clear" id="searchClear" type="button" aria-label="Limpiar búsqueda" title="Limpiar búsqueda">×</button>
+      </div>
+      <button class="icon-btn search-btn" id="searchToggle" type="button" aria-label="Abrir buscador" title="Buscar canales" aria-expanded="false">
         <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-4-4"></path></svg>
       </button>
     </div>
@@ -621,7 +747,7 @@ body{
       <div class="player-channel-copy">
         <div class="player-channel-title" id="playerChannelTitle">Selecciona un canal</div>
         <div class="player-channel-details">
-          <span class="number-badge" id="playerChannelNumber">Canal ---</span>
+          <span class="number-badge" id="playerChannelNumber">---</span>
           <span class="meta-text" id="playerChannelMeta">Sección - Categoría</span>
         </div>
       </div>
@@ -646,11 +772,6 @@ body{
     <button class="main-tab" id="favoritesMainTab" type="button">Favoritos</button>
   </nav>
 
-  <div class="search-panel" id="searchPanel">
-    <input class="search-input" id="searchInput" type="search" placeholder="Buscar canal..." autocomplete="off">
-    <button class="reload-btn" id="reloadBtn" type="button">Recargar</button>
-  </div>
-
   <nav class="scroll-tabs provider-tabs" id="sectionTabs" aria-label="Servicios de TV"></nav>
   <nav class="scroll-tabs category-tabs" id="categoryTabs" aria-label="Categorías"></nav>
 
@@ -666,16 +787,6 @@ body{
   </main>
 </div>
 
-<div class="action-sheet" id="shareSheet" role="dialog" aria-modal="true" aria-labelledby="shareSheetTitle">
-  <div class="action-sheet-panel">
-    <div class="action-sheet-title" id="shareSheetTitle">Watch TV Plus</div>
-    <div class="action-sheet-copy">Comparte esta página o instálala como acceso directo en tu pantalla de inicio.</div>
-    <button class="sheet-action" id="sharePageBtn" type="button"><span class="sheet-icon">↗</span><span>Compartir página</span></button>
-    <button class="sheet-action" id="installAppBtn" type="button"><span class="sheet-icon">＋</span><span>Agregar a pantalla de inicio</span></button>
-    <div class="install-help" id="installHelp"></div>
-    <button class="sheet-action cancel" id="closeShareSheet" type="button">Cerrar</button>
-  </div>
-</div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
@@ -706,17 +817,13 @@ const PLAYLISTS = [
 const playerStage = document.getElementById("playerStage");
 const mainTitle = document.getElementById("mainTitle");
 const countPill = document.getElementById("countPill");
+const topbar = document.querySelector(".topbar");
+const topSearchWrap = document.getElementById("topSearchWrap");
 const searchToggle = document.getElementById("searchToggle");
+const searchClear = document.getElementById("searchClear");
 const shareToggle = document.getElementById("shareToggle");
-const shareSheet = document.getElementById("shareSheet");
-const sharePageBtn = document.getElementById("sharePageBtn");
-const installAppBtn = document.getElementById("installAppBtn");
-const installHelp = document.getElementById("installHelp");
-const closeShareSheet = document.getElementById("closeShareSheet");
 const toast = document.getElementById("toast");
-const searchPanel = document.getElementById("searchPanel");
 const searchInput = document.getElementById("searchInput");
-const reloadBtn = document.getElementById("reloadBtn");
 const channelList = document.getElementById("channelList");
 const sectionTabs = document.getElementById("sectionTabs");
 const categoryTabs = document.getElementById("categoryTabs");
@@ -742,8 +849,9 @@ let adultUnlocked = localStorage.getItem(ADULT_UNLOCK_KEY) === "1";
 let allChannels = [];
 let channelsBySection = {};
 let playerUiTimer = null;
+let searchUiTimer = null;
 let toastTimer = null;
-let deferredInstallPrompt = null;
+let clapprControlObserver = null;
 
 async function init(){
   buildSectionTabs();
@@ -754,24 +862,28 @@ async function init(){
 }
 
 function bindEvents(){
-  reloadBtn.addEventListener("click", loadAllPlaylists);
   searchInput.addEventListener("input", () => {
     buildCategories();
     renderChannels();
+    scheduleSearchAutoClose();
+  });
+  searchInput.addEventListener("focus", () => clearTimeout(searchUiTimer));
+  searchInput.addEventListener("blur", () => scheduleSearchAutoClose(900));
+
+  searchClear.addEventListener("click", () => {
+    searchInput.value = "";
+    buildCategories();
+    renderChannels();
+    searchInput.focus();
   });
 
-  searchToggle.addEventListener("click", () => {
-    searchPanel.classList.toggle("open");
-    if(searchPanel.classList.contains("open")) searchInput.focus();
+  searchToggle.addEventListener("click", event => {
+    event.stopPropagation();
+    if(topbar.classList.contains("search-open")) closeTopSearch();
+    else openTopSearch();
   });
 
-  shareToggle.addEventListener("click", openShareSheet);
-  closeShareSheet.addEventListener("click", closeShareMenu);
-  shareSheet.addEventListener("click", event => {
-    if(event.target === shareSheet) closeShareMenu();
-  });
-  sharePageBtn.addEventListener("click", shareCurrentPage);
-  installAppBtn.addEventListener("click", installWebApp);
+  shareToggle.addEventListener("click", shareCurrentPage);
 
   channelsMainTab.addEventListener("click", () => {
     if(activeSection === "favorites") setSection(lastNormalSection || "mexico");
@@ -791,9 +903,31 @@ function bindEvents(){
   });
   playerStage.addEventListener("mouseleave",() => scheduleHidePlayerUi(500));
   document.addEventListener("keydown",event => {
-    if(event.key === "Escape" && shareSheet.classList.contains("open")) closeShareMenu();
     showPlayerUi();
+    if(event.key === "Escape" && topbar.classList.contains("search-open")){
+      closeTopSearch();
+    }
   });
+
+  document.addEventListener("pointerdown",event => {
+    if(topbar.classList.contains("search-open") && !topbar.contains(event.target)){
+      closeTopSearch();
+    }
+  },{passive:true});
+
+  /* Captura únicamente el botón original de pantalla completa de Clappr. */
+  playerStage.addEventListener("click",event => {
+    const fullscreenButton = event.target.closest(
+      "#player [data-fullscreen], #player button[class*='fullscreen'], #player .fullscreen-button"
+    );
+    if(!fullscreenButton) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    togglePlayerFullscreen();
+  },true);
+
+  document.addEventListener("fullscreenchange",showPlayerUi);
+  document.addEventListener("webkitfullscreenchange",showPlayerUi);
 }
 function buildSectionTabs(){
   sectionTabs.innerHTML = "";
@@ -1200,6 +1334,7 @@ function loadChannel(channel){
     width:"100%",
     height:"100%",
     hideMediaControl:false,
+    hideMediaControlDelay:PLAYER_UI_HIDE_DELAY,
     mimeType:"application/vnd.apple.mpegurl",
     hlsPlayback:{preload:true},
     playback:{
@@ -1221,13 +1356,14 @@ function loadChannel(channel){
     events:{
       onReady(){
         syncVideoEvents();
+        prepareClapprControls();
         showPlayerUi();
       },
-      onPlay(){scheduleHidePlayerUi()},
-      onPause(){showPlayerUi(true)},
+      onPlay(){showPlayerUi()},
+      onPause(){showPlayerUi()},
       onError(error){
         console.log("Clappr error:",error);
-        showPlayerUi(true);
+        showPlayerUi();
       }
     }
   });
@@ -1251,6 +1387,10 @@ function getPlayableUrl(channel){
 }
 
 function destroyPlayer(){
+  if(clapprControlObserver){
+    clapprControlObserver.disconnect();
+    clapprControlObserver = null;
+  }
   if(player){
     try{player.destroy()}catch(error){}
     player = null;
@@ -1267,11 +1407,11 @@ function syncVideoEvents(){
     scheduleHidePlayerUi();
   });
   video.addEventListener("play",scheduleHidePlayerUi);
-  video.addEventListener("pause",() => showPlayerUi(true));
+  video.addEventListener("pause",showPlayerUi);
   video.addEventListener("waiting",showPlayerUi);
   video.addEventListener("error",() => {
     if(currentChannel) mainTitle.textContent = `${currentChannel.name} · Error de reproducción`;
-    showPlayerUi(true);
+    showPlayerUi();
   });
 }
 
@@ -1279,7 +1419,7 @@ function syncVideoEvents(){
 function updatePlayerChannelCard(channel){
   const number = String(channel.channelNumber || channel.sectionIndex || "---").padStart(3,"0");
   playerChannelTitle.textContent = channel.name || "Canal";
-  playerChannelNumber.textContent = `Canal ${number}`;
+  playerChannelNumber.textContent = number;
   playerChannelMeta.textContent = `${channel.sectionLabel || "TV"} - ${channel.category || "General"}`;
   playerChannelLogo.innerHTML = "";
 
@@ -1297,18 +1437,46 @@ function updatePlayerChannelCard(channel){
   }
 }
 
-function showPlayerUi(keepVisible = false){
-  playerStage.classList.add("show-ui");
+function removeLiveProgressControls(){
+  const selectors = [
+    "#player [data-seekbar]",
+    "#player [data-position]",
+    "#player [data-duration]",
+    "#player .media-control-center-panel",
+    "#player .seek-bar",
+    "#player .seekbar"
+  ];
+  document.querySelectorAll(selectors.join(",")).forEach(element => {
+    element.setAttribute("aria-hidden","true");
+    element.style.setProperty("display","none","important");
+  });
+}
+
+function prepareClapprControls(){
+  removeLiveProgressControls();
+  const root = document.getElementById("player");
+  if(!root) return;
+
+  if(clapprControlObserver) clapprControlObserver.disconnect();
+  clapprControlObserver = new MutationObserver(() => {
+    removeLiveProgressControls();
+    syncClapprControls(playerStage.classList.contains("show-ui"));
+  });
+  clapprControlObserver.observe(root,{childList:true,subtree:true});
+}
+
+function syncClapprControls(visible){
+  playerStage.classList.toggle("show-ui",Boolean(visible));
+  playerStage.querySelectorAll("#player .media-control").forEach(control => {
+    control.setAttribute("aria-hidden",visible ? "false" : "true");
+  });
+  removeLiveProgressControls();
+}
+
+function showPlayerUi(){
   clearTimeout(playerUiTimer);
-
-  try{
-    const mediaControl = player && player.getPlugin ? player.getPlugin("media_control") : null;
-    if(mediaControl && typeof mediaControl.show === "function") mediaControl.show();
-  }catch(error){}
-
-  if(!keepVisible){
-    playerUiTimer = setTimeout(hidePlayerUi,PLAYER_UI_HIDE_DELAY);
-  }
+  syncClapprControls(true);
+  playerUiTimer = setTimeout(hidePlayerUi,PLAYER_UI_HIDE_DELAY);
 }
 
 function scheduleHidePlayerUi(delay = PLAYER_UI_HIDE_DELAY){
@@ -1317,25 +1485,63 @@ function scheduleHidePlayerUi(delay = PLAYER_UI_HIDE_DELAY){
 }
 
 function hidePlayerUi(){
+  clearTimeout(playerUiTimer);
+  syncClapprControls(false);
+}
+
+async function togglePlayerFullscreen(){
+  const target = playerStage;
   const video = getPlayerVideo();
-  if(!video || video.paused) return;
-  playerStage.classList.remove("show-ui");
 
   try{
-    const mediaControl = player && player.getPlugin ? player.getPlugin("media_control") : null;
-    if(mediaControl && typeof mediaControl.hide === "function") mediaControl.hide();
-  }catch(error){}
+    const activeFullscreen = document.fullscreenElement || document.webkitFullscreenElement;
+    if(activeFullscreen){
+      if(document.exitFullscreen) await document.exitFullscreen();
+      else if(document.webkitExitFullscreen) document.webkitExitFullscreen();
+      return;
+    }
+
+    if(target.requestFullscreen){
+      await target.requestFullscreen({navigationUI:"hide"});
+      return;
+    }
+    if(target.webkitRequestFullscreen){
+      target.webkitRequestFullscreen();
+      return;
+    }
+    if(video && typeof video.webkitEnterFullscreen === "function"){
+      video.webkitEnterFullscreen();
+    }
+  }catch(error){
+    console.log("No se pudo abrir pantalla completa:",error);
+    showToast("Pantalla completa no disponible");
+  }
 }
 
-function openShareSheet(){
-  installHelp.classList.remove("show");
-  installHelp.textContent = "";
-  shareSheet.classList.add("open");
+function openTopSearch(){
+  clearTimeout(searchUiTimer);
+  topbar.classList.add("search-open");
+  searchToggle.classList.add("active");
+  searchToggle.setAttribute("aria-expanded","true");
+  searchToggle.setAttribute("aria-label","Cerrar buscador");
+  requestAnimationFrame(() => searchInput.focus({preventScroll:true}));
 }
 
-function closeShareMenu(){
-  shareSheet.classList.remove("open");
-  installHelp.classList.remove("show");
+function closeTopSearch(){
+  clearTimeout(searchUiTimer);
+  topbar.classList.remove("search-open");
+  searchToggle.classList.remove("active");
+  searchToggle.setAttribute("aria-expanded","false");
+  searchToggle.setAttribute("aria-label","Abrir buscador");
+  searchInput.blur();
+}
+
+function scheduleSearchAutoClose(delay = 6500){
+  clearTimeout(searchUiTimer);
+  if(!topbar.classList.contains("search-open")) return;
+  searchUiTimer = setTimeout(() => {
+    if(document.activeElement !== searchInput) closeTopSearch();
+  },delay);
 }
 
 async function shareCurrentPage(){
@@ -1348,37 +1554,15 @@ async function shareCurrentPage(){
   try{
     if(navigator.share){
       await navigator.share(shareData);
-      closeShareMenu();
       return;
     }
 
     await navigator.clipboard.writeText(location.href);
-    closeShareMenu();
     showToast("Enlace copiado");
   }catch(error){
     if(error && error.name === "AbortError") return;
     showToast("No se pudo compartir");
   }
-}
-
-async function installWebApp(){
-  if(deferredInstallPrompt){
-    deferredInstallPrompt.prompt();
-    const choice = await deferredInstallPrompt.userChoice;
-    deferredInstallPrompt = null;
-    closeShareMenu();
-    showToast(choice.outcome === "accepted" ? "Instalación iniciada" : "Instalación cancelada");
-    return;
-  }
-
-  const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
-  const isAndroid = /android/i.test(navigator.userAgent);
-  installHelp.textContent = isIos
-    ? "En Safari toca el botón Compartir y después elige ‘Agregar a pantalla de inicio’."
-    : isAndroid
-      ? "Abre el menú ⋮ del navegador y elige ‘Instalar aplicación’ o ‘Agregar a pantalla principal’."
-      : "Usa el icono de instalación de la barra del navegador o abre su menú y elige ‘Instalar aplicación’.";
-  installHelp.classList.add("show");
 }
 
 function showToast(message){
@@ -1389,17 +1573,6 @@ function showToast(message){
 }
 
 function registerPwaSupport(){
-  window.addEventListener("beforeinstallprompt",event => {
-    event.preventDefault();
-    deferredInstallPrompt = event;
-  });
-
-  window.addEventListener("appinstalled",() => {
-    deferredInstallPrompt = null;
-    closeShareMenu();
-    showToast("Watch TV Plus se agregó a tu dispositivo");
-  });
-
   if("serviceWorker" in navigator && location.protocol === "https:"){
     window.addEventListener("load",() => {
       navigator.serviceWorker.register("./service-worker.js").catch(error => {
