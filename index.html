@@ -716,6 +716,61 @@ body{
   .topbar.search-open .icon-btn{width:37px;height:37px}
 }
 
+
+/* Reporte de canales y búsqueda sin zoom en iPhone. */
+.channel-row{
+  grid-template-columns:48px 42px minmax(0,1fr) 78px;
+}
+.row-actions{
+  gap:5px;
+}
+.favorite-btn,.report-btn{
+  width:35px;
+  height:35px;
+}
+.report-btn{
+  display:grid;
+  place-items:center;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:50%;
+  background:#292936;
+  color:#ff9aab;
+  opacity:.94;
+  transition:color .18s ease,background .18s ease,transform .18s ease,border-color .18s ease;
+}
+.report-btn svg{
+  width:19px;
+  height:19px;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:2;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+.report-btn:hover,.report-btn:focus-visible{
+  transform:scale(1.06);
+  color:#fff;
+  background:#713142;
+  border-color:rgba(255,154,171,.65);
+}
+.top-search-input{
+  font-size:16px!important;
+  touch-action:manipulation;
+}
+@media (max-width:430px){
+  .channel-row{
+    grid-template-columns:44px 38px minmax(0,1fr) 74px;
+    gap:7px;
+    padding-left:7px;
+    padding-right:7px;
+  }
+  .channel-logo{width:43px;height:43px}
+  .channel-number{font-size:14px}
+  .channel-name{font-size:15px}
+  .program-text{font-size:11px}
+  .favorite-btn,.report-btn{width:33px;height:33px}
+}
+
 </style>
 </head>
 <body>
@@ -762,11 +817,6 @@ body{
       disabled
     >☆</button>
   </section>
-
-  <div class="status-strip">
-    <strong id="mainTitle">Selecciona un canal</strong>
-  </div>
-
   <nav class="main-tabs" aria-label="Vista principal">
     <button class="main-tab active" id="channelsMainTab" type="button">Canales</button>
     <button class="main-tab" id="favoritesMainTab" type="button">Favoritos</button>
@@ -799,6 +849,7 @@ const ADULT_UNLOCK_KEY = "watch_tv_plus_adult_unlocked_app_v1";
 const MAX_RENDER_DEFAULT = 1200;
 const MAX_RENDER_WITH_SEARCH = 2500;
 const PLAYER_UI_HIDE_DELAY = 3500;
+const IS_IPHONE = /iPhone|iPod/i.test(navigator.userAgent);
 
 const PLAYLISTS = [
   { id:"mexico", label:"México", file:"./mexico.m3u" },
@@ -815,7 +866,6 @@ const PLAYLISTS = [
 ];
 
 const playerStage = document.getElementById("playerStage");
-const mainTitle = document.getElementById("mainTitle");
 const countPill = document.getElementById("countPill");
 const topbar = document.querySelector(".topbar");
 const topSearchWrap = document.getElementById("topSearchWrap");
@@ -915,15 +965,16 @@ function bindEvents(){
     }
   },{passive:true});
 
-  /* Captura únicamente el botón original de pantalla completa de Clappr. */
+  /* El video permanece en línea. La pantalla completa solo se abre desde el botón de Clappr. */
   playerStage.addEventListener("click",event => {
     const fullscreenButton = event.target.closest(
       "#player [data-fullscreen], #player button[class*='fullscreen'], #player .fullscreen-button"
     );
     if(!fullscreenButton) return;
     event.preventDefault();
+    event.stopPropagation();
     event.stopImmediatePropagation();
-    togglePlayerFullscreen();
+    openFullscreenFromClapprButton();
   },true);
 
   document.addEventListener("fullscreenchange",showPlayerUi);
@@ -1280,6 +1331,7 @@ function createChannelItem(channel,index){
       <div class="program-text">${escapeHtml(channel.sectionLabel)} - ${escapeHtml(channel.category)}</div>
     </div>
     <div class="row-actions">
+      ${channel.type === "video" ? `<button class="report-btn" type="button" aria-label="Reportar ${escapeHtml(channel.name)}" title="Reportar canal caído"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 9v4"></path><path d="M12 17h.01"></path><path d="M10.3 3.5 2.7 17a2 2 0 0 0 1.8 3h15a2 2 0 0 0 1.8-3L13.7 3.5a2 2 0 0 0-3.4 0Z"></path></svg></button>` : ""}
       <button class="favorite-btn ${favorite ? "active" : ""}" type="button" aria-label="${favorite ? "Quitar de favoritos" : "Agregar a favoritos"}" title="${favorite ? "Quitar de favoritos" : "Agregar a favoritos"}">${favorite ? "★" : "☆"}</button>
     </div>
   `;
@@ -1293,7 +1345,7 @@ function createChannelItem(channel,index){
   }
 
   row.addEventListener("click",event => {
-    if(event.target.closest(".favorite-btn")) return;
+    if(event.target.closest(".favorite-btn,.report-btn")) return;
     loadChannel(channel);
   });
   row.addEventListener("keydown",event => {
@@ -1308,13 +1360,34 @@ function createChannelItem(channel,index){
     toggleFavorite(channel.url);
   });
 
+  const reportButton = row.querySelector(".report-btn");
+  if(reportButton){
+    reportButton.addEventListener("click",event => {
+      event.preventDefault();
+      event.stopPropagation();
+      openChannelReport(channel,displayNumber);
+    });
+  }
+
   return row;
+}
+
+function openChannelReport(channel,displayNumber){
+  const params = new URLSearchParams();
+  params.set("canal",channel.name || "Canal sin nombre");
+  params.set("numero",displayNumber || "---");
+  params.set("seccion",channel.sectionLabel || "TV");
+  params.set("categoria",channel.category || "General");
+  if(channel.logo) params.set("logo",channel.logo);
+  if(channel.id) params.set("id",channel.id);
+  if(channel.url) params.set("stream",channel.url);
+  params.set("volver",location.pathname.split("/").pop() || "index.html");
+  location.href = `./reportar-canal.html?${params.toString()}`;
 }
 
 function loadChannel(channel){
   currentChannel = channel;
   currentUrl = channel.url;
-  mainTitle.textContent = channel.name;
   updatePlayerChannelCard(channel);
   updatePlayerFavoriteButton();
   showPlayerUi();
@@ -1331,6 +1404,7 @@ function loadChannel(channel){
     plugins,
     autoPlay:true,
     mute:false,
+    playInline:true,
     width:"100%",
     height:"100%",
     hideMediaControl:false,
@@ -1338,6 +1412,7 @@ function loadChannel(channel){
     mimeType:"application/vnd.apple.mpegurl",
     hlsPlayback:{preload:true},
     playback:{
+      playInline:true,
       hlsjsConfig:{
         enableWorker:true,
         lowLatencyMode:true,
@@ -1399,18 +1474,27 @@ function destroyPlayer(){
 }
 
 function getPlayerVideo(){return document.querySelector("#player video")}
+function enforceInlinePlayback(video = getPlayerVideo()){
+  if(!video) return false;
+  video.playsInline = true;
+  video.setAttribute("playsinline","");
+  video.setAttribute("webkit-playsinline","");
+  video.setAttribute("x5-playsinline","");
+  return true;
+}
 function syncVideoEvents(){
   const video = getPlayerVideo();
   if(!video) return;
+  enforceInlinePlayback(video);
+  if(video.dataset.watchTvEventsBound === "1") return;
+  video.dataset.watchTvEventsBound = "1";
   video.addEventListener("playing",() => {
-    if(currentChannel) mainTitle.textContent = currentChannel.name;
     scheduleHidePlayerUi();
   });
   video.addEventListener("play",scheduleHidePlayerUi);
   video.addEventListener("pause",showPlayerUi);
   video.addEventListener("waiting",showPlayerUi);
   video.addEventListener("error",() => {
-    if(currentChannel) mainTitle.textContent = `${currentChannel.name} · Error de reproducción`;
     showPlayerUi();
   });
 }
@@ -1456,9 +1540,12 @@ function prepareClapprControls(){
   removeLiveProgressControls();
   const root = document.getElementById("player");
   if(!root) return;
+  enforceInlinePlayback();
 
   if(clapprControlObserver) clapprControlObserver.disconnect();
   clapprControlObserver = new MutationObserver(() => {
+    enforceInlinePlayback();
+    syncVideoEvents();
     removeLiveProgressControls();
     syncClapprControls(playerStage.classList.contains("show-ui"));
   });
@@ -1489,33 +1576,83 @@ function hidePlayerUi(){
   syncClapprControls(false);
 }
 
-async function togglePlayerFullscreen(){
-  const target = playerStage;
+function openFullscreenFromClapprButton(){
   const video = getPlayerVideo();
+  if(!video){
+    showToast("El reproductor todavía no está listo");
+    return;
+  }
 
-  try{
-    const activeFullscreen = document.fullscreenElement || document.webkitFullscreenElement;
-    if(activeFullscreen){
-      if(document.exitFullscreen) await document.exitFullscreen();
-      else if(document.webkitExitFullscreen) document.webkitExitFullscreen();
+  enforceInlinePlayback(video);
+
+  /* En iPhone se usa el reproductor nativo solo después de este toque. */
+  if(IS_IPHONE && typeof video.webkitEnterFullscreen === "function"){
+    try{
+      video.webkitEnterFullscreen();
       return;
+    }catch(error){
+      console.log("Pantalla completa nativa de iPhone no disponible:",error);
     }
+  }
 
+  const activeFullscreen = document.fullscreenElement || document.webkitFullscreenElement;
+  if(activeFullscreen){
+    try{
+      const exitResult = document.exitFullscreen
+        ? document.exitFullscreen()
+        : (document.webkitExitFullscreen ? document.webkitExitFullscreen() : null);
+      if(exitResult && typeof exitResult.catch === "function") exitResult.catch(() => {});
+    }catch(error){}
+    return;
+  }
+
+  requestStandardFullscreen(playerStage,video);
+}
+
+function requestStandardFullscreen(target,video){
+  try{
     if(target.requestFullscreen){
-      await target.requestFullscreen({navigationUI:"hide"});
+      const result = target.requestFullscreen();
+      if(result && typeof result.catch === "function"){
+        result.catch(() => requestVideoFullscreen(video));
+      }
       return;
     }
     if(target.webkitRequestFullscreen){
       target.webkitRequestFullscreen();
       return;
     }
-    if(video && typeof video.webkitEnterFullscreen === "function"){
+  }catch(error){
+    console.log("No se pudo ampliar el contenedor:",error);
+  }
+  requestVideoFullscreen(video);
+}
+
+function requestVideoFullscreen(video){
+  if(!video){
+    showToast("Pantalla completa no disponible");
+    return;
+  }
+  try{
+    if(video.requestFullscreen){
+      const result = video.requestFullscreen();
+      if(result && typeof result.catch === "function"){
+        result.catch(() => showToast("Pantalla completa no disponible"));
+      }
+      return;
+    }
+    if(video.webkitRequestFullscreen){
+      video.webkitRequestFullscreen();
+      return;
+    }
+    if(typeof video.webkitEnterFullscreen === "function"){
       video.webkitEnterFullscreen();
+      return;
     }
   }catch(error){
     console.log("No se pudo abrir pantalla completa:",error);
-    showToast("Pantalla completa no disponible");
   }
+  showToast("Pantalla completa no disponible");
 }
 
 function openTopSearch(){
