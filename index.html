@@ -100,6 +100,39 @@ button{cursor:pointer}
 #player{position:absolute;inset:0;width:100%;height:100%;background:#000}
 #player video{width:100%!important;height:100%!important;object-fit:contain!important;background:#000!important}
 
+.player-favorite-btn{
+  position:absolute;
+  z-index:80;
+  top:10px;
+  right:10px;
+  width:42px;
+  height:42px;
+  display:grid;
+  place-items:center;
+  border:1px solid rgba(255,255,255,.28);
+  border-radius:50%;
+  background:rgba(17,17,25,.78);
+  color:#fff;
+  font-size:25px;
+  line-height:1;
+  box-shadow:0 5px 18px rgba(0,0,0,.45);
+  backdrop-filter:blur(9px);
+  transition:opacity .2s ease,transform .2s ease,color .2s ease,background .2s ease;
+}
+.player-favorite-btn:hover,.player-favorite-btn:focus-visible{
+  transform:scale(1.06);
+  background:rgba(32,32,45,.94);
+}
+.player-favorite-btn.active{
+  color:#ffd34f;
+  border-color:rgba(255,211,79,.75);
+  background:rgba(73,54,6,.86);
+}
+.player-favorite-btn:disabled{
+  opacity:.4;
+  cursor:default;
+}
+
 .player-shade{
   position:absolute;
   inset:0;
@@ -163,7 +196,7 @@ button{cursor:pointer}
   padding:8px 13px;
   display:flex;
   align-items:center;
-  justify-content:space-between;
+  justify-content:flex-start;
   gap:8px;
   border-bottom:1px solid var(--line);
   background:#191923;
@@ -489,11 +522,18 @@ body{
 
   <section class="player-stage" id="playerStage">
     <div id="player"></div>
+    <button
+      class="player-favorite-btn"
+      id="playerFavoriteBtn"
+      type="button"
+      aria-label="Agregar canal actual a favoritos"
+      title="Agregar a favoritos"
+      disabled
+    >☆</button>
   </section>
 
   <div class="status-strip">
     <strong id="mainTitle">Selecciona un canal</strong>
-    <span class="signal-pill" id="proxyStatus">PROXY</span>
   </div>
 
   <nav class="main-tabs" aria-label="Vista principal">
@@ -546,7 +586,6 @@ const PLAYLISTS = [
 ];
 
 const playerStage = document.getElementById("playerStage");
-const proxyStatus = document.getElementById("proxyStatus");
 const mainTitle = document.getElementById("mainTitle");
 const countPill = document.getElementById("countPill");
 const searchToggle = document.getElementById("searchToggle");
@@ -560,6 +599,7 @@ const sectionInfo = document.getElementById("sectionInfo");
 const adultNotice = document.getElementById("adultNotice");
 const channelsMainTab = document.getElementById("channelsMainTab");
 const favoritesMainTab = document.getElementById("favoritesMainTab");
+const playerFavoriteBtn = document.getElementById("playerFavoriteBtn");
 
 let player = null;
 let currentChannel = null;
@@ -581,7 +621,10 @@ async function init(){
 
 function bindEvents(){
   reloadBtn.addEventListener("click", loadAllPlaylists);
-  searchInput.addEventListener("input", renderChannels);
+  searchInput.addEventListener("input", () => {
+    buildCategories();
+    renderChannels();
+  });
 
   searchToggle.addEventListener("click", () => {
     searchPanel.classList.toggle("open");
@@ -594,6 +637,11 @@ function bindEvents(){
   });
 
   favoritesMainTab.addEventListener("click", () => setSection("favorites"));
+
+  playerFavoriteBtn.addEventListener("click", () => {
+    if(!currentChannel || !currentChannel.url) return;
+    toggleFavorite(currentChannel.url);
+  });
 }
 
 function buildSectionTabs(){
@@ -841,8 +889,16 @@ function getSectionChannels(requireUnlocked = true){
 }
 
 function buildCategories(){
-  const source = getSectionChannels(false);
+  const hasSearch = Boolean(searchInput.value.trim());
+  const source = hasSearch
+    ? allChannels.filter(channel => !channel.isAdult)
+    : getSectionChannels(false);
   const categories = [...new Set(source.map(channel => channel.category).filter(Boolean))].sort((a,b) => a.localeCompare(b,"es"));
+
+  if(selectedCategory !== "all" && !categories.includes(selectedCategory)){
+    selectedCategory = "all";
+  }
+
   categoryTabs.innerHTML = "";
 
   const choices = [
@@ -873,9 +929,12 @@ function buildCategories(){
 
 function renderChannels(){
   const search = searchInput.value.trim().toLowerCase();
-  let source = getSectionChannels(true);
+  const globalSearch = Boolean(search);
+  let source = globalSearch
+    ? allChannels.filter(channel => !channel.isAdult)
+    : getSectionChannels(true);
 
-  if(activeSection === "adult" && !adultUnlocked){
+  if(!globalSearch && activeSection === "adult" && !adultUnlocked){
     channelList.innerHTML = `<div class="empty">Sección bloqueada. Presiona <b>(+18)</b> y confirma que eres mayor de edad.</div>`;
     sectionInfo.textContent = "Sección bloqueada";
     countPill.textContent = "0";
@@ -898,7 +957,11 @@ function renderChannels(){
   const limit = search ? MAX_RENDER_WITH_SEARCH : MAX_RENDER_DEFAULT;
   const shown = filtered.slice(0,limit);
 
-  sectionInfo.textContent = activeSection === "favorites" ? "Canales favoritos" : (PLAYLISTS.find(item => item.id === activeSection)?.label || "Canales");
+  sectionInfo.textContent = globalSearch
+    ? "Resultados en todas las secciones"
+    : (activeSection === "favorites"
+        ? "Canales favoritos"
+        : (PLAYLISTS.find(item => item.id === activeSection)?.label || "Canales"));
   countPill.textContent = `${shown.length}`;
 
   if(!shown.length){
@@ -929,8 +992,7 @@ function createChannelItem(channel,index){
     <div class="channel-number">${escapeHtml(displayNumber)}</div>
     <div class="channel-copy">
       <div class="channel-name">${escapeHtml(channel.name)}</div>
-      <div class="program-text">Obteniendo programa</div>
-      <div class="channel-meta">${escapeHtml(channel.sectionLabel)} · ${escapeHtml(channel.category)}</div>
+      <div class="program-text">${escapeHtml(channel.sectionLabel)} - ${escapeHtml(channel.category)}</div>
     </div>
     <div class="row-actions"><span class="play-arrow">›</span></div>
     <button class="favorite-btn ${favorite ? "active" : ""}" type="button" aria-label="Favorito" title="Favorito">${favorite ? "★" : "☆"}</button>
@@ -967,11 +1029,11 @@ function loadChannel(channel){
   currentChannel = channel;
   currentUrl = channel.url;
   mainTitle.textContent = channel.name;
+  updatePlayerFavoriteButton();
   renderChannels();
   destroyPlayer();
 
   const streamUrl = getPlayableUrl(channel);
-  proxyStatus.textContent = shouldUseProxy(channel) ? "PROXY" : "DIRECTO";
   const plugins = [];
   if(window.HlsjsPlayback) plugins.push(window.HlsjsPlayback);
 
@@ -983,7 +1045,7 @@ function loadChannel(channel){
     mute:false,
     width:"100%",
     height:"100%",
-    hideMediaControl:false,
+    hideMediaControl:true,
     mimeType:"application/vnd.apple.mpegurl",
     hlsPlayback:{preload:true},
     playback:{
@@ -1056,9 +1118,23 @@ function loadFavoriteUrls(){
 }
 function saveFavoriteUrls(){localStorage.setItem(FAVORITES_KEY,JSON.stringify([...favoriteUrls]))}
 function isFavorite(url){return favoriteUrls.has(url)}
+function updatePlayerFavoriteButton(){
+  const available = Boolean(currentChannel && currentChannel.url);
+  const favorite = available && isFavorite(currentChannel.url);
+
+  playerFavoriteBtn.disabled = !available;
+  playerFavoriteBtn.classList.toggle("active",favorite);
+  playerFavoriteBtn.textContent = favorite ? "★" : "☆";
+  playerFavoriteBtn.title = favorite ? "Quitar de favoritos" : "Agregar a favoritos";
+  playerFavoriteBtn.setAttribute(
+    "aria-label",
+    favorite ? "Quitar canal actual de favoritos" : "Agregar canal actual a favoritos"
+  );
+}
 function toggleFavorite(url){
   favoriteUrls.has(url) ? favoriteUrls.delete(url) : favoriteUrls.add(url);
   saveFavoriteUrls();
+  updatePlayerFavoriteButton();
   renderChannels();
 }
 function getInitials(name){return String(name || "TV").split(" ").filter(Boolean).slice(0,2).map(word => word[0]).join("").toUpperCase()}
