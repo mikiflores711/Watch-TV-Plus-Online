@@ -8,6 +8,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/clappr@latest/dist/clappr.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@clappr/hlsjs-playback@latest/dist/hlsjs-playback.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js"></script>
 
 <style>
 :root{
@@ -74,6 +75,8 @@ button{cursor:pointer}
   color:#fff;
   font-size:11px;
 }
+
+.top-actions{display:flex;align-items:center;gap:2px}
 
 .icon-btn{
   width:40px;
@@ -195,15 +198,17 @@ button{cursor:pointer}
   min-height:34px;
   padding:8px 13px;
   display:flex;
-  align-items:center;
-  justify-content:flex-start;
-  gap:8px;
+  align-items:flex-start;
+  justify-content:center;
+  flex-direction:column;
+  gap:2px;
   border-bottom:1px solid var(--line);
   background:#191923;
   color:var(--muted);
   font-size:11px;
 }
-.status-strip strong{min-width:0;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.status-strip strong{width:100%;min-width:0;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.status-program{width:100%;color:#aeb5c7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .signal-pill{flex:0 0 auto;color:#8facff;font-weight:800}
 
 .main-tabs{
@@ -320,7 +325,7 @@ button{cursor:pointer}
 .channel-list{background:#1c1c26;padding-bottom:var(--safe-bottom)}
 .channel-row{
   position:relative;
-  min-height:70px;
+  min-height:88px;
   display:grid;
   grid-template-columns:48px 42px minmax(0,1fr) 38px;
   align-items:center;
@@ -355,7 +360,11 @@ button{cursor:pointer}
 .channel-number{font-size:16px;color:#e1e1e6;font-variant-numeric:tabular-nums}
 .channel-copy{min-width:0}
 .channel-name{font-size:16px;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.program-text{margin-top:6px;color:#f0f0f2;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.program-text{margin-top:5px;color:#c7c7d0;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.epg-text{width:100%;margin-top:5px;padding:0;border:0;background:transparent;color:#f0f0f2;font-size:12px;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
+.epg-text:hover,.epg-text:focus-visible{color:#8facff;outline:none}
+.epg-text.loading{color:#8f96a8}
+.channel-row.active .epg-text{color:var(--blue)}
 .channel-meta{display:none}
 
 .row-actions{display:flex;align-items:center;justify-content:flex-end;gap:5px}
@@ -401,6 +410,33 @@ button{cursor:pointer}
   font-size:13px;
   line-height:1.5;
 }
+
+
+
+/* Guía de programación */
+.epg-modal{position:fixed;inset:0;z-index:300;display:none;align-items:center;justify-content:center;padding:max(12px,env(safe-area-inset-top)) 12px max(12px,env(safe-area-inset-bottom));}
+.epg-modal.open{display:flex}
+.epg-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.82);backdrop-filter:blur(8px)}
+.epg-card{position:relative;width:min(720px,96vw);max-height:90dvh;display:flex;flex-direction:column;overflow:hidden;border:1px solid rgba(255,255,255,.14);border-radius:16px;background:linear-gradient(180deg,#20202c,#121219);box-shadow:0 25px 80px rgba(0,0,0,.72)}
+.epg-head{display:grid;grid-template-columns:52px minmax(0,1fr) 40px;align-items:center;gap:11px;padding:13px;border-bottom:1px solid var(--line)}
+.epg-logo{width:50px;height:50px;display:grid;place-items:center;overflow:hidden;border-radius:8px;background:#fff;color:#111;font-weight:900}
+.epg-logo img{width:100%;height:100%;padding:4px;object-fit:contain}
+.epg-provider{color:#8facff;font-size:9px;font-weight:900;letter-spacing:1px;text-transform:uppercase}
+.epg-title{margin-top:3px;font-size:18px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.epg-close{width:36px;height:36px;border:0;border-radius:50%;background:rgba(255,255,255,.09);font-size:22px}
+.epg-status{padding:9px 13px;border-bottom:1px solid var(--line);color:#aeb4c3;font-size:11px}
+.epg-list{min-height:170px;overflow-y:auto;padding:7px 11px 12px}
+.epg-program{display:grid;grid-template-columns:92px minmax(0,1fr);gap:10px;padding:11px 8px;border-bottom:1px solid rgba(255,255,255,.07);border-radius:8px}
+.epg-program.current{background:linear-gradient(90deg,rgba(63,112,255,.42),rgba(63,112,255,.08));border-bottom-color:transparent}
+.epg-time{color:#b7bdca;font-size:11px;font-weight:800;font-variant-numeric:tabular-nums}
+.epg-program-title{font-size:14px;font-weight:800;line-height:1.25}
+.epg-program-desc{margin-top:4px;color:#aeb4c2;font-size:11px;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.epg-badge{display:inline-flex;align-items:center;height:19px;margin-right:6px;padding:0 6px;border-radius:99px;background:var(--blue);font-size:8px;font-weight:900}
+.epg-empty{padding:28px 15px;color:#adb3c1;text-align:center;font-size:12px;line-height:1.5}
+.epg-actions{display:flex;justify-content:flex-end;gap:8px;padding:10px 12px;border-top:1px solid var(--line)}
+.epg-action{height:34px;padding:0 12px;border:0;border-radius:8px;background:#2a2a39;font-size:11px;font-weight:900}
+.epg-action.primary{background:var(--blue)}
+@media(max-width:560px){.epg-card{width:100%;max-height:94dvh}.epg-program{grid-template-columns:76px minmax(0,1fr)}}
 
 @media (min-width:760px){
   .app-shell{width:min(100%,1100px)}
@@ -517,7 +553,10 @@ body{
 <div class="app-shell">
   <header class="topbar">
     <div class="brand"><img src="https://raw.githubusercontent.com/mikiflores711/Watch-TV-Plus/refs/heads/main/Watch%20TV%20Plus1.png" alt="Watch TV Plus"></div>
-    <button class="icon-btn" id="searchToggle" type="button" aria-label="Buscar" title="Buscar">⌕</button>
+    <div class="top-actions">
+      <button class="icon-btn" id="guideToggle" type="button" aria-label="Programación del canal actual" title="Programación" disabled>▤</button>
+      <button class="icon-btn" id="searchToggle" type="button" aria-label="Buscar" title="Buscar">⌕</button>
+    </div>
   </header>
 
   <section class="player-stage" id="playerStage">
@@ -534,6 +573,7 @@ body{
 
   <div class="status-strip">
     <strong id="mainTitle">Selecciona un canal</strong>
+    <span class="status-program" id="mainProgram">Programación no disponible</span>
   </div>
 
   <nav class="main-tabs" aria-label="Vista principal">
@@ -561,6 +601,23 @@ body{
   </main>
 </div>
 
+  <div class="epg-modal" id="epgModal" aria-hidden="true">
+    <div class="epg-backdrop" id="epgBackdrop"></div>
+    <section class="epg-card" role="dialog" aria-modal="true" aria-labelledby="epgTitle">
+      <header class="epg-head">
+        <div class="epg-logo" id="epgLogo">TV</div>
+        <div><div class="epg-provider" id="epgProvider">PROGRAMACIÓN</div><h2 class="epg-title" id="epgTitle">Canal</h2></div>
+        <button class="epg-close" id="epgClose" type="button" aria-label="Cerrar">×</button>
+      </header>
+      <div class="epg-status" id="epgStatus">Cargando programación…</div>
+      <div class="epg-list" id="epgList"><div class="epg-empty">Cargando…</div></div>
+      <footer class="epg-actions">
+        <button class="epg-action" id="epgRefresh" type="button">Actualizar</button>
+        <button class="epg-action primary" id="epgPlay" type="button">Reproducir canal</button>
+      </footer>
+    </section>
+  </div>
+
 <script>
 "use strict";
 
@@ -570,6 +627,10 @@ const FAVORITES_KEY = "watch_tv_plus_favorites_app_v1";
 const ADULT_UNLOCK_KEY = "watch_tv_plus_adult_unlocked_app_v1";
 const MAX_RENDER_DEFAULT = 1200;
 const MAX_RENDER_WITH_SEARCH = 2500;
+const WORKER_BASE = PROXY_BASE.replace(/\/proxy\?url=$/, "");
+const EPG_CACHE_TTL = 1000 * 60 * 8;
+const EPG_WINDOW_HOURS = 12;
+const EPG_PREFETCH_LIMIT = 18;
 
 const PLAYLISTS = [
   { id:"mexico", label:"México", file:"./mexico.m3u" },
@@ -587,8 +648,10 @@ const PLAYLISTS = [
 
 const playerStage = document.getElementById("playerStage");
 const mainTitle = document.getElementById("mainTitle");
+const mainProgram = document.getElementById("mainProgram");
 const countPill = document.getElementById("countPill");
 const searchToggle = document.getElementById("searchToggle");
+const guideToggle = document.getElementById("guideToggle");
 const searchPanel = document.getElementById("searchPanel");
 const searchInput = document.getElementById("searchInput");
 const reloadBtn = document.getElementById("reloadBtn");
@@ -600,6 +663,16 @@ const adultNotice = document.getElementById("adultNotice");
 const channelsMainTab = document.getElementById("channelsMainTab");
 const favoritesMainTab = document.getElementById("favoritesMainTab");
 const playerFavoriteBtn = document.getElementById("playerFavoriteBtn");
+const epgModal = document.getElementById("epgModal");
+const epgBackdrop = document.getElementById("epgBackdrop");
+const epgClose = document.getElementById("epgClose");
+const epgLogo = document.getElementById("epgLogo");
+const epgProvider = document.getElementById("epgProvider");
+const epgTitle = document.getElementById("epgTitle");
+const epgStatus = document.getElementById("epgStatus");
+const epgList = document.getElementById("epgList");
+const epgRefresh = document.getElementById("epgRefresh");
+const epgPlay = document.getElementById("epgPlay");
 
 let player = null;
 let currentChannel = null;
@@ -612,11 +685,20 @@ let favoriteUrls = loadFavoriteUrls();
 let adultUnlocked = localStorage.getItem(ADULT_UNLOCK_KEY) === "1";
 let allChannels = [];
 let channelsBySection = {};
+let epgModalChannel = null;
+const epgProgramsByKey = new Map();
+const epgNameToKey = new Map();
+const epgRequestCache = new Map();
+const epgSourceCache = new Map();
+const epgPending = new Map();
+let epgClockTimer = null;
 
 async function init(){
   buildSectionTabs();
   bindEvents();
   await loadAllPlaylists();
+  clearInterval(epgClockTimer);
+  epgClockTimer = setInterval(refreshEpgDisplay, 60000);
 }
 
 function bindEvents(){
@@ -641,6 +723,18 @@ function bindEvents(){
   playerFavoriteBtn.addEventListener("click", () => {
     if(!currentChannel || !currentChannel.url) return;
     toggleFavorite(currentChannel.url);
+  });
+
+  guideToggle.addEventListener("click", () => currentChannel && openSchedule(currentChannel));
+  epgClose.addEventListener("click", closeSchedule);
+  epgBackdrop.addEventListener("click", closeSchedule);
+  epgRefresh.addEventListener("click", () => epgModalChannel && loadSchedule(epgModalChannel, true));
+  epgPlay.addEventListener("click", () => {
+    if(epgModalChannel) loadChannel(epgModalChannel);
+    closeSchedule();
+  });
+  document.addEventListener("keydown", event => {
+    if(event.key === "Escape" && epgModal.classList.contains("open")) closeSchedule();
   });
 }
 
@@ -676,6 +770,7 @@ async function loadAllPlaylists(){
       const response = await fetch(pl.file + "?v=" + Date.now(), {cache:"no-store"});
       if(!response.ok) throw new Error("HTTP " + response.status);
       const text = await response.text();
+      const epgUrls = extractEpgUrls(text);
       const channels = parseM3U(text).map((channel,index) => ({
         ...channel,
         section:pl.id,
@@ -684,10 +779,10 @@ async function loadAllPlaylists(){
         isAdult:Boolean(pl.isAdult),
         category:pl.isAdult ? "(+18)" : (channel.category || guessCategory(channel.rawName, channel.id))
       }));
-      return {playlist:pl,channels};
+      return {playlist:pl,channels,epgUrls};
     }catch(error){
       console.error("No se pudo cargar",pl.file,error);
-      return {playlist:pl,channels:[]};
+      return {playlist:pl,channels:[],epgUrls:[]};
     }
   }));
 
@@ -695,6 +790,8 @@ async function loadAllPlaylists(){
     channelsBySection[result.playlist.id] = result.channels;
     allChannels.push(...result.channels);
   });
+
+  loadXmltvSources(results).catch(error => console.warn("EPG XMLTV:", error));
 
   if(!allChannels.length){
     countPill.textContent = "0";
@@ -747,6 +844,12 @@ function parseM3U(text){
         quality:parsed.quality,
         note:parsed.note,
         logo:attrs["tvg-logo"] || "",
+        tvgName:attrs["tvg-name"] || parsed.name,
+        provider:(attrs["provider"] || "").toLowerCase(),
+        epgId:attrs["epg-id"] || attrs["epgid"] || "",
+        contentId:attrs["content-id"] || attrs["contentid"] || "",
+        plutoId:attrs["pluto-id"] || "",
+        officialUrl:attrs["official-url"] || "",
         category:attrs["group-title"] || guessCategory(rawName,attrs["tvg-id"] || ""),
         type:"video",
         url:"",
@@ -770,6 +873,15 @@ function parseM3U(text){
   }
 
   return removeDuplicateChannels(channels);
+}
+
+function extractEpgUrls(text){
+  const header = String(text || "").replace(/\r/g, "").split("\n").find(line => line.trim().startsWith("#EXTM3U")) || "";
+  const attrs = getAttributes(header);
+  const raw = attrs["url-tvg"] || attrs["x-tvg-url"] || attrs["tvg-url"] || "";
+  return raw.split(/[,;]/).map(value => value.trim()).filter(Boolean).map(value => {
+    try{return new URL(value, location.href).toString()}catch(error){return value}
+  });
 }
 
 function getAttributes(line){
@@ -972,12 +1084,14 @@ function renderChannels(){
   const fragment = document.createDocumentFragment();
   shown.forEach((channel,index) => fragment.appendChild(createChannelItem(channel,index)));
   channelList.appendChild(fragment);
+  prefetchVisibleEpg(shown.slice(0, EPG_PREFETCH_LIMIT));
 }
 
 function createChannelItem(channel,index){
   const row = document.createElement("article");
   row.className = "channel-row" + (channel.url === currentUrl ? " active" : "");
   row.tabIndex = 0;
+  row.dataset.channelKey = `${channel.section}|${channel.url}`;
   row.setAttribute("role","button");
   row.setAttribute("aria-label",`Reproducir ${channel.name}`);
 
@@ -993,6 +1107,7 @@ function createChannelItem(channel,index){
     <div class="channel-copy">
       <div class="channel-name">${escapeHtml(channel.name)}</div>
       <div class="program-text">${escapeHtml(channel.sectionLabel)} - ${escapeHtml(channel.category)}</div>
+      <button class="epg-text ${getEpgLine(channel).loading ? "loading" : ""}" type="button" title="Abrir programación">${escapeHtml(getEpgLine(channel).text)}</button>
     </div>
     <div class="row-actions"><span class="play-arrow">›</span></div>
     <button class="favorite-btn ${favorite ? "active" : ""}" type="button" aria-label="Favorito" title="Favorito">${favorite ? "★" : "☆"}</button>
@@ -1006,8 +1121,13 @@ function createChannelItem(channel,index){
     });
   }
 
+  row.querySelector(".epg-text").addEventListener("click", event => {
+    event.stopPropagation();
+    openSchedule(channel);
+  });
+
   row.addEventListener("click",event => {
-    if(event.target.closest(".favorite-btn")) return;
+    if(event.target.closest(".favorite-btn") || event.target.closest(".epg-text")) return;
     loadChannel(channel);
   });
   row.addEventListener("keydown",event => {
@@ -1029,6 +1149,12 @@ function loadChannel(channel){
   currentChannel = channel;
   currentUrl = channel.url;
   mainTitle.textContent = channel.name;
+  guideToggle.disabled = false;
+  updateCurrentProgrammeUI();
+  ensureChannelEpg(channel).then(() => {
+    if(currentChannel === channel) updateCurrentProgrammeUI();
+    renderChannels();
+  }).catch(() => {});
   updatePlayerFavoriteButton();
   renderChannels();
   destroyPlayer();
@@ -1106,6 +1232,325 @@ function syncVideoEvents(){
   video.addEventListener("error",() => {
     if(currentChannel) mainTitle.textContent = `${currentChannel.name} · Error de reproducción`;
   });
+}
+
+
+function normalizeEpgName(value){
+  return String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/\b(?:tv|hd|fhd|uhd|4k|pluto)\b/g, " ")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+function parseXmltvDate(value){
+  const match = String(value || "").trim().match(/^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})?\s*([+-]\d{4}|Z)?/);
+  if(!match) return NaN;
+  const [,y,mo,d,h,mi,s="00",zone="+0000"] = match;
+  let timestamp = Date.UTC(Number(y),Number(mo)-1,Number(d),Number(h),Number(mi),Number(s));
+  if(zone !== "Z"){
+    const sign = zone.startsWith("-") ? -1 : 1;
+    const offsetMinutes = Number(zone.slice(1,3)) * 60 + Number(zone.slice(3,5));
+    timestamp -= sign * offsetMinutes * 60000;
+  }
+  return timestamp;
+}
+
+async function fetchEpgBytes(url){
+  const proxied = PROXY_BASE + encodeURIComponent(url);
+  let response;
+  try{
+    response = await fetch(proxied, {cache:"no-store"});
+    if(!response.ok) throw new Error("HTTP " + response.status);
+  }catch(proxyError){
+    response = await fetch(url, {cache:"no-store"});
+    if(!response.ok) throw new Error("HTTP " + response.status);
+  }
+  return {buffer:await response.arrayBuffer(), contentType:response.headers.get("content-type") || ""};
+}
+
+async function decodeEpgPayload(url, payload){
+  const bytes = new Uint8Array(payload.buffer);
+  const gzip = /\.gz(?:$|[?#])/i.test(url) || /gzip/i.test(payload.contentType) || (bytes[0] === 0x1f && bytes[1] === 0x8b);
+  if(!gzip) return new TextDecoder("utf-8").decode(bytes);
+  if("DecompressionStream" in window){
+    const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream("gzip"));
+    return await new Response(stream).text();
+  }
+  if(window.pako) return new TextDecoder("utf-8").decode(window.pako.ungzip(bytes));
+  throw new Error("El navegador no puede descomprimir la guía XMLTV");
+}
+
+async function loadXmltvSources(results){
+  const tasks = [];
+  results.forEach(result => {
+    (result.epgUrls || []).forEach(url => {
+      tasks.push(loadXmltvSource(url, result.channels));
+    });
+  });
+  await Promise.allSettled(tasks);
+  refreshEpgDisplay();
+}
+
+async function loadXmltvSource(url, channels){
+  if(!url || epgSourceCache.has(url)) return epgSourceCache.get(url);
+  const task = (async () => {
+    const payload = await fetchEpgBytes(url);
+    const xmlText = await decodeEpgPayload(url, payload);
+    const parser = new DOMParser();
+    const documentXml = parser.parseFromString(xmlText, "application/xml");
+    if(documentXml.querySelector("parsererror")) throw new Error("XMLTV inválido");
+
+    const relevantIds = new Set(channels.flatMap(channel => [channel.epgId, channel.id]).map(value => String(value || "")).filter(Boolean));
+    const relevantNames = new Map();
+    channels.forEach(channel => {
+      [channel.name, channel.tvgName, channel.rawName].forEach(name => {
+        const normalized = normalizeEpgName(name);
+        if(normalized) relevantNames.set(normalized, channel);
+      });
+    });
+
+    const acceptedIds = new Set();
+    documentXml.querySelectorAll("channel").forEach(node => {
+      const id = node.getAttribute("id") || "";
+      const names = [...node.querySelectorAll("display-name")].map(item => item.textContent || "");
+      if(relevantIds.has(id)) acceptedIds.add(id);
+      names.forEach(name => {
+        const normalized = normalizeEpgName(name);
+        if(relevantNames.has(normalized)) acceptedIds.add(id);
+        if(normalized) epgNameToKey.set(normalized, id);
+      });
+    });
+
+    const now = Date.now();
+    const lower = now - 3 * 60 * 60 * 1000;
+    const upper = now + 30 * 60 * 60 * 1000;
+    documentXml.querySelectorAll("programme").forEach(node => {
+      const key = node.getAttribute("channel") || "";
+      if(!acceptedIds.has(key)) return;
+      const start = parseXmltvDate(node.getAttribute("start"));
+      const stop = parseXmltvDate(node.getAttribute("stop"));
+      if(!Number.isFinite(start) || !Number.isFinite(stop) || stop < lower || start > upper) return;
+      const title = node.querySelector("title")?.textContent?.trim() || "Programa sin título";
+      const description = node.querySelector("desc")?.textContent?.trim() || "";
+      const subtitle = node.querySelector("sub-title")?.textContent?.trim() || "";
+      const list = epgProgramsByKey.get(key) || [];
+      list.push({start,stop,title,description,subtitle,source:"xmltv"});
+      epgProgramsByKey.set(key,list);
+    });
+
+    acceptedIds.forEach(key => {
+      const list = epgProgramsByKey.get(key) || [];
+      list.sort((a,b) => a.start - b.start);
+    });
+    return true;
+  })();
+  epgSourceCache.set(url, task);
+  return task;
+}
+
+function extractPlutoId(channel){
+  const values = [channel.plutoId, channel.epgId, channel.url, channel.id].filter(Boolean).map(String);
+  for(const value of values){
+    const match = value.match(/(?:plu-|channel\/)([a-f0-9]{24})/i) || value.match(/\b([a-f0-9]{24})\b/i);
+    if(match) return match[1];
+  }
+  return "";
+}
+
+function extractTubiContentId(channel){
+  const values = [channel.contentId, channel.epgId, channel.url, channel.officialUrl].filter(Boolean).map(String);
+  for(const value of values){
+    const match = value.match(/(?:live\/|content[_-]?id[=/])?(\d{6,})/i);
+    if(match) return match[1];
+  }
+  return "";
+}
+
+function channelEpgKey(channel){
+  if(!channel) return "";
+  for(const candidate of [channel.epgId, channel.id]){
+    const exact = String(candidate || "");
+    if(exact && epgProgramsByKey.has(exact)) return exact;
+  }
+  for(const name of [channel.tvgName, channel.name, channel.rawName]){
+    const key = epgNameToKey.get(normalizeEpgName(name));
+    if(key && epgProgramsByKey.has(key)) return key;
+  }
+  return exact;
+}
+
+function getProgramsForChannel(channel){
+  const key = channel && channel._epgKey && epgProgramsByKey.has(channel._epgKey) ? channel._epgKey : channelEpgKey(channel);
+  return key ? (epgProgramsByKey.get(key) || []) : [];
+}
+
+function getProgramSnapshot(channel){
+  const now = Date.now();
+  const programs = getProgramsForChannel(channel);
+  const current = programs.find(program => program.start <= now && program.stop > now) || null;
+  const next = programs.find(program => program.start > now) || null;
+  return {programs,current,next};
+}
+
+function getEpgLine(channel){
+  const snapshot = getProgramSnapshot(channel);
+  if(snapshot.current){
+    return {loading:false,text:`Ahora: ${snapshot.current.title} · ${formatClock(snapshot.current.start)}–${formatClock(snapshot.current.stop)}`};
+  }
+  if(epgPending.has(channel.url)) return {loading:true,text:"Cargando programación…"};
+  if(snapshot.next) return {loading:false,text:`Próximo: ${snapshot.next.title} · ${formatClock(snapshot.next.start)}`};
+  return {loading:false,text:"Programación no disponible"};
+}
+
+function formatClock(timestamp){
+  return new Intl.DateTimeFormat("es-MX",{hour:"2-digit",minute:"2-digit",hour12:true}).format(new Date(timestamp));
+}
+
+function normalizeProviderPrograms(programs, source){
+  return (Array.isArray(programs) ? programs : []).map(program => ({
+    start:Date.parse(program.start),
+    stop:Date.parse(program.stop),
+    title:String(program.title || "Programa sin título"),
+    description:String(program.description || ""),
+    subtitle:String(program.subtitle || ""),
+    source
+  })).filter(program => Number.isFinite(program.start) && Number.isFinite(program.stop)).sort((a,b) => a.start - b.start);
+}
+
+async function fetchProviderEpg(channel, force=false){
+  const provider = channel.provider || channel.section;
+  let endpoint = "";
+  if(provider === "pluto" || /jmp2\.uk\/plu-/i.test(channel.url)){
+    const id = extractPlutoId(channel);
+    if(id) endpoint = `${WORKER_BASE}/epg/pluto?channel_id=${encodeURIComponent(id)}&hours=${EPG_WINDOW_HOURS}`;
+  }else if(provider === "tubi" || channel.section === "tubi"){
+    const id = extractTubiContentId(channel);
+    if(id) endpoint = `${WORKER_BASE}/epg/tubi?content_id=${encodeURIComponent(id)}`;
+  }
+  if(!endpoint) return [];
+
+  const cacheKey = endpoint;
+  const cached = epgRequestCache.get(cacheKey);
+  if(!force && cached && Date.now() - cached.time < EPG_CACHE_TTL) return cached.programs;
+  const response = await fetch(endpoint + (endpoint.includes("?") ? "&" : "?") + "v=" + Date.now(), {cache:"no-store"});
+  if(!response.ok) throw new Error("EPG HTTP " + response.status);
+  const payload = await response.json();
+  let rawPrograms = [];
+  if(payload.provider === "pluto") rawPrograms = payload.programs || [];
+  if(payload.provider === "tubi") rawPrograms = payload.channel?.programs || payload.channels?.[0]?.programs || [];
+  const programs = normalizeProviderPrograms(rawPrograms, payload.provider || provider);
+  epgRequestCache.set(cacheKey,{time:Date.now(),programs});
+  return programs;
+}
+
+async function ensureChannelEpg(channel, force=false){
+  if(!channel || !channel.url) return [];
+  const existing = getProgramsForChannel(channel);
+  if(existing.length && !force) return existing;
+  if(epgPending.has(channel.url)) return epgPending.get(channel.url);
+  const task = (async () => {
+    try{
+      const programs = await fetchProviderEpg(channel, force);
+      if(programs.length){
+        const key = `provider:${channel.section}:${channel.id || channel.url}`;
+        epgProgramsByKey.set(key, programs);
+        channel._epgKey = key;
+      }
+      return programs;
+    }finally{
+      epgPending.delete(channel.url);
+    }
+  })();
+  epgPending.set(channel.url, task);
+  return task;
+}
+
+function prefetchVisibleEpg(channels){
+  channels.filter(channel => !getProgramsForChannel(channel).length).slice(0, EPG_PREFETCH_LIMIT).forEach((channel,index) => {
+    setTimeout(() => ensureChannelEpg(channel).then(() => {
+      if(currentChannel === channel) updateCurrentProgrammeUI();
+      const activeRow = [...channelList.querySelectorAll(".channel-row")].find(row => row.dataset.channelKey === `${channel.section}|${channel.url}`);
+      if(activeRow){
+        const element = activeRow.querySelector(".epg-text");
+        if(element){
+          const line = getEpgLine(channel);
+          element.textContent = line.text;
+          element.classList.toggle("loading", line.loading);
+        }
+      }
+    }).catch(() => {}), index * 180);
+  });
+}
+
+function updateCurrentProgrammeUI(){
+  if(!currentChannel){
+    mainProgram.textContent = "Programación no disponible";
+    return;
+  }
+  const snapshot = getProgramSnapshot(currentChannel);
+  mainProgram.textContent = snapshot.current
+    ? `${snapshot.current.title} · ${formatClock(snapshot.current.start)}–${formatClock(snapshot.current.stop)}`
+    : (epgPending.has(currentChannel.url) ? "Cargando programación…" : "Programación no disponible");
+}
+
+function refreshEpgDisplay(){
+  updateCurrentProgrammeUI();
+  channelList.querySelectorAll(".channel-row").forEach(row => {
+    const channel = allChannels.find(item => `${item.section}|${item.url}` === row.dataset.channelKey);
+    if(!channel) return;
+    const element = row.querySelector(".epg-text");
+    if(!element) return;
+    const line = getEpgLine(channel);
+    element.textContent = line.text;
+    element.classList.toggle("loading", line.loading);
+  });
+}
+
+function openSchedule(channel){
+  epgModalChannel = channel;
+  epgModal.classList.add("open");
+  epgModal.setAttribute("aria-hidden","false");
+  epgProvider.textContent = `${channel.sectionLabel} · ${channel.category}`;
+  epgTitle.textContent = channel.name;
+  epgLogo.innerHTML = channel.logo ? `<img src="${escapeHtml(channel.logo)}" alt="">` : escapeHtml(getInitials(channel.name));
+  loadSchedule(channel, false);
+  setTimeout(() => epgClose.focus(),30);
+}
+
+function closeSchedule(){
+  epgModal.classList.remove("open");
+  epgModal.setAttribute("aria-hidden","true");
+  epgModalChannel = null;
+}
+
+async function loadSchedule(channel, force=false){
+  epgStatus.textContent = "Consultando programación…";
+  epgList.innerHTML = `<div class="epg-empty">Cargando programación…</div>`;
+  try{
+    await ensureChannelEpg(channel, force);
+  }catch(error){
+    console.warn("EPG:",error);
+  }
+  const snapshot = getProgramSnapshot(channel);
+  const now = Date.now();
+  const limit = now + EPG_WINDOW_HOURS * 60 * 60 * 1000;
+  const programs = snapshot.programs.filter(program => program.stop > now - 30*60000 && program.start < limit);
+  epgStatus.textContent = programs.length ? `Próximas ${EPG_WINDOW_HOURS} horas · ${programs.length} programas` : "Sin programación disponible para este canal";
+  if(!programs.length){
+    epgList.innerHTML = `<div class="epg-empty">Este canal no tiene una guía compatible o su identificador <b>tvg-id</b> no coincide con la fuente EPG.</div>`;
+    return;
+  }
+  epgList.innerHTML = programs.map(program => {
+    const current = program.start <= now && program.stop > now;
+    return `<article class="epg-program ${current ? "current" : ""}">
+      <div class="epg-time">${formatClock(program.start)}<br>${formatClock(program.stop)}</div>
+      <div><div class="epg-program-title">${current ? '<span class="epg-badge">Ahora</span>' : ''}${escapeHtml(program.title)}</div>${program.description ? `<div class="epg-program-desc">${escapeHtml(program.description)}</div>` : ""}</div>
+    </article>`;
+  }).join("");
+  refreshEpgDisplay();
 }
 
 function loadFavoriteUrls(){
