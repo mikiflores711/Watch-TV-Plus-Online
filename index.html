@@ -95,12 +95,10 @@ button{cursor:pointer}
   min-height:180px;
   overflow:hidden;
   background:#000;
-  cursor:none;
+  cursor:default;
 }
-.player-stage.show-ui{cursor:default}
 #player{position:absolute;inset:0;width:100%;height:100%;background:#000}
 #player video{width:100%!important;height:100%!important;object-fit:contain!important;background:#000!important}
-#player .media-control{display:none!important}
 
 .player-shade{
   position:absolute;
@@ -389,28 +387,108 @@ button{cursor:pointer}
   .scroll-tabs{padding-top:5px;padding-bottom:5px}
   .tab-chip{min-height:29px;font-size:12px}
 }
+
+
+/* =====================================================
+   DISEÑO FIJO: SOLO LA LISTA DE CANALES SE DESPLAZA
+   ===================================================== */
+html,body{
+  height:100%;
+  min-height:100%;
+  overflow:hidden;
+}
+
+body{
+  overscroll-behavior:none;
+}
+
+.app-shell{
+  height:100dvh;
+  min-height:0;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+}
+
+.topbar,
+.player-stage,
+.status-strip,
+.main-tabs,
+.search-panel,
+.provider-tabs,
+.category-tabs,
+.adult-notice,
+.list-head{
+  flex:0 0 auto;
+}
+
+.topbar{
+  min-height:58px;
+}
+
+.brand{
+  width:min(190px,58vw);
+  min-width:0;
+  height:42px;
+  padding:0;
+  border:0;
+  background:transparent;
+  overflow:hidden;
+}
+
+.brand img{
+  display:block;
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  object-position:left center;
+}
+
+.player-stage{
+  height:min(56.25vw,36dvh,420px);
+  min-height:175px;
+  aspect-ratio:auto;
+  cursor:default;
+}
+
+
+.channel-list{
+  flex:1 1 auto;
+  min-height:0;
+  overflow-y:auto;
+  overflow-x:hidden;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+}
+
+.scroll-tabs{
+  flex-shrink:0;
+}
+
+@media (min-width:760px){
+  .player-stage{
+    height:min(56.25vw,38dvh,430px);
+    aspect-ratio:auto;
+  }
+}
+
+@media (orientation:landscape) and (max-height:560px){
+  .topbar{height:44px;min-height:44px}
+  .brand{height:30px;width:150px}
+  .player-stage{height:42dvh;min-height:145px;aspect-ratio:auto}
+}
+
 </style>
 </head>
 <body>
 <div class="app-shell">
   <header class="topbar">
-    <div class="brand"><span class="brand-mark">TV</span><span>WATCH TV+</span></div>
+    <div class="brand"><img src="https://raw.githubusercontent.com/mikiflores711/Watch-TV-Plus/refs/heads/main/Watch%20TV%20Plus1.png" alt="Watch TV Plus"></div>
     <button class="icon-btn" id="searchToggle" type="button" aria-label="Buscar" title="Buscar">⌕</button>
   </header>
 
-  <section class="player-stage show-ui" id="playerStage">
+  <section class="player-stage" id="playerStage">
     <div id="player"></div>
-    <div class="player-shade"></div>
-    <div class="now-box">
-      <div class="now-label" id="topCategory">CANAL EN VIVO</div>
-      <div class="now-title" id="topTitle">Selecciona un canal</div>
-    </div>
-    <div class="controls">
-      <button class="control-btn primary" id="playBtn" type="button"><span id="playIcon">▶</span><span id="playText">Play</span></button>
-      <button class="control-btn" id="muteBtn" type="button">🔊</button>
-      <button class="control-btn" id="pipBtn" type="button">▣</button>
-      <button class="control-btn right" id="fullBtn" type="button">⛶</button>
-    </div>
   </section>
 
   <div class="status-strip">
@@ -461,7 +539,6 @@ const PLAYLISTS = [
   { id:"vix", label:"ViX", file:"./vix.m3u" },
   { id:"tubi", label:"Tubi TV", file:"./tubi.m3u" },
   { id:"runtime", label:"Run Time", file:"./runtime.m3u" },
-  { id:"tv", label:"TV", file:"./tv.m3u" },
   { id:"plex", label:"Plex TV", file:"./plex_mx.m3u" },
   { id:"roku", label:"Roku TV", file:"./roku_all.m3u" },
   { id:"rakuten", label:"Rakuten TV", file:"./rakutentv.m3u" },
@@ -469,15 +546,7 @@ const PLAYLISTS = [
 ];
 
 const playerStage = document.getElementById("playerStage");
-const playBtn = document.getElementById("playBtn");
-const playIcon = document.getElementById("playIcon");
-const playText = document.getElementById("playText");
-const muteBtn = document.getElementById("muteBtn");
-const pipBtn = document.getElementById("pipBtn");
-const fullBtn = document.getElementById("fullBtn");
 const proxyStatus = document.getElementById("proxyStatus");
-const topCategory = document.getElementById("topCategory");
-const topTitle = document.getElementById("topTitle");
 const mainTitle = document.getElementById("mainTitle");
 const countPill = document.getElementById("countPill");
 const searchToggle = document.getElementById("searchToggle");
@@ -495,7 +564,6 @@ const favoritesMainTab = document.getElementById("favoritesMainTab");
 let player = null;
 let currentChannel = null;
 let currentUrl = "";
-let hideTimer = null;
 let activeSection = "mexico";
 let lastNormalSection = "mexico";
 let selectedCategory = "all";
@@ -508,15 +576,10 @@ let channelsBySection = {};
 async function init(){
   buildSectionTabs();
   bindEvents();
-  showPlayerUI();
   await loadAllPlaylists();
 }
 
 function bindEvents(){
-  playBtn.addEventListener("click", togglePlay);
-  muteBtn.addEventListener("click", toggleMute);
-  fullBtn.addEventListener("click", toggleFullscreen);
-  pipBtn.addEventListener("click", togglePiP);
   reloadBtn.addEventListener("click", loadAllPlaylists);
   searchInput.addEventListener("input", renderChannels);
 
@@ -531,12 +594,6 @@ function bindEvents(){
   });
 
   favoritesMainTab.addEventListener("click", () => setSection("favorites"));
-
-  ["mousemove","touchstart","click","pointerdown"].forEach(eventName => {
-    playerStage.addEventListener(eventName, showPlayerUI, {passive:true});
-  });
-  playerStage.addEventListener("mouseleave", () => hidePlayerUI(600));
-  document.addEventListener("keydown", showPlayerUI);
 }
 
 function buildSectionTabs(){
@@ -910,8 +967,6 @@ function loadChannel(channel){
   currentChannel = channel;
   currentUrl = channel.url;
   mainTitle.textContent = channel.name;
-  topCategory.textContent = `${channel.sectionLabel} · ${channel.category}`.toUpperCase();
-  topTitle.textContent = channel.name;
   renderChannels();
   destroyPlayer();
 
@@ -928,7 +983,7 @@ function loadChannel(channel){
     mute:false,
     width:"100%",
     height:"100%",
-    hideMediaControl:true,
+    hideMediaControl:false,
     mimeType:"application/vnd.apple.mpegurl",
     hlsPlayback:{preload:true},
     playback:{
@@ -949,14 +1004,10 @@ function loadChannel(channel){
     },
     events:{
       onReady(){syncVideoEvents()},
-      onPlay:updatePlayState,
-      onPause:updatePlayState,
-      onError(error){console.log("Clappr error:",error);showPlayerUI()}
+      onError(error){console.log("Clappr error:",error)}
     }
   });
 
-  showPlayerUI();
-  setTimeout(updatePlayState,700);
 }
 
 function shouldUseProxy(channel){
@@ -987,73 +1038,12 @@ function getPlayerVideo(){return document.querySelector("#player video")}
 function syncVideoEvents(){
   const video = getPlayerVideo();
   if(!video) return;
-  video.addEventListener("play",updatePlayState);
-  video.addEventListener("pause",updatePlayState);
-  video.addEventListener("playing",updatePlayState);
-  video.addEventListener("waiting",showPlayerUI);
-  video.addEventListener("error",showPlayerUI);
-}
-
-function togglePlay(){
-  showPlayerUI();
-  const video = getPlayerVideo();
-  if(!video) return;
-  if(video.paused) video.play().catch(() => {});
-  else video.pause();
-  updatePlayState();
-}
-
-function toggleMute(){
-  showPlayerUI();
-  const video = getPlayerVideo();
-  if(!video) return;
-  video.muted = !video.muted;
-  muteBtn.textContent = video.muted ? "🔇" : "🔊";
-}
-
-function updatePlayState(){
-  const video = getPlayerVideo();
-  const paused = !video || video.paused;
-  playIcon.textContent = paused ? "▶" : "❚❚";
-  playText.textContent = paused ? "Play" : "Pausa";
-  if(paused) playerStage.classList.add("show-ui");
-  else showPlayerUI();
-}
-
-async function togglePiP(){
-  showPlayerUI();
-  const video = getPlayerVideo();
-  if(!video) return;
-  try{
-    if(document.pictureInPictureElement) await document.exitPictureInPicture();
-    else if(document.pictureInPictureEnabled) await video.requestPictureInPicture();
-  }catch(error){}
-}
-
-async function toggleFullscreen(){
-  showPlayerUI();
-  try{
-    if(!document.fullscreenElement){
-      await playerStage.requestFullscreen();
-      if(screen.orientation?.lock) screen.orientation.lock("landscape").catch(() => {});
-    }else{
-      await document.exitFullscreen();
-    }
-  }catch(error){}
-}
-
-function showPlayerUI(){
-  playerStage.classList.add("show-ui");
-  clearTimeout(hideTimer);
-  hideTimer = setTimeout(() => hidePlayerUI(),3500);
-}
-
-function hidePlayerUI(delay = 0){
-  clearTimeout(hideTimer);
-  hideTimer = setTimeout(() => {
-    const video = getPlayerVideo();
-    if(video && !video.paused) playerStage.classList.remove("show-ui");
-  },delay);
+  video.addEventListener("playing",() => {
+    if(currentChannel) mainTitle.textContent = currentChannel.name;
+  });
+  video.addEventListener("error",() => {
+    if(currentChannel) mainTitle.textContent = `${currentChannel.name} · Error de reproducción`;
+  });
 }
 
 function loadFavoriteUrls(){
