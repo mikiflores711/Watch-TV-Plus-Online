@@ -335,6 +335,33 @@ button{cursor:pointer}
 .tab-chip.adult{color:#ff8999}
 .tab-chip.adult.active{background:#a61f34;color:#fff}
 
+/* Pestañas de servicios con logos PNG. */
+.provider-tabs .tab-chip{
+  width:auto;
+  min-width:76px;
+  height:42px;
+  padding:5px 10px;
+  display:grid;
+  place-items:center;
+  border:1px solid transparent;
+}
+.provider-tabs .tab-chip img{
+  display:block;
+  width:auto;
+  max-width:78px;
+  height:auto;
+  max-height:30px;
+  object-fit:contain;
+  pointer-events:none;
+}
+.provider-tabs .tab-chip.active,
+.provider-tabs .tab-chip.adult.active{
+  background:rgba(255,255,255,.14);
+  border-color:rgba(255,255,255,.13);
+  color:#fff;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.035),0 2px 8px rgba(0,0,0,.22);
+}
+
 .adult-notice{
   display:none;
   padding:9px 12px;
@@ -844,7 +871,8 @@ body{
 
 const PROXY_BASE = "https://hls-proxy-tv-plus.mikimc-business.workers.dev/proxy?url=";
 const USE_PROXY_FOR_ALL = true;
-const FAVORITES_KEY = "watch_tv_plus_favorites_app_v1";
+const FAVORITES_KEY = "watch_tv_plus_favorites_app_v2";
+const LEGACY_FAVORITES_KEY = "watch_tv_plus_favorites_app_v1";
 const ADULT_UNLOCK_KEY = "watch_tv_plus_adult_unlocked_app_v1";
 const MAX_RENDER_DEFAULT = 1200;
 const MAX_RENDER_WITH_SEARCH = 2500;
@@ -852,17 +880,17 @@ const PLAYER_UI_HIDE_DELAY = 3500;
 const IS_IPHONE = /iPhone|iPod/i.test(navigator.userAgent);
 
 const PLAYLISTS = [
-  { id:"mexico", label:"México", file:"./mexico.m3u" },
-  { id:"pluto", label:"Pluto TV", file:"./pluto.m3u" },
-  { id:"espanol", label:"Español", file:"./espanol.m3u" },
-  { id:"lg", label:"LG Channels", file:"./LG_Channels_mx.m3u" },
-  { id:"vix", label:"ViX", file:"./vix.m3u" },
-  { id:"tubi", label:"Tubi TV", file:"./tubi.m3u" },
-  { id:"runtime", label:"Run Time", file:"./runtime.m3u" },
-  { id:"plex", label:"Plex TV", file:"./plex_mx.m3u" },
-  { id:"roku", label:"Roku TV", file:"./roku_all.m3u" },
-  { id:"rakuten", label:"Rakuten TV", file:"./rakutentv.m3u" },
-  { id:"adult", label:"(+18)", file:"./adult.m3u", isAdult:true }
+  { id:"mexico", label:"México", file:"./mexico.m3u", logo:"https://raw.githubusercontent.com/mikiflores711/Watch-TV-Plus/refs/heads/main/Icono%20Mexico.png" },
+  { id:"pluto", label:"Pluto TV", file:"./pluto.m3u", logo:"https://raw.githubusercontent.com/mikiflores711/Watch-TV-Plus/refs/heads/main/Icono%20Pluto%20TV.png" },
+  { id:"lg", label:"LG Channels", file:"./LG_Channels_mx.m3u", logo:"https://raw.githubusercontent.com/mikiflores711/Watch-TV-Plus/refs/heads/main/Icono%20LG%20Channels.png" },
+  { id:"vix", label:"ViX", file:"./vix.m3u", logo:"https://raw.githubusercontent.com/mikiflores711/Watch-TV-Plus/refs/heads/main/Icono%20Vix.png" },
+  { id:"tubi", label:"Tubi TV", file:"./tubi.m3u", logo:"https://raw.githubusercontent.com/mikiflores711/Watch-TV-Plus/refs/heads/main/Icono%20Tubi.png" },
+  { id:"runtime", label:"Run Time", file:"./runtime.m3u", logo:"https://raw.githubusercontent.com/mikiflores711/Watch-TV-Plus/refs/heads/main/Icono%20RunTime.png" },
+  { id:"plex", label:"Plex TV", file:"./plex_mx.m3u", logo:"https://raw.githubusercontent.com/mikiflores711/Watch-TV-Plus/refs/heads/main/Icono%20Plex%20TV.png" },
+  { id:"roku", label:"Roku Channel", file:"./roku_all.m3u", logo:"https://raw.githubusercontent.com/mikiflores711/Watch-TV-Plus/refs/heads/main/Icono%20Roku%20Channel.png" },
+  { id:"rakuten", label:"Rakuten TV", file:"./rakutentv.m3u", logo:"https://raw.githubusercontent.com/mikiflores711/Watch-TV-Plus/refs/heads/main/Icono%20Rakuten%20TV.png" },
+  { id:"espanol", label:"Español", file:"./espanol.m3u", logo:"https://raw.githubusercontent.com/mikiflores711/Watch-TV-Plus/refs/heads/main/Icono%20Espa%C3%B1ol.png" },
+  { id:"adult", label:"Zona 18+", file:"./adult.m3u", logo:"https://raw.githubusercontent.com/mikiflores711/Watch-TV-Plus/refs/heads/main/Icono%20Zona%2018+.png", isAdult:true }
 ];
 
 const playerStage = document.getElementById("playerStage");
@@ -890,6 +918,7 @@ const playerChannelMeta = document.getElementById("playerChannelMeta");
 let player = null;
 let currentChannel = null;
 let currentUrl = "";
+let currentChannelKey = "";
 let activeSection = "mexico";
 let lastNormalSection = "mexico";
 let selectedCategory = "all";
@@ -915,16 +944,15 @@ function bindEvents(){
   searchInput.addEventListener("input", () => {
     buildCategories();
     renderChannels();
-    scheduleSearchAutoClose();
   });
-  searchInput.addEventListener("focus", () => clearTimeout(searchUiTimer));
-  searchInput.addEventListener("blur", () => scheduleSearchAutoClose(900));
 
   searchClear.addEventListener("click", () => {
     searchInput.value = "";
+    selectedCategory = "all";
+    sortPopular = false;
+    closeTopSearch(false);
     buildCategories();
     renderChannels();
-    searchInput.focus();
   });
 
   searchToggle.addEventListener("click", event => {
@@ -944,7 +972,7 @@ function bindEvents(){
 
   playerFavoriteBtn.addEventListener("click", () => {
     if(!currentChannel || !currentChannel.url) return;
-    toggleFavorite(currentChannel.url);
+    toggleFavorite(currentChannel);
     showPlayerUi();
   });
 
@@ -959,11 +987,6 @@ function bindEvents(){
     }
   });
 
-  document.addEventListener("pointerdown",event => {
-    if(topbar.classList.contains("search-open") && !topbar.contains(event.target)){
-      closeTopSearch();
-    }
-  },{passive:true});
 
   /* El video permanece en línea. La pantalla completa solo se abre desde el botón de Clappr. */
   playerStage.addEventListener("click",event => {
@@ -987,7 +1010,23 @@ function buildSectionTabs(){
     button.type = "button";
     button.className = "tab-chip" + (pl.id === activeSection ? " active" : "") + (pl.isAdult ? " adult" : "");
     button.dataset.section = pl.id;
-    button.textContent = pl.label;
+    button.title = pl.label;
+    button.setAttribute("aria-label",`Abrir ${pl.label}`);
+
+    if(pl.logo){
+      const image = document.createElement("img");
+      image.src = pl.logo;
+      image.alt = pl.label;
+      image.loading = "eager";
+      image.referrerPolicy = "no-referrer";
+      image.addEventListener("error",() => {
+        button.textContent = pl.label;
+      },{once:true});
+      button.appendChild(image);
+    }else{
+      button.textContent = pl.label;
+    }
+
     button.addEventListener("click", () => setSection(pl.id));
     sectionTabs.appendChild(button);
   });
@@ -1017,6 +1056,7 @@ async function loadAllPlaylists(){
         section:pl.id,
         sectionLabel:pl.label,
         sectionIndex:index + 1,
+        favoriteKey:`${pl.id}::${channel.url}`,
         isAdult:Boolean(pl.isAdult),
         category:pl.isAdult ? "(+18)" : (channel.category || guessCategory(channel.rawName, channel.id))
       }));
@@ -1031,6 +1071,8 @@ async function loadAllPlaylists(){
     channelsBySection[result.playlist.id] = result.channels;
     allChannels.push(...result.channels);
   });
+
+  migrateLegacyFavorites();
 
   if(!allChannels.length){
     countPill.textContent = "0";
@@ -1213,10 +1255,13 @@ function setSection(section){
   updateMainTabs();
   buildCategories();
   renderChannels();
+  requestAnimationFrame(() => {
+    channelList.scrollTop = 0;
+  });
 }
 
 function getSectionChannels(requireUnlocked = true){
-  if(activeSection === "favorites") return allChannels.filter(channel => isFavorite(channel.url));
+  if(activeSection === "favorites") return allChannels.filter(channel => isFavorite(channel));
   if(activeSection === "adult"){
     if(requireUnlocked && !adultUnlocked) return [];
     return channelsBySection.adult || [];
@@ -1284,7 +1329,7 @@ function renderChannels(){
 
   if(sortPopular){
     filtered = [...filtered].sort((a,b) => {
-      const favDifference = Number(isFavorite(b.url)) - Number(isFavorite(a.url));
+      const favDifference = Number(isFavorite(b)) - Number(isFavorite(a));
       return favDifference || a.name.localeCompare(b.name,"es");
     });
   }
@@ -1312,13 +1357,13 @@ function renderChannels(){
 
 function createChannelItem(channel,index){
   const row = document.createElement("article");
-  row.className = "channel-row" + (channel.url === currentUrl ? " active" : "");
+  row.className = "channel-row" + (getChannelKey(channel) === currentChannelKey ? " active" : "");
   row.tabIndex = 0;
   row.setAttribute("role","button");
   row.setAttribute("aria-label",`Reproducir ${channel.name}`);
 
   const displayNumber = String(channel.channelNumber || index + 1).padStart(3,"0");
-  const favorite = isFavorite(channel.url);
+  const favorite = isFavorite(channel);
   const logoMarkup = channel.logo
     ? `<img src="${escapeHtml(channel.logo)}" alt="" loading="lazy" referrerpolicy="no-referrer">`
     : escapeHtml(getInitials(channel.name));
@@ -1357,7 +1402,7 @@ function createChannelItem(channel,index){
 
   row.querySelector(".favorite-btn").addEventListener("click",event => {
     event.stopPropagation();
-    toggleFavorite(channel.url);
+    toggleFavorite(channel);
   });
 
   const reportButton = row.querySelector(".report-btn");
@@ -1388,6 +1433,7 @@ function openChannelReport(channel,displayNumber){
 function loadChannel(channel){
   currentChannel = channel;
   currentUrl = channel.url;
+  currentChannelKey = getChannelKey(channel);
   updatePlayerChannelCard(channel);
   updatePlayerFavoriteButton();
   showPlayerUi();
@@ -1664,21 +1710,21 @@ function openTopSearch(){
   requestAnimationFrame(() => searchInput.focus({preventScroll:true}));
 }
 
-function closeTopSearch(){
+function closeTopSearch(resetResults = true){
   clearTimeout(searchUiTimer);
   topbar.classList.remove("search-open");
   searchToggle.classList.remove("active");
   searchToggle.setAttribute("aria-expanded","false");
   searchToggle.setAttribute("aria-label","Abrir buscador");
   searchInput.blur();
-}
 
-function scheduleSearchAutoClose(delay = 6500){
-  clearTimeout(searchUiTimer);
-  if(!topbar.classList.contains("search-open")) return;
-  searchUiTimer = setTimeout(() => {
-    if(document.activeElement !== searchInput) closeTopSearch();
-  },delay);
+  if(resetResults && searchInput.value){
+    searchInput.value = "";
+    selectedCategory = "all";
+    sortPopular = false;
+    buildCategories();
+    renderChannels();
+  }
 }
 
 async function shareCurrentPage(){
@@ -1727,11 +1773,39 @@ function loadFavoriteUrls(){
     return new Set();
   }
 }
+function getChannelKey(channel){
+  if(!channel) return "";
+  return channel.favoriteKey || `${channel.section || "sin-seccion"}::${channel.url || ""}`;
+}
+function migrateLegacyFavorites(){
+  if(favoriteUrls.size || localStorage.getItem(FAVORITES_KEY)) return;
+
+  try{
+    const legacy = JSON.parse(localStorage.getItem(LEGACY_FAVORITES_KEY) || "[]");
+    if(!Array.isArray(legacy) || !legacy.length) return;
+
+    const byUrl = new Map();
+    allChannels.forEach(channel => {
+      const group = byUrl.get(channel.url) || [];
+      group.push(channel);
+      byUrl.set(channel.url,group);
+    });
+
+    legacy.forEach(url => {
+      const matches = byUrl.get(url) || [];
+      if(matches.length === 1) favoriteUrls.add(getChannelKey(matches[0]));
+    });
+
+    saveFavoriteUrls();
+  }catch(error){
+    console.log("No se pudieron migrar los favoritos anteriores:",error);
+  }
+}
 function saveFavoriteUrls(){localStorage.setItem(FAVORITES_KEY,JSON.stringify([...favoriteUrls]))}
-function isFavorite(url){return favoriteUrls.has(url)}
+function isFavorite(channel){return favoriteUrls.has(getChannelKey(channel))}
 function updatePlayerFavoriteButton(){
   const available = Boolean(currentChannel && currentChannel.url);
-  const favorite = available && isFavorite(currentChannel.url);
+  const favorite = available && isFavorite(currentChannel);
 
   playerFavoriteBtn.disabled = !available;
   playerFavoriteBtn.classList.toggle("active",favorite);
@@ -1742,8 +1816,10 @@ function updatePlayerFavoriteButton(){
     favorite ? "Quitar canal actual de favoritos" : "Agregar canal actual a favoritos"
   );
 }
-function toggleFavorite(url){
-  favoriteUrls.has(url) ? favoriteUrls.delete(url) : favoriteUrls.add(url);
+function toggleFavorite(channel){
+  const key = getChannelKey(channel);
+  if(!key) return;
+  favoriteUrls.has(key) ? favoriteUrls.delete(key) : favoriteUrls.add(key);
   saveFavoriteUrls();
   updatePlayerFavoriteButton();
   renderChannels();
