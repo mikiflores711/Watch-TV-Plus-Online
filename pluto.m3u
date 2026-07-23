@@ -1,6 +1,8 @@
 #EXTM3U
 #EXTINF:-1 tvg-id="CineEstelar.us@LatAm" tvg-name="Cine Estelar" group-title="Películas" provider="pluto" epg-id="5dcde437229eff00091b6c30" tvg-logo="https://images.pluto.tv/channels/5dcde437229eff00091b6c30/colorLogoPNG.png",Cine Estelar
 https://jmp2.uk/plu-5dcde437229eff00091b6c30.m3u8
+#EXTINF:-1 tvg-id="CineAccion.us@LatAm" tvg-name="Cine Acción" group-title="Películas" tvg-logo="https://m.media-amazon.com/images/S/pv-target-images/e45597338e06c9143baa97cfb910b67113ee5dd16f63242bbb3009c56005d840.jpg",Casa de cultivo
+https://nc-cf.tubi.video/deb32ac2-d1d4-4d2a-bb9c-b3790ea3e1b9/ve5cuoop.m3u8?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjZG5fcHJlZml4IjoiaHR0cHM6Ly9uYy1jZi50dWJpLnZpZGVvIiwiZXhwIjoxNzg1Mzc2ODAwLCJtZWRpYV9zaWciOjcwNzk2NDQ5fQ.wUbJb4Wkqq1Aqpm1MSqJwnAiizMFPE30OMZJc3fwS1Y
 #EXTINF:-1 tvg-id="CineAccion.us@LatAm" tvg-name="Cine Acción" group-title="Películas" provider="pluto" epg-id="5dcb62e63d4d8f0009f36881" tvg-logo="https://images.pluto.tv/channels/5dcb62e63d4d8f0009f36881/colorLogoPNG.png",Cine Acción
 https://jmp2.uk/plu-5dcb62e63d4d8f0009f36881.m3u8
 #EXTINF:-1 tvg-id="EstrellasdeAccion.us@SD" tvg-name="Estrellas de Acción" group-title="Películas" provider="pluto" epg-id="5e972a21ad709d00074195ba" tvg-logo="https://images.pluto.tv/channels/5e972a21ad709d00074195ba/colorLogoPNG.png",Estrellas de Acción
