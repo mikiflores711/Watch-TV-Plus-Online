@@ -65,98 +65,155 @@ button,a{min-height:47px;display:grid;place-items:center;border:0;border-radius:
 </main>
 <script>
 "use strict";
+
 const API_URL = "https://script.google.com/macros/s/AKfycbzSek-P5YnrbbUZ-4CrTS3dBV86JOL9jRHGPGw_iqZ2m5nJauSs9Eqymn-ISAbEqK_W/exec";
-const p = new URLSearchParams(location.search);
+const params = new URLSearchParams(location.search);
+
 const data = {
-  canal:p.get("canal")||"Canal",
-  numero:p.get("numero")||"---",
-  seccion:p.get("seccion")||"TV",
-  categoria:p.get("categoria")||"General",
-  logo:p.get("logo")||"",
-  canalId:p.get("id")||"",
-  stream:p.get("stream")||"",
-  volver:p.get("volver")||"index.html"
+  canal: params.get("canal") || "Canal",
+  numero: params.get("numero") || "---",
+  seccion: params.get("seccion") || "TV",
+  categoria: params.get("categoria") || "General",
+  logo: params.get("logo") || "",
+  canalId: params.get("id") || "",
+  stream: params.get("stream") || "",
+  volver: params.get("volver") || "index.html"
 };
 
-const form=document.getElementById("form");
-const nameEl=document.getElementById("name");
-const metaEl=document.getElementById("meta");
-const logoEl=document.getElementById("logo");
-const backEl=document.getElementById("back");
-const statusEl=document.getElementById("status");
-const sendEl=document.getElementById("send");
+const form = document.getElementById("form");
+const nameElement = document.getElementById("name");
+const metaElement = document.getElementById("meta");
+const logoElement = document.getElementById("logo");
+const backElement = document.getElementById("back");
+const reasonElement = document.getElementById("reason");
+const detailsElement = document.getElementById("details");
+const contactElement = document.getElementById("contact");
+const sendElement = document.getElementById("send");
+const statusElement = document.getElementById("status");
 
-nameEl.textContent=data.canal;
-metaEl.textContent=`Número ${data.numero} · ${data.seccion} · ${data.categoria}`;
-backEl.href=data.volver;
+nameElement.textContent = data.canal;
+metaElement.textContent =
+  `Número ${data.numero} · ${data.seccion} · ${data.categoria}`;
+backElement.href = data.volver;
 
-if(data.logo){
-  const img=document.createElement("img");
-  img.src=data.logo;
-  img.alt="";
-  img.referrerPolicy="no-referrer";
-  img.onerror=()=>logoEl.textContent="TV";
-  logoEl.textContent="";
-  logoEl.appendChild(img);
+if (data.logo) {
+  const image = document.createElement("img");
+  image.src = data.logo;
+  image.alt = "";
+  image.referrerPolicy = "no-referrer";
+  image.onerror = () => {
+    logoElement.textContent = "TV";
+  };
+  logoElement.textContent = "";
+  logoElement.appendChild(image);
 }
 
-function showStatus(message,type){
-  statusEl.className="status show "+type;
-  statusEl.textContent=message;
+function showStatus(message, type) {
+  statusElement.className = "status show " + type;
+  statusElement.textContent = message;
 }
 
-function jsonp(params){
-  return new Promise((resolve,reject)=>{
-    const callback="__wtvReport_"+Date.now()+"_"+Math.random().toString(36).slice(2);
-    const script=document.createElement("script");
-    const cleanup=()=>{
-      try{delete window[callback]}catch(e){window[callback]=undefined}
-      script.remove();
-    };
-    window[callback]=result=>{cleanup();resolve(result)};
-    script.onerror=()=>{cleanup();reject(new Error("No se pudo conectar con Apps Script."))};
-    params.set("callback",callback);
-    script.src=API_URL+"?"+params.toString();
-    document.head.appendChild(script);
-  });
-}
+let pendingTimeout = null;
+let waitingForResult = false;
 
-form.addEventListener("submit",async event=>{
-  event.preventDefault();
-  sendEl.disabled=true;
-  sendEl.textContent="Enviando...";
-  statusEl.className="status";
+window.addEventListener("message", event => {
+  const message = event.data;
 
-  const params=new URLSearchParams({
-    action:"publicReport",
-    canal:data.canal,
-    numero:data.numero,
-    seccion:data.seccion,
-    categoria:data.categoria,
-    logo:data.logo,
-    canalId:data.canalId,
-    stream:data.stream,
-    motivo:document.getElementById("reason").value,
-    detalles:document.getElementById("details").value.trim(),
-    contacto:document.getElementById("contact").value.trim(),
-    pagina:data.volver,
-    userAgent:navigator.userAgent
-  });
-
-  try{
-    const result=await jsonp(params);
-    if(!result||!result.ok)throw new Error(result?.error||"No se pudo guardar.");
-    showStatus(result.grouped
-      ? `Reporte recibido. Este canal ahora suma ${result.cantidad} reportes.`
-      : "Reporte enviado correctamente.","ok");
-    document.getElementById("details").value="";
-    document.getElementById("contact").value="";
-  }catch(error){
-    showStatus(error.message||"No se pudo enviar el reporte.","error");
-  }finally{
-    sendEl.disabled=false;
-    sendEl.textContent="Enviar reporte";
+  if (!message || message.type !== "WATCH_TV_REPORT_RESULT" || !waitingForResult) {
+    return;
   }
+
+  waitingForResult = false;
+  clearTimeout(pendingTimeout);
+
+  const result = message.payload || {};
+
+  if (result.ok) {
+    showStatus(
+      result.grouped
+        ? `Reporte recibido. Este canal ahora suma ${result.cantidad} reportes.`
+        : "Reporte enviado correctamente.",
+      "ok"
+    );
+
+    reasonElement.selectedIndex = 0;
+    detailsElement.value = "";
+    contactElement.value = "";
+  } else {
+    showStatus(result.error || "No se pudo guardar el reporte.", "error");
+  }
+
+  sendElement.disabled = false;
+  sendElement.textContent = "Enviar reporte";
+});
+
+function appendHiddenField(targetForm, name, value) {
+  const input = document.createElement("input");
+  input.type = "hidden";
+  input.name = name;
+  input.value = String(value ?? "");
+  targetForm.appendChild(input);
+}
+
+form.addEventListener("submit", event => {
+  event.preventDefault();
+
+  sendElement.disabled = true;
+  sendElement.textContent = "Enviando...";
+  statusElement.className = "status";
+  statusElement.textContent = "";
+
+  const frameName = "watchTvReportFrame_" + Date.now();
+
+  const iframe = document.createElement("iframe");
+  iframe.name = frameName;
+  iframe.hidden = true;
+  iframe.setAttribute("aria-hidden", "true");
+  document.body.appendChild(iframe);
+
+  const postForm = document.createElement("form");
+  postForm.method = "POST";
+  postForm.action = API_URL;
+  postForm.target = frameName;
+  postForm.style.display = "none";
+
+  appendHiddenField(postForm, "action", "publicReport");
+  appendHiddenField(postForm, "canal", data.canal);
+  appendHiddenField(postForm, "numero", data.numero);
+  appendHiddenField(postForm, "seccion", data.seccion);
+  appendHiddenField(postForm, "categoria", data.categoria);
+  appendHiddenField(postForm, "logo", data.logo);
+  appendHiddenField(postForm, "canalId", data.canalId);
+  appendHiddenField(postForm, "stream", data.stream);
+  appendHiddenField(postForm, "motivo", reasonElement.value);
+  appendHiddenField(postForm, "detalles", detailsElement.value.trim());
+  appendHiddenField(postForm, "contacto", contactElement.value.trim());
+  appendHiddenField(postForm, "pagina", data.volver);
+  appendHiddenField(postForm, "userAgent", navigator.userAgent);
+
+  document.body.appendChild(postForm);
+
+  waitingForResult = true;
+
+  pendingTimeout = setTimeout(() => {
+    if (!waitingForResult) return;
+
+    waitingForResult = false;
+    sendElement.disabled = false;
+    sendElement.textContent = "Enviar reporte";
+
+    showStatus(
+      "El servidor tardó demasiado en responder. Revisa el panel antes de volver a enviarlo.",
+      "error"
+    );
+  }, 20000);
+
+  postForm.submit();
+
+  setTimeout(() => {
+    postForm.remove();
+    iframe.remove();
+  }, 30000);
 });
 </script>
 </body>
