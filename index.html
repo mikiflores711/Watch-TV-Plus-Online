@@ -1014,7 +1014,7 @@ body.legal-open{overflow:hidden}
 const PROXY_BASE = "https://hls-proxy-tv-plus.mikimc-business.workers.dev/proxy?url=";
 const REPORT_API_URL = window.WATCH_TV_CONFIG.API_URL;
 const REPORT_STATUS_INTERVAL = 60000;
-const USE_PROXY_FOR_ALL = true;
+const USE_PROXY_FOR_ALL = false;
 const FAVORITES_KEY = "watch_tv_plus_favorites_app_v2";
 const LEGACY_FAVORITES_KEY = "watch_tv_plus_favorites_app_v1";
 const ADULT_UNLOCK_KEY = "watch_tv_plus_adult_unlocked_app_v1";
@@ -1593,30 +1593,25 @@ function getChannelReportBadge(channel){
   return `<span class="report-state ${css}">${escapeHtml(text)}</span>`;
 }
 
-function loadPublicReportStates(){
-  const callbackName = "__watchTvReportStatus_" + Date.now();
-  const script = document.createElement("script");
-  const cleanup = () => {
-    try{ delete window[callbackName]; }catch(error){ window[callbackName] = undefined; }
-    script.remove();
-  };
+async function loadPublicReportStates(){
+  try{
+    const response = await fetch(REPORT_API_URL + "/api/statuses", {
+      cache:"no-store"
+    });
+    const result = await response.json();
+    if(!response.ok || !result.ok || !Array.isArray(result.items)) return;
 
-  window[callbackName] = result => {
-    if(result && result.ok && Array.isArray(result.items)){
-      const map = new Map();
-      result.items.forEach(item => {
-        const key = String(item.stream || item.canalId || item.canal || "").trim();
-        if(key) map.set(key,item);
-      });
-      channelReportStates = map;
-      renderChannels();
-    }
-    cleanup();
-  };
+    const map = new Map();
+    result.items.forEach(item => {
+      const key = String(item.stream || item.canalId || item.canal || "").trim();
+      if(key) map.set(key,item);
+    });
 
-  script.onerror = cleanup;
-  script.src = `${APPS_SCRIPT_WEBAPP}?action=publicStatus&callback=${encodeURIComponent(callbackName)}&t=${Date.now()}`;
-  document.head.appendChild(script);
+    channelReportStates = map;
+    renderChannels();
+  }catch(error){
+    console.warn("No se pudieron cargar los estados de reportes",error);
+  }
 }
 
 function startPublicReportStateRefresh(){
@@ -1694,14 +1689,14 @@ function playChannelCandidate(channel,candidates,index){
       playInline:true,
       hlsjsConfig:{
         enableWorker:true,
-        lowLatencyMode:true,
+        lowLatencyMode:false,
         liveSyncDurationCount:3,
         maxBufferLength:24,
-        manifestLoadingMaxRetry:3,
+        manifestLoadingMaxRetry:5,
         manifestLoadingRetryDelay:900,
-        levelLoadingMaxRetry:3,
+        levelLoadingMaxRetry:5,
         levelLoadingRetryDelay:900,
-        fragLoadingMaxRetry:4,
+        fragLoadingMaxRetry:6,
         fragLoadingRetryDelay:900,
         keyLoadingMaxRetry:3,
         keyLoadingRetryDelay:900
@@ -1744,19 +1739,31 @@ function isMexicoGeoRestrictedAkamai(url){
   }
 }
 
+function isPlutoStream(url){
+  const value = String(url || "").toLowerCase();
+  return value.includes("pluto.tv") ||
+         value.includes("plutotv.net") ||
+         value.includes("service-stitcher.clusters.pluto.tv") ||
+         value.includes("stitcher-ipv4.pluto.tv");
+}
+
 function shouldUseProxy(channel){
-  /*
-    Los streams *-onlymex.akamaized.net validan la IP del espectador.
-    Si pasan por Cloudflare Worker, Akamai ve la IP del Worker (que puede
-    estar fuera de México) y responde 403. Estos canales deben abrirse
-    directamente desde el navegador del usuario.
-  */
-  if(isMexicoGeoRestrictedAkamai(channel.url)) return false;
-  if(USE_PROXY_FOR_ALL) return true;
-  if(channel.url.startsWith("http://") && location.protocol === "https:") return true;
-  if(channel.url.includes("jmp2.uk/plu-")) return true;
+  const url = String(channel.url || "");
+
+  // Los hosts restringidos a México deben ver la IP real del espectador.
+  if(isMexicoGeoRestrictedAkamai(url)) return false;
+
+  // Pluto usa URLs firmadas y parámetros dinámicos: conexión directa primero.
+  if(isPlutoStream(url)) return false;
+
+  // HTTP dentro de una página HTTPS queda bloqueado como contenido mixto.
+  if(url.startsWith("http://") && location.protocol === "https:") return true;
+
+  // Estos enlaces o cabeceras especiales sí necesitan el Worker.
+  if(url.includes("jmp2.uk/plu-")) return true;
   if(channel.referrer || channel.userAgent) return true;
-  return false;
+
+  return USE_PROXY_FOR_ALL;
 }
 
 function buildProxyUrl(channel,url = channel.url){
@@ -1777,22 +1784,40 @@ function getStreamCandidates(channel){
     if(url && !candidates.includes(url)) candidates.push(url);
   };
 
-  /* Primera opción: conexión directa para que Akamai vea la IP mexicana. */
-  if(isMexicoGeoRestrictedAkamai(channel.url)){
-    add(channel.url);
+  const original = String(channel.url || "");
+  const proxied = buildProxyUrl(channel);
 
-    /* Host alternativo del mismo evento, usado cuando onlymex cambia o falla. */
+  if(isMexicoGeoRestrictedAkamai(original)){
+    // Akamai restringido por país: directo primero.
+    add(original);
+
     try{
-      const parsed = new URL(channel.url);
+      const parsed = new URL(original);
       const genericHost = parsed.hostname.replace("-onlymex.akamaized.net",".akamaized.net");
-      add(`${parsed.protocol}//${genericHost}${parsed.pathname}${parsed.search}`);
+      if(genericHost !== parsed.hostname){
+        add(`${parsed.protocol}//${genericHost}${parsed.pathname}${parsed.search}`);
+      }
     }catch(error){}
 
-    /* Último intento por proxy, útil solo si el Worker tiene salida mexicana. */
-    add(buildProxyUrl(channel));
+    add(proxied);
+    return candidates;
+  }
+
+  if(isPlutoStream(original)){
+    // Pluto y otros servicios con tokens firmados no deben alterarse.
+    add(original);
+    add(proxied);
+    return candidates;
+  }
+
+  if(shouldUseProxy(channel)){
+    // Contenido HTTP o streams que requieren Referer/User-Agent.
+    add(proxied);
+    if(!original.startsWith("http://") || location.protocol !== "https:") add(original);
   }else{
-    add(getPlayableUrl(channel));
-    if(shouldUseProxy(channel)) add(channel.url);
+    // Para la mayoría de HTTPS, directo primero y proxy como respaldo.
+    add(original);
+    add(proxied);
   }
 
   return candidates;
