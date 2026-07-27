@@ -897,9 +897,6 @@ body.legal-open{overflow:hidden}
 </head>
   
 <meta name="monetag" content="ff387c5ca1262d0427676ec2b136685d">
-  
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2636891173590272"
-     crossorigin="anonymous"></script>
 
 <script>(function(s){s.dataset.zone='11402210',s.src='https://n6wxm.com/vignette.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
   
@@ -1645,8 +1642,8 @@ function openChannelReport(channel,displayNumber){
     volver: location.href
   };
 
-  const encoded = encodeURIComponent(JSON.stringify(payload));
-  location.href = `${APPS_SCRIPT_WEBAPP}?page=report#data=${encoded}`;
+  const encodedPayload = encodeURIComponent(JSON.stringify(payload));
+  location.href = `${APPS_SCRIPT_WEBAPP}?page=report&payload=${encodedPayload}`;
 }
 
 function loadChannel(channel){
