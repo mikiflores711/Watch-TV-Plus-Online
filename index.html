@@ -4,12 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#181821">
-<meta name="application-name" content="Watch TV Plus Online">
+<meta name="application-name" content="Watch TV Plus">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Watch TV Plus Online">
-<title>Watch TV Plus Online</title>
+<meta name="apple-mobile-web-app-title" content="Watch TV Plus">
+<title>Watch TV Plus</title>
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="192x192" href="./icons/watch-tv-plus-192.png">
 <link rel="icon" type="image/png" sizes="512x512" href="./icons/watch-tv-plus-512.png">
@@ -807,19 +807,6 @@ body{
   color:#fff;
   white-space:nowrap;
 }
-.brand-code{
-  flex:0 0 auto;
-  display:grid;
-  place-items:center;
-  width:32px;
-  height:32px;
-  border-radius:8px;
-  background:var(--blue);
-  color:#fff;
-  font-size:12px;
-  font-weight:900;
-  letter-spacing:-1px;
-}
 .brand-text{
   min-width:0;
   overflow:hidden;
@@ -885,7 +872,6 @@ body.legal-open{overflow:hidden}
 
 @media (max-width:520px){
   .brand{gap:7px}
-  .brand-code{width:29px;height:29px;border-radius:7px;font-size:11px}
   .brand-text{font-size:13px}
   .legal-modal{padding:10px}
   .legal-dialog{max-height:90dvh;border-radius:14px}
@@ -901,16 +887,15 @@ body.legal-open{overflow:hidden}
 <body>
 <div class="app-shell">
   <header class="topbar">
-    <div class="brand" aria-label="Watch TV Plus Online">
-      <span class="brand-code" aria-hidden="true">&lt;/&gt;</span>
-      <span class="brand-text">Watch TV Plus Online</span>
+    <div class="brand" aria-label="Watch TV Plus">
+      <span class="brand-text">Watch TV Plus</span>
     </div>
     <div class="top-actions" aria-label="Acciones">
       <button class="icon-btn" id="shareToggle" type="button" aria-label="Compartir página" title="Compartir página">
         <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><path d="m8.7 10.7 6.6-4.1M8.7 13.3l6.6 4.1"></path></svg>
       </button>
       <a class="icon-btn donate-btn" id="donateBtn" href="https://link.mercadopago.com.mx/versoestudiodonativo" target="_blank" rel="noopener noreferrer" aria-label="Apoyar el proyecto" title="Apoyar el proyecto">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 9-4 3 4 3"></path><path d="m16 9 4 3-4 3"></path><path d="m14 5-4 14"></path></svg>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-4.4-9.2-8.2C.9 9.5 2.5 5.5 6.3 5.1c2.1-.2 3.8.9 4.7 2.3.9-1.4 2.6-2.5 4.7-2.3 3.8.4 5.4 4.4 3.5 7.7C19 16.6 12 21 12 21Z"></path><path d="M12 9v6M9.8 11.2c.5-1.2 3.9-1.4 4.4.2.5 1.7-4.3 1.3-4.1 3 .2 1.5 3.7 1.4 4.2.2"></path></svg>
       </a>
       <button class="icon-btn" id="legalToggle" type="button" aria-label="Aviso legal y términos" title="Aviso legal y términos">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l3 3v15H6z"></path><path d="M14 3v4h4"></path><path d="M9 11h6M9 15h6"></path></svg>
@@ -980,7 +965,7 @@ body.legal-open{overflow:hidden}
     </header>
     <div class="legal-content">
       <h3>1. Naturaleza del sitio</h3>
-      <p>Watch TV Plus Online funciona como un reproductor y organizador de enlaces públicos de transmisión. El sitio no aloja directamente archivos de video ni controla los servidores externos desde los que se distribuyen las señales.</p>
+      <p>Watch TV Plus funciona como un reproductor y organizador de enlaces públicos de transmisión. El sitio no aloja directamente archivos de video ni controla los servidores externos desde los que se distribuyen las señales.</p>
 
       <h3>2. Disponibilidad del contenido</h3>
       <p>Los canales, señales, horarios y enlaces pueden cambiar, interrumpirse o dejar de estar disponibles sin previo aviso. No se garantiza la continuidad, calidad, exactitud o disponibilidad permanente de ninguna transmisión.</p>
@@ -995,7 +980,7 @@ body.legal-open{overflow:hidden}
       <p>Las preferencias como favoritos y confirmación de mayoría de edad se guardan localmente en el navegador. Algunos servicios externos, reproductores, anuncios o proveedores de transmisión pueden aplicar sus propias políticas de privacidad y cookies.</p>
 
       <h3>6. Aceptación</h3>
-      <p>Al utilizar Watch TV Plus Online aceptas estos términos. Si no estás de acuerdo, debes dejar de utilizar el sitio.</p>
+      <p>Al utilizar Watch TV Plus aceptas estos términos. Si no estás de acuerdo, debes dejar de utilizar el sitio.</p>
 
       <p class="legal-update">Última actualización: 26 de julio de 2026.</p>
     </div>
@@ -1031,7 +1016,7 @@ const PLAYLISTS = [
   { id:"roku", label:"Roku Channel", file:"./roku_all.m3u", logo:"https://raw.githubusercontent.com/mikiflores711/Watch-TV-Plus/refs/heads/main/Icono%20Roku%20Channel.png" },
   { id:"rakuten", label:"Rakuten TV", file:"./rakutentv.m3u", logo:"https://raw.githubusercontent.com/mikiflores711/Watch-TV-Plus/refs/heads/main/Icono%20Rakuten%20TV.png" },
   { id:"espanol", label:"Español", file:"./espanol.m3u", logo:"https://raw.githubusercontent.com/mikiflores711/Watch-TV-Plus/refs/heads/main/Icono%20Espa%C3%B1ol.png" },
-  { id:"adult", label:"Zona 18+", file:"./adult.m3u", logo:"https://raw.githubusercontent.com/mikiflores711/Watch-TV-Plus/refs/heads/main/Icono%20Zona%2018+.png", isAdult:true }
+  { id:"adult", label:"18+", file:"./adult.m3u", logo:"https://raw.githubusercontent.com/mikiflores711/Watch-TV-Plus/refs/heads/main/Icono%20Zona%2018+.png", isAdult:true }
 ];
 
 const playerStage = document.getElementById("playerStage");
