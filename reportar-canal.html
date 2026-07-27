@@ -3,257 +3,163 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#171720">
+<meta name="theme-color" content="#15151e">
 <title>Reportar canal | Watch TV Plus</title>
 <style>
-:root{
-  --bg:#171720;
-  --panel:#20202b;
-  --panel2:#292936;
-  --line:rgba(255,255,255,.09);
-  --text:#f7f7fa;
-  --muted:#aeaeba;
-  --blue:#3f70ff;
-  --danger:#ff6d83;
-  --safe-top:max(8px,env(safe-area-inset-top));
-  --safe-bottom:max(10px,env(safe-area-inset-bottom));
-}
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html,body{width:100%;height:100%;background:#000;color:var(--text);font-family:Arial,Helvetica,sans-serif}
-button,textarea{font:inherit;color:inherit}
-button{cursor:pointer}
-.report-app{width:min(100%,720px);height:100dvh;margin:0 auto;display:flex;flex-direction:column;background:var(--bg);overflow:hidden}
-.report-header{flex:0 0 auto;min-height:62px;padding:var(--safe-top) 12px 8px;display:flex;align-items:center;gap:10px;background:#1a1a24;border-bottom:1px solid var(--line)}
-.back-btn{width:42px;height:42px;display:grid;place-items:center;border:0;border-radius:50%;background:transparent;color:#fff}
-.back-btn:hover,.back-btn:focus-visible{background:rgba(255,255,255,.08)}
-.back-btn svg{width:25px;height:25px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
-.header-logo{width:116px;height:38px;object-fit:contain;object-position:left center}
-.header-copy{min-width:0;margin-left:auto;text-align:right}
-.header-copy strong{display:block;font-size:14px}.header-copy span{display:block;margin-top:3px;color:var(--muted);font-size:11px}
-.channel-card{flex:0 0 auto;margin:12px 12px 0;padding:10px;display:grid;grid-template-columns:56px minmax(0,1fr);gap:11px;align-items:center;border:1px solid var(--line);border-radius:14px;background:var(--panel)}
-.channel-logo{width:56px;height:56px;display:grid;place-items:center;overflow:hidden;border-radius:10px;background:#30303d;color:#fff;font-weight:900;font-size:12px}
-.channel-logo img{width:100%;height:100%;padding:4px;object-fit:contain}
-.channel-copy{min-width:0}.channel-copy h1{font-size:18px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.channel-copy p{margin-top:6px;color:var(--muted);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.chat{flex:1 1 auto;min-height:0;overflow-y:auto;padding:16px 12px 20px;display:flex;flex-direction:column;gap:10px;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
-.bubble{max-width:88%;padding:11px 13px;border-radius:16px;font-size:14px;line-height:1.45;white-space:pre-wrap;word-break:break-word}
-.bubble.bot{align-self:flex-start;background:var(--panel2);border-bottom-left-radius:5px}
-.bubble.user{align-self:flex-end;background:var(--blue);border-bottom-right-radius:5px}
-.quick-reasons{display:flex;gap:7px;overflow-x:auto;padding:0 0 3px;scrollbar-width:none}.quick-reasons::-webkit-scrollbar{display:none}
-.reason-btn{flex:0 0 auto;min-height:34px;padding:0 11px;border:1px solid var(--line);border-radius:999px;background:#242431;color:#eee;font-size:12px}
-.reason-btn.active{border-color:rgba(255,109,131,.7);background:rgba(148,38,57,.34);color:#ffd0d7}
-.composer{flex:0 0 auto;padding:9px 10px var(--safe-bottom);display:grid;grid-template-columns:minmax(0,1fr) 46px;gap:8px;align-items:end;border-top:1px solid var(--line);background:#1a1a24}
-.message-input{width:100%;min-height:44px;max-height:120px;resize:none;padding:11px 13px;border:1px solid var(--line);border-radius:18px;outline:0;background:#292936;color:#fff;font-size:16px;line-height:1.35;touch-action:manipulation}
-.message-input:focus{border-color:rgba(63,112,255,.75);box-shadow:0 0 0 3px rgba(63,112,255,.13)}
-.send-btn{width:46px;height:46px;display:grid;place-items:center;border:0;border-radius:50%;background:var(--blue);color:#fff}
-.send-btn:disabled{opacity:.45;cursor:default}.send-btn svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
-.notice{font-size:11px;color:var(--muted);text-align:center;padding:0 14px 7px;background:#1a1a24}
-.toast{position:fixed;z-index:20;left:50%;bottom:82px;transform:translate(-50%,14px);padding:10px 13px;border-radius:999px;background:#101017;color:#fff;font-size:12px;opacity:0;pointer-events:none;transition:.2s}.toast.show{opacity:1;transform:translate(-50%,0)}
+:root{--bg:#101017;--panel:#1b1b25;--panel2:#252533;--text:#f7f7f9;--muted:#a5a5b2;--blue:#4c78ff;--green:#2eb872;--red:#ef5b70;--line:rgba(255,255,255,.09)}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:radial-gradient(circle at top,#1c1c2a 0,#101017 52%);color:var(--text);font-family:Arial,Helvetica,sans-serif}
+body{display:grid;place-items:center;padding:20px}
+.card{width:min(100%,650px);overflow:hidden;border:1px solid var(--line);border-radius:20px;background:rgba(27,27,37,.97);box-shadow:0 25px 75px rgba(0,0,0,.48)}
+header{padding:22px;border-bottom:1px solid var(--line)}
+.brand{font-size:23px;font-weight:900}
+.subtitle{margin-top:6px;color:var(--muted);font-size:13px}
+.channel{display:grid;grid-template-columns:72px 1fr;gap:15px;align-items:center;margin:18px;padding:15px;border:1px solid var(--line);border-radius:15px;background:var(--panel2)}
+.logo{width:72px;height:72px;display:grid;place-items:center;overflow:hidden;border-radius:14px;background:#343445;font-weight:900}
+.logo img{width:100%;height:100%;object-fit:contain;padding:6px}
+.channel h1{margin:0;font-size:20px}
+.meta{margin-top:7px;color:var(--muted);font-size:12px;line-height:1.5}
+form{padding:0 18px 21px}
+label{display:block;margin:16px 0 7px;font-size:13px;font-weight:900}
+select,textarea,input{width:100%;border:1px solid var(--line);border-radius:11px;background:#292937;color:#fff;padding:12px;outline:none;font:inherit}
+select:focus,textarea:focus,input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(76,120,255,.18)}
+textarea{min-height:110px;resize:vertical}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}
+button,a.btn{min-height:47px;display:grid;place-items:center;border:0;border-radius:11px;text-decoration:none;font-weight:900;cursor:pointer}
+.primary{background:var(--blue);color:#fff}
+.secondary{background:#30303f;color:#fff}
+button:disabled{opacity:.55;cursor:not-allowed}
+.status{display:none;margin-top:14px;padding:13px;border-radius:10px;font-size:13px;line-height:1.5}
+.status.show{display:block}
+.status.ok{background:rgba(46,184,114,.14);color:#99f0bf;border:1px solid rgba(46,184,114,.32)}
+.status.error{background:rgba(239,91,112,.13);color:#ffb0bc;border:1px solid rgba(239,91,112,.32)}
+.small{margin-top:12px;color:#898996;font-size:11px;line-height:1.55}
+@media(max-width:500px){body{padding:0}.card{min-height:100dvh;border:0;border-radius:0}.actions{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
-<div class="report-app">
-  <header class="report-header">
-    <button class="back-btn" id="backBtn" type="button" aria-label="Regresar a Watch TV Plus" title="Regresar">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg>
-    </button>
-    <img class="header-logo" src="https://raw.githubusercontent.com/mikiflores711/Watch-TV-Plus/refs/heads/main/Watch%20TV%20Plus1.png" alt="Watch TV Plus">
-    <div class="header-copy"><strong>Reportar canal</strong><span>Ayúdanos a corregirlo</span></div>
-  </header>
+<main class="card">
+<header>
+  <div class="brand">Watch TV Plus</div>
+  <div class="subtitle">Reportar un canal no disponible</div>
+</header>
 
-  <section class="channel-card">
-    <div class="channel-logo" id="channelLogo">TV</div>
-    <div class="channel-copy">
-      <h1 id="channelName">Canal</h1>
-      <p id="channelMeta">--- · Sección · Categoría</p>
-    </div>
-  </section>
-
-  <main class="chat" id="chat" aria-live="polite">
-    <div class="bubble bot">Hola. Selecciona el problema y escribe cualquier detalle que ayude a identificar la falla.</div>
-    <div class="quick-reasons" id="quickReasons" aria-label="Motivos rápidos">
-      <button class="reason-btn" type="button" data-reason="No reproduce">No reproduce</button>
-      <button class="reason-btn" type="button" data-reason="Se queda cargando">Se queda cargando</button>
-      <button class="reason-btn" type="button" data-reason="Solo se escucha el audio">Solo audio</button>
-      <button class="reason-btn" type="button" data-reason="Canal equivocado">Canal equivocado</button>
-    </div>
-  </main>
-
-  <div class="composer">
-    <textarea class="message-input" id="messageInput" rows="1" maxlength="600" placeholder="Describe qué sucede..."></textarea>
-    <button class="send-btn" id="sendBtn" type="button" aria-label="Enviar reporte" title="Enviar reporte">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m22 2-7 20-4-9-9-4Z"></path><path d="M22 2 11 13"></path></svg>
-    </button>
+<section class="channel">
+  <div class="logo" id="logoBox">TV</div>
+  <div>
+    <h1 id="channelName">Canal sin nombre</h1>
+    <div class="meta" id="channelMeta">Número --- · TV · General</div>
   </div>
-  <div class="notice">El reporte se prepara para enviarlo mediante las opciones de compartir de tu dispositivo.</div>
-</div>
-<div class="toast" id="toast" role="status"></div>
+</section>
+
+<form id="reportForm">
+  <label for="reason">¿Cuál es el problema?</label>
+  <select id="reason" required>
+    <option value="Canal no reproduce">Canal no reproduce</option>
+    <option value="Pantalla negra">Pantalla negra</option>
+    <option value="Se corta constantemente">Se corta constantemente</option>
+    <option value="Audio sin imagen">Audio sin imagen</option>
+    <option value="Imagen sin audio">Imagen sin audio</option>
+    <option value="Canal incorrecto">Canal incorrecto</option>
+    <option value="Otro problema">Otro problema</option>
+  </select>
+
+  <label for="details">Detalles adicionales</label>
+  <textarea id="details" maxlength="800" placeholder="Describe brevemente qué ocurre."></textarea>
+
+  <label for="contact">Correo de contacto (opcional)</label>
+  <input id="contact" type="email" maxlength="160" placeholder="usuario@correo.com">
+
+  <div class="actions">
+    <a class="btn secondary" id="backBtn" href="./index.html">Volver</a>
+    <button class="primary" id="submitBtn" type="submit">Enviar reporte</button>
+  </div>
+
+  <div class="status" id="statusBox" role="status" aria-live="polite"></div>
+  <div class="small">Se enviarán automáticamente el nombre, número, sección, categoría y enlace técnico del canal.</div>
+</form>
+</main>
+
 <script>
 "use strict";
-
-/* Opcional: pega aquí una URL propia que acepte POST JSON para recibir reportes automáticamente. */
-const REPORT_ENDPOINT = "";
-
+const API_URL = "https://script.google.com/macros/s/AKfycbx0xQsu7a6fVQqNETwIdQv-PebzpHq2MQCbTHfHu_7Rqq2-l3eAKgoppzFsBiTe6VTS/exec";
 const params = new URLSearchParams(location.search);
-const channel = {
-  name: params.get("canal") || "Canal sin nombre",
-  number: params.get("numero") || "---",
-  section: params.get("seccion") || "TV",
-  category: params.get("categoria") || "General",
+const data = {
+  canal: params.get("canal") || params.get("nombre") || "Canal sin nombre",
+  numero: params.get("numero") || "---",
+  seccion: params.get("seccion") || "TV",
+  categoria: params.get("categoria") || "General",
   logo: params.get("logo") || "",
-  id: params.get("id") || "",
-  stream: params.get("stream") || ""
+  canalId: params.get("id") || "",
+  stream: params.get("stream") || params.get("url") || "",
+  volver: params.get("volver") || "index.html"
 };
-const returnPage = safeReturnPage(params.get("volver"));
-const backBtn = document.getElementById("backBtn");
-const channelLogo = document.getElementById("channelLogo");
-const channelName = document.getElementById("channelName");
-const channelMeta = document.getElementById("channelMeta");
-const quickReasons = document.getElementById("quickReasons");
-const messageInput = document.getElementById("messageInput");
-const sendBtn = document.getElementById("sendBtn");
-const chat = document.getElementById("chat");
-const toast = document.getElementById("toast");
-let selectedReason = "";
-let toastTimer = null;
 
-channelName.textContent = channel.name;
-channelMeta.textContent = `${channel.number} · ${channel.section} · ${channel.category}`;
-if(channel.logo){
-  const image = document.createElement("img");
-  image.src = channel.logo;
-  image.alt = "";
-  image.referrerPolicy = "no-referrer";
-  image.addEventListener("error",() => channelLogo.textContent = initials(channel.name));
-  channelLogo.innerHTML = "";
-  channelLogo.appendChild(image);
-}else{
-  channelLogo.textContent = initials(channel.name);
+const form = document.getElementById("reportForm");
+const submitBtn = document.getElementById("submitBtn");
+const statusBox = document.getElementById("statusBox");
+const logoBox = document.getElementById("logoBox");
+
+document.getElementById("channelName").textContent = data.canal;
+document.getElementById("channelMeta").textContent = `Número ${data.numero} · ${data.seccion} · ${data.categoria}`;
+document.getElementById("backBtn").href = "./" + data.volver.replace(/^\.\//,"").replace(/[^a-zA-Z0-9._-]/g,"");
+
+if(data.logo){
+  const img = document.createElement("img");
+  img.src = data.logo;
+  img.alt = "";
+  img.referrerPolicy = "no-referrer";
+  img.onerror = () => { logoBox.textContent = "TV"; };
+  logoBox.textContent = "";
+  logoBox.appendChild(img);
 }
 
-backBtn.addEventListener("click",() => {
-  location.href = `./${returnPage}`;
-});
+function showStatus(message,type){
+  statusBox.textContent = message;
+  statusBox.className = "status show " + type;
+}
 
-quickReasons.addEventListener("click",event => {
-  const button = event.target.closest(".reason-btn");
-  if(!button) return;
-  selectedReason = button.dataset.reason || "";
-  quickReasons.querySelectorAll(".reason-btn").forEach(item => item.classList.toggle("active",item === button));
-  if(!messageInput.value.trim()) messageInput.value = selectedReason + ". ";
-  resizeInput();
-  messageInput.focus({preventScroll:true});
-});
+form.addEventListener("submit",async event => {
+  event.preventDefault();
+  submitBtn.disabled = true;
+  submitBtn.textContent = "Enviando...";
 
-messageInput.addEventListener("input",resizeInput);
-messageInput.addEventListener("keydown",event => {
-  if(event.key === "Enter" && !event.shiftKey){
-    event.preventDefault();
-    sendReport();
-  }
-});
-sendBtn.addEventListener("click",sendReport);
-
-async function sendReport(){
-  const detail = messageInput.value.trim();
-  if(!detail){
-    showToast("Escribe el problema del canal");
-    messageInput.focus({preventScroll:true});
-    return;
-  }
-
-  sendBtn.disabled = true;
-  appendBubble(detail,"user");
-  messageInput.value = "";
-  resizeInput();
-
-  const report = {
-    type:"canal_caido",
-    channel:channel.name,
-    number:channel.number,
-    section:channel.section,
-    category:channel.category,
-    tvgId:channel.id,
-    stream:channel.stream,
-    reason:selectedReason,
-    message:detail,
-    page:document.referrer || location.origin,
-    sentAt:new Date().toISOString()
-  };
+  const payload = new URLSearchParams({
+    action:"report",
+    canal:data.canal,
+    numero:data.numero,
+    seccion:data.seccion,
+    categoria:data.categoria,
+    logo:data.logo,
+    canalId:data.canalId,
+    stream:data.stream,
+    motivo:document.getElementById("reason").value,
+    detalles:document.getElementById("details").value.trim(),
+    contacto:document.getElementById("contact").value.trim(),
+    pagina:document.referrer || location.href,
+    userAgent:navigator.userAgent
+  });
 
   try{
-    if(REPORT_ENDPOINT){
-      const response = await fetch(REPORT_ENDPOINT,{
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify(report)
-      });
-      if(!response.ok) throw new Error("HTTP " + response.status);
-      appendBubble("Gracias. El reporte fue enviado.","bot");
-      showToast("Reporte enviado");
-      return;
-    }
-
-    const text = buildReportText(report);
-    if(navigator.share){
-      await navigator.share({title:`Canal caído: ${channel.name}`,text});
-      appendBubble("Reporte preparado. Gracias por compartirlo.","bot");
-      showToast("Reporte compartido");
-      return;
-    }
-
-    await navigator.clipboard.writeText(text);
-    appendBubble("El reporte quedó copiado. Pégalo en tu aplicación de mensajes o correo.","bot");
-    showToast("Reporte copiado");
+    const response = await fetch(API_URL,{
+      method:"POST",
+      headers:{"Content-Type":"application/x-www-form-urlencoded;charset=UTF-8"},
+      body:payload.toString()
+    });
+    const result = await response.json();
+    if(!result.ok) throw new Error(result.error || "No se pudo guardar");
+    form.reset();
+    showStatus(result.grouped
+      ? `Reporte recibido. Este canal ya tenía reportes y ahora suma ${result.cantidad}.`
+      : "Reporte enviado correctamente. Gracias por avisarnos.","ok");
   }catch(error){
-    if(error && error.name === "AbortError"){
-      appendBubble("El envío fue cancelado. Puedes volver a presionar enviar.","bot");
-    }else{
-      console.log(error);
-      appendBubble("No se pudo abrir el menú de compartir. Intenta nuevamente.","bot");
-      showToast("No se pudo enviar");
-    }
+    console.error(error);
+    showStatus("No fue posible enviar el reporte. Inténtalo nuevamente en unos momentos.","error");
   }finally{
-    sendBtn.disabled = false;
-    selectedReason = "";
-    quickReasons.querySelectorAll(".reason-btn").forEach(item => item.classList.remove("active"));
+    submitBtn.disabled = false;
+    submitBtn.textContent = "Enviar reporte";
   }
-}
-
-function buildReportText(report){
-  return [
-    "REPORTE DE CANAL CAÍDO - WATCH TV PLUS",
-    `Canal: ${report.channel}`,
-    `Número: ${report.number}`,
-    `Sección: ${report.section}`,
-    `Categoría: ${report.category}`,
-    report.tvgId ? `ID: ${report.tvgId}` : "",
-    `Problema: ${report.message}`,
-    `Fecha: ${new Date(report.sentAt).toLocaleString("es-MX")}`
-  ].filter(Boolean).join("\n");
-}
-
-function appendBubble(message,type){
-  const bubble = document.createElement("div");
-  bubble.className = `bubble ${type}`;
-  bubble.textContent = message;
-  chat.appendChild(bubble);
-  chat.scrollTop = chat.scrollHeight;
-}
-function resizeInput(){
-  messageInput.style.height = "auto";
-  messageInput.style.height = Math.min(messageInput.scrollHeight,120) + "px";
-}
-function initials(name){return String(name || "TV").split(/\s+/).filter(Boolean).slice(0,2).map(word => word[0]).join("").toUpperCase()}
-function safeReturnPage(value){
-  const page = String(value || "index.html").split(/[?#]/)[0];
-  return /^[\w().-]+\.html$/i.test(page) ? page : "index.html";
-}
-function showToast(message){
-  clearTimeout(toastTimer);
-  toast.textContent = message;
-  toast.classList.add("show");
-  toastTimer = setTimeout(() => toast.classList.remove("show"),2400);
-}
+});
 </script>
 </body>
 </html>

@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#121219">
+<title>Panel de administración | Watch TV Plus</title>
+<style>
+:root{--bg:#0f0f16;--panel:#1a1a24;--panel2:#242432;--text:#f7f7f9;--muted:#a5a5b2;--blue:#4c78ff;--green:#2eb872;--yellow:#e0a93a;--red:#ef5b70;--line:rgba(255,255,255,.09)}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:Arial,Helvetica,sans-serif}
+button,input,select{font:inherit}
+.topbar{position:sticky;top:0;z-index:30;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px;background:rgba(20,20,29,.96);border-bottom:1px solid var(--line);backdrop-filter:blur(12px)}
+.brand{font-size:20px;font-weight:900} .brand small{display:block;margin-top:3px;color:var(--muted);font-size:11px;font-weight:400}
+.actions{display:flex;gap:8px;align-items:center}
+.live{display:flex;align-items:center;gap:7px;color:#a7edc3;font-size:11px;font-weight:800} .dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 0 5px rgba(46,184,114,.12)}
+button{border:0;border-radius:9px;padding:10px 13px;color:#fff;background:#30303f;cursor:pointer;font-weight:900}
+button.primary{background:var(--blue)} button.danger{background:#7d2938} button:disabled{opacity:.45;cursor:not-allowed}
+main{width:min(100%,1320px);margin:0 auto;padding:18px}
+.notice{display:none;margin-bottom:14px;padding:12px;border-radius:10px;background:rgba(239,91,112,.13);color:#ffb0bc;border:1px solid rgba(239,91,112,.3);font-size:13px}
+.notice.show{display:block}
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px}
+.stat{padding:16px;border:1px solid var(--line);border-radius:14px;background:var(--panel)} .stat b{display:block;font-size:27px} .stat span{color:var(--muted);font-size:12px}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:14px}
+.panel{border:1px solid var(--line);border-radius:14px;background:var(--panel);overflow:hidden}
+.panel-title{display:flex;align-items:center;justify-content:space-between;padding:14px 15px;border-bottom:1px solid var(--line);font-weight:900}
+.filters{display:grid;grid-template-columns:1fr 180px auto;gap:9px;padding:13px}
+input,select{width:100%;min-height:42px;border:1px solid var(--line);border-radius:9px;background:var(--panel2);color:#fff;padding:0 11px;outline:none}
+.table-wrap{overflow:auto}
+table{width:100%;border-collapse:collapse;min-width:960px}
+th,td{padding:11px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;font-size:12px}
+th{position:sticky;top:0;background:#222230;color:#d0d0d8;font-size:11px;text-transform:uppercase;letter-spacing:.4px}
+.channel-name{font-weight:900;font-size:13px} .sub{margin-top:4px;color:var(--muted);font-size:11px;max-width:290px;overflow:hidden;text-overflow:ellipsis}
+.badge{display:inline-block;padding:5px 8px;border-radius:999px;font-size:10px;font-weight:900}
+.pending{background:rgba(224,169,58,.15);color:#ffd77d} .reviewing{background:rgba(76,120,255,.16);color:#9db7ff} .fixed{background:rgba(46,184,114,.15);color:#91efba} .discarded{background:rgba(239,91,112,.15);color:#ffafbb}
+.row-actions{display:flex;gap:6px;flex-wrap:wrap} .row-actions button,.row-actions a{padding:7px 9px;border-radius:7px;font-size:10px;text-decoration:none;color:#fff;background:#30303f;font-weight:900}
+.empty{padding:35px;text-align:center;color:var(--muted)}
+.ranking{padding:8px 14px 14px} .rank-item{display:grid;grid-template-columns:28px 1fr auto;gap:10px;align-items:center;padding:11px 0;border-bottom:1px solid var(--line)} .rank-num{width:26px;height:26px;display:grid;place-items:center;border-radius:8px;background:#2b2b39;font-size:11px;font-weight:900} .rank-name{font-size:12px;font-weight:900} .rank-meta{margin-top:3px;color:var(--muted);font-size:10px} .rank-count{font-size:14px;font-weight:900;color:#ffcb69}
+.history{max-height:370px;overflow:auto;padding:6px 14px 14px} .history-item{padding:11px 0;border-bottom:1px solid var(--line)} .history-item b{font-size:12px} .history-item div{margin-top:4px;color:var(--muted);font-size:10px;line-height:1.45}
+.toast{position:fixed;right:18px;bottom:18px;z-index:50;display:none;max-width:360px;padding:14px 16px;border-radius:12px;background:#24392e;color:#aaf1c6;border:1px solid rgba(46,184,114,.4);box-shadow:0 15px 45px rgba(0,0,0,.4);font-size:13px;font-weight:800} .toast.show{display:block}
+@media(max-width:980px){.grid{grid-template-columns:1fr}.stats{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:700px){.stats{grid-template-columns:1fr 1fr}.filters{grid-template-columns:1fr}.topbar{align-items:flex-start}.live{display:none}}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">Watch TV Plus <small>Panel de administración 2.0</small></div>
+  <div class="actions">
+    <div class="live"><span class="dot"></span>Actualización automática</div>
+    <button id="refreshBtn" class="primary">Actualizar</button>
+  </div>
+</header>
+
+<main>
+  <div class="notice" id="notice"></div>
+
+  <section class="stats">
+    <div class="stat"><b id="totalStat">0</b><span>Total</span></div>
+    <div class="stat"><b id="pendingStat">0</b><span>Pendientes</span></div>
+    <div class="stat"><b id="reviewingStat">0</b><span>En revisión</span></div>
+    <div class="stat"><b id="fixedStat">0</b><span>Reparados</span></div>
+    <div class="stat"><b id="discardedStat">0</b><span>Descartados</span></div>
+  </section>
+
+  <section class="grid">
+    <div class="panel">
+      <div class="panel-title"><span>Reportes recibidos</span><small id="updatedAt">Sin actualizar</small></div>
+      <div class="filters">
+        <input id="searchInput" type="search" placeholder="Buscar canal, motivo o sección...">
+        <select id="statusFilter">
+          <option value="">Todos los estados</option>
+          <option value="Pendiente">Pendiente</option>
+          <option value="En revisión">En revisión</option>
+          <option value="Reparado">Reparado</option>
+          <option value="Descartado">Descartado</option>
+        </select>
+        <button id="clearBtn">Limpiar filtros</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Fecha</th><th>Canal</th><th>Problema</th><th>Estado</th><th>Reportes</th><th>Acciones</th></tr></thead>
+          <tbody id="reportBody"></tbody>
+        </table>
+        <div class="empty" id="emptyBox">Cargando reportes...</div>
+      </div>
+    </div>
+
+    <aside>
+      <div class="panel" style="margin-bottom:14px">
+        <div class="panel-title">Canales más reportados</div>
+        <div class="ranking" id="rankingBox"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-title">Historial reciente</div>
+        <div class="history" id="historyBox"></div>
+      </div>
+    </aside>
+  </section>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+const API_URL = "https://script.google.com/macros/s/AKfycbx0xQsu7a6fVQqNETwIdQv-PebzpHq2MQCbTHfHu_7Rqq2-l3eAKgoppzFsBiTe6VTS/exec";
+const ADMIN_TOKEN = "6-HlnDoGphKbz0aGEzfWEPOeAGNcdtb7W5H-WnyFvyg";
+const POLL_INTERVAL = 30000;
+
+let reports = [];
+let lastKnownTotal = Number(localStorage.getItem("wtv_admin_total") || 0);
+let pollTimer = null;
+
+const body = document.getElementById("reportBody");
+const emptyBox = document.getElementById("emptyBox");
+const notice = document.getElementById("notice");
+const searchInput = document.getElementById("searchInput");
+const statusFilter = document.getElementById("statusFilter");
+const toast = document.getElementById("toast");
+
+function showNotice(message){ notice.textContent = message; notice.classList.add("show"); }
+function hideNotice(){ notice.classList.remove("show"); }
+function showToast(message){
+  toast.textContent = message;
+  toast.classList.add("show");
+  clearTimeout(showToast.timer);
+  showToast.timer = setTimeout(() => toast.classList.remove("show"),5000);
+}
+
+async function api(params,method="GET"){
+  const data = new URLSearchParams({...params,token:ADMIN_TOKEN});
+  const options = method === "POST"
+    ? {method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded;charset=UTF-8"},body:data.toString()}
+    : {};
+  const url = method === "GET" ? API_URL + "?" + data.toString() : API_URL;
+  const response = await fetch(url,options);
+  const result = await response.json();
+  if(!result.ok) throw new Error(result.error || "Error del servidor");
+  return result;
+}
+
+async function loadDashboard(silent=false){
+  if(!silent){
+    hideNotice();
+    document.getElementById("refreshBtn").disabled = true;
+    emptyBox.style.display = "block";
+    emptyBox.textContent = "Cargando reportes...";
+  }
+  try{
+    const result = await api({action:"dashboard"});
+    const newTotal = Number(result.stats?.total || 0);
+    if(lastKnownTotal > 0 && newTotal > lastKnownTotal){
+      const difference = newTotal - lastKnownTotal;
+      showToast(`Hay ${difference} reporte${difference === 1 ? "" : "s"} nuevo${difference === 1 ? "" : "s"}.`);
+    }
+    lastKnownTotal = newTotal;
+    localStorage.setItem("wtv_admin_total",String(newTotal));
+
+    reports = Array.isArray(result.reports) ? result.reports : [];
+    updateStats(result.stats || {});
+    renderRanking(result.ranking || []);
+    renderHistory(result.history || []);
+    renderReports();
+    document.getElementById("updatedAt").textContent = "Actualizado: " + new Date().toLocaleTimeString("es-MX",{hour:"2-digit",minute:"2-digit"});
+  }catch(error){
+    console.error(error);
+    if(!silent) showNotice("No se pudo cargar el panel. Revisa el despliegue de Apps Script y el token.");
+  }finally{
+    document.getElementById("refreshBtn").disabled = false;
+  }
+}
+
+function updateStats(stats){
+  document.getElementById("totalStat").textContent = stats.total || 0;
+  document.getElementById("pendingStat").textContent = stats.pending || 0;
+  document.getElementById("reviewingStat").textContent = stats.reviewing || 0;
+  document.getElementById("fixedStat").textContent = stats.fixed || 0;
+  document.getElementById("discardedStat").textContent = stats.discarded || 0;
+}
+
+function statusClass(status){
+  return status === "Reparado" ? "fixed" : status === "En revisión" ? "reviewing" : status === "Descartado" ? "discarded" : "pending";
+}
+function esc(value){
+  return String(value ?? "").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");
+}
+
+function renderReports(){
+  const search = searchInput.value.trim().toLowerCase();
+  const state = statusFilter.value;
+  const filtered = reports.filter(r => {
+    const text = `${r.canal} ${r.motivo} ${r.detalles} ${r.seccion} ${r.categoria}`.toLowerCase();
+    return (!search || text.includes(search)) && (!state || r.estado === state);
+  });
+
+  body.innerHTML = "";
+  emptyBox.style.display = filtered.length ? "none" : "block";
+  emptyBox.textContent = filtered.length ? "" : "No hay reportes para mostrar.";
+
+  filtered.forEach(r => {
+    const tr = document.createElement("tr");
+    const streamLink = r.stream ? `<a href="${esc(r.stream)}" target="_blank" rel="noopener noreferrer">Abrir stream</a>` : "";
+    tr.innerHTML = `
+      <td>${esc(r.fechaTexto || r.fecha)}<div class="sub">${esc(r.contacto || "Sin contacto")}</div></td>
+      <td><div class="channel-name">${esc(r.canal)}</div><div class="sub">#${esc(r.numero)} · ${esc(r.seccion)} · ${esc(r.categoria)}</div></td>
+      <td><b>${esc(r.motivo)}</b><div class="sub">${esc(r.detalles || "Sin detalles")}</div></td>
+      <td><span class="badge ${statusClass(r.estado)}">${esc(r.estado)}</span></td>
+      <td>${esc(r.cantidad || 1)}</td>
+      <td><div class="row-actions">
+        <button data-action="review" data-id="${esc(r.id)}">Revisar</button>
+        <button data-action="fixed" data-id="${esc(r.id)}">Reparado</button>
+        <button data-action="discard" data-id="${esc(r.id)}">Descartar</button>
+        <button data-action="delete" data-id="${esc(r.id)}" class="danger">Eliminar</button>
+        ${streamLink}
+      </div></td>`;
+    body.appendChild(tr);
+  });
+}
+
+function renderRanking(items){
+  const box = document.getElementById("rankingBox");
+  if(!items.length){ box.innerHTML = '<div class="empty">Aún no hay datos.</div>'; return; }
+  box.innerHTML = items.slice(0,10).map((item,index) => `
+    <div class="rank-item">
+      <div class="rank-num">${index + 1}</div>
+      <div><div class="rank-name">${esc(item.canal)}</div><div class="rank-meta">${esc(item.seccion || "TV")}</div></div>
+      <div class="rank-count">${esc(item.cantidad)}</div>
+    </div>`).join("");
+}
+
+function renderHistory(items){
+  const box = document.getElementById("historyBox");
+  if(!items.length){ box.innerHTML = '<div class="empty">Sin movimientos recientes.</div>'; return; }
+  box.innerHTML = items.slice(0,30).map(item => `
+    <div class="history-item">
+      <b>${esc(item.canal || "Reporte")} · ${esc(item.accion)}</b>
+      <div>${esc(item.fechaTexto || item.fecha)}${item.detalle ? " · " + esc(item.detalle) : ""}</div>
+    </div>`).join("");
+}
+
+body.addEventListener("click",async event => {
+  const button = event.target.closest("button[data-action]");
+  if(!button) return;
+  const id = button.dataset.id;
+  const action = button.dataset.action;
+  if(action === "delete" && !confirm("¿Eliminar definitivamente este reporte?")) return;
+
+  button.disabled = true;
+  try{
+    if(action === "delete") await api({action:"delete",id},"POST");
+    else {
+      const estado = action === "review" ? "En revisión" : action === "fixed" ? "Reparado" : "Descartado";
+      await api({action:"update",id,estado},"POST");
+    }
+    await loadDashboard(true);
+  }catch(error){
+    console.error(error);
+    showNotice("No se pudo completar la acción.");
+    button.disabled = false;
+  }
+});
+
+searchInput.addEventListener("input",renderReports);
+statusFilter.addEventListener("change",renderReports);
+document.getElementById("refreshBtn").addEventListener("click",() => loadDashboard(false));
+document.getElementById("clearBtn").addEventListener("click",() => {
+  searchInput.value = "";
+  statusFilter.value = "";
+  renderReports();
+});
+
+function startPolling(){
+  clearInterval(pollTimer);
+  pollTimer = setInterval(() => {
+    if(document.visibilityState === "visible") loadDashboard(true);
+  },POLL_INTERVAL);
+}
+document.addEventListener("visibilitychange",() => {
+  if(document.visibilityState === "visible") loadDashboard(true);
+});
+loadDashboard(false);
+startPolling();
+</script>
+</body>
+</html>
