@@ -877,22 +877,6 @@ body.legal-open{overflow:hidden}
   .legal-dialog{max-height:90dvh;border-radius:14px}
 }
 
-
-.report-status-badge{
-  display:inline-flex;
-  align-items:center;
-  gap:5px;
-  margin-left:7px;
-  padding:2px 7px;
-  border-radius:999px;
-  font-size:9px;
-  font-weight:900;
-  vertical-align:middle;
-}
-.report-status-badge.pending{background:rgba(228,62,85,.16);color:#ff9cad;border:1px solid rgba(228,62,85,.3)}
-.report-status-badge.reviewing{background:rgba(63,112,255,.17);color:#a9bbff;border:1px solid rgba(63,112,255,.32)}
-.report-status-badge.fixed{background:rgba(45,181,111,.16);color:#99efbd;border:1px solid rgba(45,181,111,.3)}
-
 </style>
 </head>
   
@@ -1012,8 +996,7 @@ body.legal-open{overflow:hidden}
 "use strict";
 
 const PROXY_BASE = "https://hls-proxy-tv-plus.mikimc-business.workers.dev/proxy?url=";
-const REPORT_API_URL = "https://script.google.com/macros/s/AKfycbx0xQsu7a6fVQqNETwIdQv-PebzpHq2MQCbTHfHu_7Rqq2-l3eAKgoppzFsBiTe6VTS/exec";
-const REPORT_STATUS_REFRESH_MS = 60000;
+const APPS_SCRIPT_WEBAPP = "https://script.google.com/macros/s/AKfycbx0xQsu7a6fVQqNETwIdQv-PebzpHq2MQCbTHfHu_7Rqq2-l3eAKgoppzFsBiTe6VTS/exec";
 const USE_PROXY_FOR_ALL = true;
 const FAVORITES_KEY = "watch_tv_plus_favorites_app_v2";
 const LEGACY_FAVORITES_KEY = "watch_tv_plus_favorites_app_v1";
@@ -1079,8 +1062,6 @@ let playerUiTimer = null;
 let searchUiTimer = null;
 let toastTimer = null;
 let clapprControlObserver = null;
-let publicReportStatuses = new Map();
-let reportStatusTimer = null;
 
 async function init(){
   buildSectionTabs();
@@ -1088,8 +1069,6 @@ async function init(){
   registerPwaSupport();
   showPlayerUi();
   await loadAllPlaylists();
-  await refreshPublicReportStatuses();
-  startReportStatusRefresh();
 }
 
 function bindEvents(){
@@ -1137,11 +1116,6 @@ function bindEvents(){
   });
   playerStage.addEventListener("mouseleave",() => scheduleHidePlayerUi(500));
   document.addEventListener("keydown",event => {
-    if(event.ctrlKey && event.shiftKey && event.key.toLowerCase() === "a"){
-      event.preventDefault();
-      location.href = "./admin.html";
-      return;
-    }
     showPlayerUi();
     if(event.key === "Escape" && legalModal.classList.contains("open")){
       closeLegalModal();
@@ -1537,7 +1511,7 @@ function createChannelItem(channel,index){
     <div class="channel-logo">${logoMarkup}</div>
     <div class="channel-number">${escapeHtml(displayNumber)}</div>
     <div class="channel-copy">
-      <div class="channel-name">${escapeHtml(channel.name)}${getReportStatusBadge(channel)}</div>
+      <div class="channel-name">${escapeHtml(channel.name)}</div>
       <div class="program-text">${escapeHtml(channel.sectionLabel)} - ${escapeHtml(channel.category)}</div>
     </div>
     <div class="row-actions">
@@ -1582,46 +1556,6 @@ function createChannelItem(channel,index){
   return row;
 }
 
-
-function getReportStatusKey(channel){
-  return String(channel.url || channel.id || channel.name || "").trim();
-}
-
-function getReportStatusBadge(channel){
-  const status = publicReportStatuses.get(getReportStatusKey(channel));
-  if(!status) return "";
-  const cls = status.estado === "Reparado" ? "fixed" : status.estado === "En revisión" ? "reviewing" : "pending";
-  const label = status.estado === "Reparado"
-    ? "Reparado"
-    : status.estado === "En revisión"
-      ? "En revisión"
-      : `Reportado ${status.cantidad > 1 ? "×" + status.cantidad : ""}`;
-  return `<span class="report-status-badge ${cls}">${escapeHtml(label)}</span>`;
-}
-
-async function refreshPublicReportStatuses(){
-  try{
-    const response = await fetch(REPORT_API_URL + "?action=publicStatus&t=" + Date.now(),{cache:"no-store"});
-    const result = await response.json();
-    if(!result.ok || !Array.isArray(result.items)) return;
-    publicReportStatuses = new Map();
-    result.items.forEach(item => {
-      const key = String(item.stream || item.canalId || item.canal || "").trim();
-      if(key) publicReportStatuses.set(key,item);
-    });
-    renderChannels();
-  }catch(error){
-    console.warn("No se pudieron actualizar los estados de reportes",error);
-  }
-}
-
-function startReportStatusRefresh(){
-  clearInterval(reportStatusTimer);
-  reportStatusTimer = setInterval(() => {
-    if(document.visibilityState === "visible") refreshPublicReportStatuses();
-  },REPORT_STATUS_REFRESH_MS);
-}
-
 function openChannelReport(channel,displayNumber){
   const params = new URLSearchParams();
   params.set("canal",channel.name || "Canal sin nombre");
@@ -1632,7 +1566,7 @@ function openChannelReport(channel,displayNumber){
   if(channel.id) params.set("id",channel.id);
   if(channel.url) params.set("stream",channel.url);
   params.set("volver",location.pathname.split("/").pop() || "index.html");
-  location.href = `./reportar-canal.html?${params.toString()}`;
+  location.href = `${APPS_SCRIPT_WEBAPP}?page=report&${params.toString()}`;
 }
 
 function loadChannel(channel){
@@ -2119,8 +2053,6 @@ function toggleFavorite(channel){
 }
 function getInitials(name){return String(name || "TV").split(" ").filter(Boolean).slice(0,2).map(word => word[0]).join("").toUpperCase()}
 function escapeHtml(text){return String(text || "").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;")}
-
-document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible") refreshPublicReportStatuses();});
 
 init();
 </script>
