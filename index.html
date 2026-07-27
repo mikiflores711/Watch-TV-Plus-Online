@@ -1632,13 +1632,16 @@ document.addEventListener("visibilitychange",() => {
 
 function openChannelReport(channel,displayNumber){
   const params = new URLSearchParams();
+
   params.set("canal", channel.name || "Canal sin nombre");
   params.set("numero", displayNumber || "---");
   params.set("seccion", channel.sectionLabel || "TV");
   params.set("categoria", channel.category || "General");
+
   if(channel.logo) params.set("logo", channel.logo);
   if(channel.id) params.set("id", channel.id);
   if(channel.url) params.set("stream", channel.url);
+
   params.set("volver", location.href);
 
   location.href = `./reportar-canal.html?${params.toString()}`;
