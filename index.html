@@ -1445,9 +1445,25 @@ function loadChannel(channel){
   renderChannels();
   destroyPlayer();
 
-  const streamUrl = getPlayableUrl(channel);
+  const candidates = getStreamCandidates(channel);
+  playChannelCandidate(channel,candidates,0);
+}
+
+function playChannelCandidate(channel,candidates,index){
+  if(index >= candidates.length){
+    showToast("No se pudo abrir este canal");
+    showPlayerUi();
+    return;
+  }
+
+  const streamUrl = candidates[index];
   const plugins = [];
   if(window.HlsjsPlayback) plugins.push(window.HlsjsPlayback);
+  let started = false;
+  let fallbackTimer = null;
+
+  destroyPlayer();
+  console.log(`Intento ${index + 1}/${candidates.length}:`,streamUrl);
 
   player = new Clappr.Player({
     source:streamUrl,
@@ -1469,14 +1485,14 @@ function loadChannel(channel){
         lowLatencyMode:true,
         liveSyncDurationCount:3,
         maxBufferLength:24,
-        manifestLoadingMaxRetry:8,
-        manifestLoadingRetryDelay:1200,
-        levelLoadingMaxRetry:8,
-        levelLoadingRetryDelay:1200,
-        fragLoadingMaxRetry:8,
-        fragLoadingRetryDelay:1200,
-        keyLoadingMaxRetry:8,
-        keyLoadingRetryDelay:1200
+        manifestLoadingMaxRetry:3,
+        manifestLoadingRetryDelay:900,
+        levelLoadingMaxRetry:3,
+        levelLoadingRetryDelay:900,
+        fragLoadingMaxRetry:4,
+        fragLoadingRetryDelay:900,
+        keyLoadingMaxRetry:3,
+        keyLoadingRetryDelay:900
       }
     },
     events:{
@@ -1484,19 +1500,46 @@ function loadChannel(channel){
         syncVideoEvents();
         prepareClapprControls();
         showPlayerUi();
+        fallbackTimer = setTimeout(() => {
+          if(!started && currentChannelKey === getChannelKey(channel)){
+            playChannelCandidate(channel,candidates,index + 1);
+          }
+        },9000);
       },
-      onPlay(){showPlayerUi()},
+      onPlay(){
+        started = true;
+        clearTimeout(fallbackTimer);
+        showPlayerUi();
+      },
       onPause(){showPlayerUi()},
       onError(error){
         console.log("Clappr error:",error);
-        showPlayerUi();
+        clearTimeout(fallbackTimer);
+        if(!started && currentChannelKey === getChannelKey(channel)){
+          setTimeout(() => playChannelCandidate(channel,candidates,index + 1),350);
+        }
       }
     }
   });
+}
 
+function isMexicoGeoRestrictedAkamai(url){
+  try{
+    const hostname = new URL(url,location.href).hostname.toLowerCase();
+    return hostname.endsWith("-onlymex.akamaized.net");
+  }catch(error){
+    return String(url || "").includes("-onlymex.akamaized.net");
+  }
 }
 
 function shouldUseProxy(channel){
+  /*
+    Los streams *-onlymex.akamaized.net validan la IP del espectador.
+    Si pasan por Cloudflare Worker, Akamai ve la IP del Worker (que puede
+    estar fuera de México) y responde 403. Estos canales deben abrirse
+    directamente desde el navegador del usuario.
+  */
+  if(isMexicoGeoRestrictedAkamai(channel.url)) return false;
   if(USE_PROXY_FOR_ALL) return true;
   if(channel.url.startsWith("http://") && location.protocol === "https:") return true;
   if(channel.url.includes("jmp2.uk/plu-")) return true;
@@ -1504,12 +1547,43 @@ function shouldUseProxy(channel){
   return false;
 }
 
+function buildProxyUrl(channel,url = channel.url){
+  let playable = PROXY_BASE + encodeURIComponent(url);
+  if(channel.referrer) playable += "&ref=" + encodeURIComponent(channel.referrer);
+  if(channel.userAgent) playable += "&ua=" + encodeURIComponent(channel.userAgent);
+  return playable;
+}
+
 function getPlayableUrl(channel){
   if(!shouldUseProxy(channel)) return channel.url;
-  let url = PROXY_BASE + encodeURIComponent(channel.url);
-  if(channel.referrer) url += "&ref=" + encodeURIComponent(channel.referrer);
-  if(channel.userAgent) url += "&ua=" + encodeURIComponent(channel.userAgent);
-  return url;
+  return buildProxyUrl(channel);
+}
+
+function getStreamCandidates(channel){
+  const candidates = [];
+  const add = url => {
+    if(url && !candidates.includes(url)) candidates.push(url);
+  };
+
+  /* Primera opción: conexión directa para que Akamai vea la IP mexicana. */
+  if(isMexicoGeoRestrictedAkamai(channel.url)){
+    add(channel.url);
+
+    /* Host alternativo del mismo evento, usado cuando onlymex cambia o falla. */
+    try{
+      const parsed = new URL(channel.url);
+      const genericHost = parsed.hostname.replace("-onlymex.akamaized.net",".akamaized.net");
+      add(`${parsed.protocol}//${genericHost}${parsed.pathname}${parsed.search}`);
+    }catch(error){}
+
+    /* Último intento por proxy, útil solo si el Worker tiene salida mexicana. */
+    add(buildProxyUrl(channel));
+  }else{
+    add(getPlayableUrl(channel));
+    if(shouldUseProxy(channel)) add(channel.url);
+  }
+
+  return candidates;
 }
 
 function destroyPlayer(){
