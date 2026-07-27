@@ -4,12 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#181821">
-<meta name="application-name" content="Watch TV Plus">
+<meta name="application-name" content="Watch TV Plus Online">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Watch TV Plus">
-<title>Watch TV Plus</title>
+<meta name="apple-mobile-web-app-title" content="Watch TV Plus Online">
+<title>Watch TV Plus Online</title>
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="192x192" href="./icons/watch-tv-plus-192.png">
 <link rel="icon" type="image/png" sizes="512x512" href="./icons/watch-tv-plus-512.png">
@@ -798,6 +798,99 @@ body{
   .favorite-btn,.report-btn{width:33px;height:33px}
 }
 
+
+/* Marca textual y ventana de aviso legal. */
+.brand{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  color:#fff;
+  white-space:nowrap;
+}
+.brand-code{
+  flex:0 0 auto;
+  display:grid;
+  place-items:center;
+  width:32px;
+  height:32px;
+  border-radius:8px;
+  background:var(--blue);
+  color:#fff;
+  font-size:12px;
+  font-weight:900;
+  letter-spacing:-1px;
+}
+.brand-text{
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  font-size:clamp(13px,2.8vw,18px);
+  font-weight:900;
+  letter-spacing:.15px;
+}
+.donate-btn svg{width:25px;height:25px}
+
+.legal-modal{
+  position:fixed;
+  z-index:2000;
+  inset:0;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:18px;
+}
+.legal-modal.open{display:flex}
+.legal-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.76);backdrop-filter:blur(4px)}
+.legal-dialog{
+  position:relative;
+  width:min(680px,100%);
+  max-height:min(86dvh,760px);
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,.13);
+  border-radius:18px;
+  background:#20202b;
+  box-shadow:0 24px 80px rgba(0,0,0,.65);
+}
+.legal-header{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:18px;
+  padding:18px 18px 14px;
+  border-bottom:1px solid var(--line);
+  background:#242432;
+}
+.legal-kicker{display:block;margin-bottom:4px;color:#8facff;font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.9px}
+.legal-header h2{font-size:clamp(18px,4vw,24px);line-height:1.18}
+.legal-close{
+  flex:0 0 38px;
+  width:38px;
+  height:38px;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:50%;
+  background:#30303e;
+  color:#fff;
+  font-size:27px;
+  line-height:1;
+}
+.legal-content{padding:17px 18px;overflow-y:auto;color:#d2d2da;font-size:13px;line-height:1.62}
+.legal-content h3{margin:15px 0 5px;color:#fff;font-size:14px}
+.legal-content h3:first-child{margin-top:0}
+.legal-update{margin-top:18px;color:#8f8f9b;font-size:11px}
+.legal-footer{padding:13px 18px;border-top:1px solid var(--line);background:#1d1d27;text-align:right}
+.legal-accept{min-width:120px;height:40px;padding:0 18px;border:0;border-radius:9px;background:var(--blue);color:#fff;font-weight:900}
+body.legal-open{overflow:hidden}
+
+@media (max-width:520px){
+  .brand{gap:7px}
+  .brand-code{width:29px;height:29px;border-radius:7px;font-size:11px}
+  .brand-text{font-size:13px}
+  .legal-modal{padding:10px}
+  .legal-dialog{max-height:90dvh;border-radius:14px}
+}
+
 </style>
 </head>
   
@@ -808,14 +901,20 @@ body{
 <body>
 <div class="app-shell">
   <header class="topbar">
-    <div class="brand"><img src="https://raw.githubusercontent.com/mikiflores711/Watch-TV-Plus/refs/heads/main/Watch%20TV%20Plus1.png" alt="Watch TV Plus"></div>
+    <div class="brand" aria-label="Watch TV Plus Online">
+      <span class="brand-code" aria-hidden="true">&lt;/&gt;</span>
+      <span class="brand-text">Watch TV Plus Online</span>
+    </div>
     <div class="top-actions" aria-label="Acciones">
       <button class="icon-btn" id="shareToggle" type="button" aria-label="Compartir página" title="Compartir página">
         <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><path d="m8.7 10.7 6.6-4.1M8.7 13.3l6.6 4.1"></path></svg>
       </button>
-      <a class="icon-btn donate-btn" id="donateBtn" href="https://link.mercadopago.com.mx/versoestudiodonativo" target="_blank" rel="noopener noreferrer" aria-label="Donar" title="Donar">
-        <img src="https://raw.githubusercontent.com/mikiflores711/Watch-TV-Plus/refs/heads/main/Donar%20icono.png" alt="">
+      <a class="icon-btn donate-btn" id="donateBtn" href="https://link.mercadopago.com.mx/versoestudiodonativo" target="_blank" rel="noopener noreferrer" aria-label="Apoyar el proyecto" title="Apoyar el proyecto">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 9-4 3 4 3"></path><path d="m16 9 4 3-4 3"></path><path d="m14 5-4 14"></path></svg>
       </a>
+      <button class="icon-btn" id="legalToggle" type="button" aria-label="Aviso legal y términos" title="Aviso legal y términos">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l3 3v15H6z"></path><path d="M14 3v4h4"></path><path d="M9 11h6M9 15h6"></path></svg>
+      </button>
       <div class="top-search" id="topSearchWrap" role="search">
         <input class="top-search-input" id="searchInput" type="search" placeholder="Buscar canal..." autocomplete="off" aria-label="Buscar canales">
         <button class="top-search-clear" id="searchClear" type="button" aria-label="Limpiar búsqueda" title="Limpiar búsqueda">×</button>
@@ -869,6 +968,43 @@ body{
   </main>
 </div>
 
+<div class="legal-modal" id="legalModal" aria-hidden="true">
+  <div class="legal-backdrop" data-close-legal></div>
+  <section class="legal-dialog" role="dialog" aria-modal="true" aria-labelledby="legalTitle">
+    <header class="legal-header">
+      <div>
+        <span class="legal-kicker">Información del servicio</span>
+        <h2 id="legalTitle">Aviso legal y términos y condiciones</h2>
+      </div>
+      <button class="legal-close" id="legalClose" type="button" aria-label="Cerrar aviso legal">×</button>
+    </header>
+    <div class="legal-content">
+      <h3>1. Naturaleza del sitio</h3>
+      <p>Watch TV Plus Online funciona como un reproductor y organizador de enlaces públicos de transmisión. El sitio no aloja directamente archivos de video ni controla los servidores externos desde los que se distribuyen las señales.</p>
+
+      <h3>2. Disponibilidad del contenido</h3>
+      <p>Los canales, señales, horarios y enlaces pueden cambiar, interrumpirse o dejar de estar disponibles sin previo aviso. No se garantiza la continuidad, calidad, exactitud o disponibilidad permanente de ninguna transmisión.</p>
+
+      <h3>3. Responsabilidad del usuario</h3>
+      <p>El usuario es responsable de verificar que el acceso al contenido sea legal en su país o región y de utilizar este servicio únicamente para fines permitidos por la legislación aplicable.</p>
+
+      <h3>4. Derechos de terceros</h3>
+      <p>Las marcas, nombres, logotipos y contenidos pertenecen a sus respectivos propietarios. Su inclusión tiene fines de identificación. Si eres titular de derechos y deseas reportar un enlace, utiliza el botón de reporte disponible junto a cada canal.</p>
+
+      <h3>5. Privacidad y almacenamiento local</h3>
+      <p>Las preferencias como favoritos y confirmación de mayoría de edad se guardan localmente en el navegador. Algunos servicios externos, reproductores, anuncios o proveedores de transmisión pueden aplicar sus propias políticas de privacidad y cookies.</p>
+
+      <h3>6. Aceptación</h3>
+      <p>Al utilizar Watch TV Plus Online aceptas estos términos. Si no estás de acuerdo, debes dejar de utilizar el sitio.</p>
+
+      <p class="legal-update">Última actualización: 26 de julio de 2026.</p>
+    </div>
+    <footer class="legal-footer">
+      <button class="legal-accept" id="legalAccept" type="button">Entendido</button>
+    </footer>
+  </section>
+</div>
+
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
@@ -905,6 +1041,10 @@ const topSearchWrap = document.getElementById("topSearchWrap");
 const searchToggle = document.getElementById("searchToggle");
 const searchClear = document.getElementById("searchClear");
 const shareToggle = document.getElementById("shareToggle");
+const legalToggle = document.getElementById("legalToggle");
+const legalModal = document.getElementById("legalModal");
+const legalClose = document.getElementById("legalClose");
+const legalAccept = document.getElementById("legalAccept");
 const toast = document.getElementById("toast");
 const searchInput = document.getElementById("searchInput");
 const channelList = document.getElementById("channelList");
@@ -967,6 +1107,10 @@ function bindEvents(){
   });
 
   shareToggle.addEventListener("click", shareCurrentPage);
+  legalToggle.addEventListener("click", openLegalModal);
+  legalClose.addEventListener("click", closeLegalModal);
+  legalAccept.addEventListener("click", closeLegalModal);
+  legalModal.querySelectorAll("[data-close-legal]").forEach(element => element.addEventListener("click", closeLegalModal));
 
   channelsMainTab.addEventListener("click", () => {
     if(activeSection === "favorites") setSection(lastNormalSection || "mexico");
@@ -987,6 +1131,10 @@ function bindEvents(){
   playerStage.addEventListener("mouseleave",() => scheduleHidePlayerUi(500));
   document.addEventListener("keydown",event => {
     showPlayerUi();
+    if(event.key === "Escape" && legalModal.classList.contains("open")){
+      closeLegalModal();
+      return;
+    }
     if(event.key === "Escape" && topbar.classList.contains("search-open")){
       closeTopSearch();
     }
@@ -1804,6 +1952,20 @@ function closeTopSearch(resetResults = true){
     buildCategories();
     renderChannels();
   }
+}
+
+function openLegalModal(){
+  legalModal.classList.add("open");
+  legalModal.setAttribute("aria-hidden","false");
+  document.body.classList.add("legal-open");
+  legalClose.focus({preventScroll:true});
+}
+
+function closeLegalModal(){
+  legalModal.classList.remove("open");
+  legalModal.setAttribute("aria-hidden","true");
+  document.body.classList.remove("legal-open");
+  legalToggle.focus({preventScroll:true});
 }
 
 async function shareCurrentPage(){
