@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#101017">
+<title>Reportar canal | Watch TV Plus</title>
+<style>
+:root{--bg:#101017;--panel:#1b1b25;--panel2:#252533;--text:#f7f7f9;--muted:#a5a5b2;--blue:#4c78ff;--green:#2eb872;--red:#ef5b70;--line:rgba(255,255,255,.09)}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:radial-gradient(circle at top,#1c1c2a,#101017 55%);color:var(--text);font-family:Arial,sans-serif}
+body{display:grid;place-items:center;padding:20px}
+.card{width:min(100%,650px);border:1px solid var(--line);border-radius:20px;background:var(--panel);overflow:hidden}
+header{padding:22px;border-bottom:1px solid var(--line)}
+.brand{font-size:23px;font-weight:900}
+.subtitle{margin-top:6px;color:var(--muted);font-size:13px}
+.channel{display:grid;grid-template-columns:72px 1fr;gap:15px;align-items:center;margin:18px;padding:15px;border:1px solid var(--line);border-radius:15px;background:var(--panel2)}
+.logo{width:72px;height:72px;display:grid;place-items:center;overflow:hidden;border-radius:14px;background:#343445;font-weight:900}
+.logo img{width:100%;height:100%;object-fit:contain}
+.channel h1{margin:0;font-size:20px}
+.meta{margin-top:7px;color:var(--muted);font-size:12px}
+form{padding:0 18px 21px}
+label{display:block;margin:16px 0 7px;font-size:13px;font-weight:900}
+select,textarea,input{width:100%;border:1px solid var(--line);border-radius:11px;background:#292937;color:#fff;padding:12px;font:inherit}
+textarea{min-height:110px;resize:vertical}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}
+button,a{min-height:47px;display:grid;place-items:center;border:0;border-radius:11px;text-decoration:none;font-weight:900}
+.primary{background:var(--blue);color:#fff}
+.secondary{background:#30303f;color:#fff}
+.status{display:none;margin-top:14px;padding:13px;border-radius:10px;font-size:13px;line-height:1.45}
+.status.show{display:block}
+.ok{background:rgba(46,184,114,.14);color:#99f0bf}
+.error{background:rgba(239,91,112,.13);color:#ffb0bc}
+@media(max-width:500px){body{padding:0}.card{min-height:100dvh;border:0;border-radius:0}.actions{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main class="card">
+<header><div class="brand">Watch TV Plus</div><div class="subtitle">Reportar canal no disponible</div></header>
+<section class="channel">
+  <div class="logo" id="logo">TV</div>
+  <div><h1 id="name">Canal</h1><div class="meta" id="meta"></div></div>
+</section>
+<form id="form">
+  <label for="reason">Problema</label>
+  <select id="reason">
+    <option>Canal no reproduce</option>
+    <option>Pantalla negra</option>
+    <option>Se corta constantemente</option>
+    <option>Audio sin imagen</option>
+    <option>Imagen sin audio</option>
+    <option>Canal incorrecto</option>
+    <option>Otro problema</option>
+  </select>
+  <label for="details">Detalles</label>
+  <textarea id="details" maxlength="500"></textarea>
+  <label for="contact">Correo (opcional)</label>
+  <input id="contact" type="email" maxlength="160">
+  <div class="actions">
+    <a class="secondary" id="back">Volver</a>
+    <button class="primary" id="send" type="submit">Enviar reporte</button>
+  </div>
+  <div class="status" id="status"></div>
+</form>
+</main>
+<script>
+"use strict";
+const API_URL = "https://script.google.com/macros/s/AKfycbzSek-P5YnrbbUZ-4CrTS3dBV86JOL9jRHGPGw_iqZ2m5nJauSs9Eqymn-ISAbEqK_W/exec";
+const p = new URLSearchParams(location.search);
+const data = {
+  canal:p.get("canal")||"Canal",
+  numero:p.get("numero")||"---",
+  seccion:p.get("seccion")||"TV",
+  categoria:p.get("categoria")||"General",
+  logo:p.get("logo")||"",
+  canalId:p.get("id")||"",
+  stream:p.get("stream")||"",
+  volver:p.get("volver")||"index.html"
+};
+
+const form=document.getElementById("form");
+const nameEl=document.getElementById("name");
+const metaEl=document.getElementById("meta");
+const logoEl=document.getElementById("logo");
+const backEl=document.getElementById("back");
+const statusEl=document.getElementById("status");
+const sendEl=document.getElementById("send");
+
+nameEl.textContent=data.canal;
+metaEl.textContent=`Número ${data.numero} · ${data.seccion} · ${data.categoria}`;
+backEl.href=data.volver;
+
+if(data.logo){
+  const img=document.createElement("img");
+  img.src=data.logo;
+  img.alt="";
+  img.referrerPolicy="no-referrer";
+  img.onerror=()=>logoEl.textContent="TV";
+  logoEl.textContent="";
+  logoEl.appendChild(img);
+}
+
+function showStatus(message,type){
+  statusEl.className="status show "+type;
+  statusEl.textContent=message;
+}
+
+function jsonp(params){
+  return new Promise((resolve,reject)=>{
+    const callback="__wtvReport_"+Date.now()+"_"+Math.random().toString(36).slice(2);
+    const script=document.createElement("script");
+    const cleanup=()=>{
+      try{delete window[callback]}catch(e){window[callback]=undefined}
+      script.remove();
+    };
+    window[callback]=result=>{cleanup();resolve(result)};
+    script.onerror=()=>{cleanup();reject(new Error("No se pudo conectar con Apps Script."))};
+    params.set("callback",callback);
+    script.src=API_URL+"?"+params.toString();
+    document.head.appendChild(script);
+  });
+}
+
+form.addEventListener("submit",async event=>{
+  event.preventDefault();
+  sendEl.disabled=true;
+  sendEl.textContent="Enviando...";
+  statusEl.className="status";
+
+  const params=new URLSearchParams({
+    action:"publicReport",
+    canal:data.canal,
+    numero:data.numero,
+    seccion:data.seccion,
+    categoria:data.categoria,
+    logo:data.logo,
+    canalId:data.canalId,
+    stream:data.stream,
+    motivo:document.getElementById("reason").value,
+    detalles:document.getElementById("details").value.trim(),
+    contacto:document.getElementById("contact").value.trim(),
+    pagina:data.volver,
+    userAgent:navigator.userAgent
+  });
+
+  try{
+    const result=await jsonp(params);
+    if(!result||!result.ok)throw new Error(result?.error||"No se pudo guardar.");
+    showStatus(result.grouped
+      ? `Reporte recibido. Este canal ahora suma ${result.cantidad} reportes.`
+      : "Reporte enviado correctamente.","ok");
+    document.getElementById("details").value="";
+    document.getElementById("contact").value="";
+  }catch(error){
+    showStatus(error.message||"No se pudo enviar el reporte.","error");
+  }finally{
+    sendEl.disabled=false;
+    sendEl.textContent="Enviar reporte";
+  }
+});
+</script>
+</body>
+</html>

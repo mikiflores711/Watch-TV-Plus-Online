@@ -1631,19 +1631,17 @@ document.addEventListener("visibilitychange",() => {
 });
 
 function openChannelReport(channel,displayNumber){
-  const payload = {
-    canal: channel.name || "Canal sin nombre",
-    numero: displayNumber || "---",
-    seccion: channel.sectionLabel || "TV",
-    categoria: channel.category || "General",
-    logo: channel.logo || "",
-    id: channel.id || "",
-    stream: channel.url || "",
-    volver: location.href
-  };
+  const params = new URLSearchParams();
+  params.set("canal", channel.name || "Canal sin nombre");
+  params.set("numero", displayNumber || "---");
+  params.set("seccion", channel.sectionLabel || "TV");
+  params.set("categoria", channel.category || "General");
+  if(channel.logo) params.set("logo", channel.logo);
+  if(channel.id) params.set("id", channel.id);
+  if(channel.url) params.set("stream", channel.url);
+  params.set("volver", location.href);
 
-  const encodedPayload = encodeURIComponent(JSON.stringify(payload));
-  location.href = `${APPS_SCRIPT_WEBAPP}?page=report&payload=${encodedPayload}`;
+  location.href = `./reportar-canal.html?${params.toString()}`;
 }
 
 function loadChannel(channel){
