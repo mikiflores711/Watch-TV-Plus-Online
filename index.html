@@ -1679,22 +1679,40 @@ function getPlutoChannelId(channel){
 }
 
 function normalizePlutoTimeline(item){
-  const start = new Date(item.start || item.startTime || item.begin || 0);
-  const stop = new Date(item.stop || item.end || item.endTime || 0);
+  const episode = item?.episode || item?.program || item || {};
+  const startValue =
+    item?.start ||
+    item?.startTime ||
+    item?.begin ||
+    item?.startsAt ||
+    episode?.start ||
+    0;
+
+  const stopValue =
+    item?.stop ||
+    item?.end ||
+    item?.endTime ||
+    item?.endsAt ||
+    episode?.stop ||
+    0;
+
+  const start = new Date(startValue);
+  const stop = new Date(stopValue);
   if(!Number.isFinite(start.getTime()) || !Number.isFinite(stop.getTime())) return null;
 
-  const episode = item.episode || item;
   const title =
-    item.title ||
-    episode.name ||
-    episode.title ||
-    episode.series?.name ||
+    item?.title ||
+    item?.name ||
+    episode?.name ||
+    episode?.title ||
+    episode?.series?.name ||
+    episode?.seriesName ||
     "Programa sin título";
 
   const description =
-    item.description ||
-    episode.description ||
-    episode.summary ||
+    item?.description ||
+    episode?.description ||
+    episode?.summary ||
     "";
 
   return {
@@ -1709,7 +1727,35 @@ function extractPlutoChannels(payload){
   if(Array.isArray(payload)) return payload;
   if(Array.isArray(payload?.channels)) return payload.channels;
   if(Array.isArray(payload?.data)) return payload.data;
+  if(Array.isArray(payload?.data?.channels)) return payload.data.channels;
+  if(Array.isArray(payload?.result?.channels)) return payload.result.channels;
   return [];
+}
+
+async function fetchJsonWithFallback(urls){
+  let lastError = null;
+
+  for(const originalUrl of urls){
+    const candidates = [
+      originalUrl,
+      PROXY_BASE + encodeURIComponent(originalUrl)
+    ];
+
+    for(const url of candidates){
+      try{
+        const response = await fetch(url,{cache:"no-store"});
+        if(!response.ok) throw new Error(`HTTP ${response.status}`);
+        const text = await response.text();
+        const payload = JSON.parse(text);
+        if(payload) return payload;
+      }catch(error){
+        lastError = error;
+        console.warn("Solicitud JSON fallida",url,error);
+      }
+    }
+  }
+
+  throw lastError || new Error("No se pudo obtener JSON");
 }
 
 async function loadPlutoEpg(){
@@ -1719,8 +1765,8 @@ async function loadPlutoEpg(){
 
   plutoEpgLoading = true;
   try{
-    const now = new Date();
-    const stop = new Date(now.getTime() + PLUTO_EPG_HOURS * 60 * 60 * 1000);
+    const now = new Date(Date.now() - 30 * 60 * 1000);
+    const stop = new Date(Date.now() + PLUTO_EPG_HOURS * 60 * 60 * 1000);
     const query = new URLSearchParams({
       start:plutoApiDate(now),
       stop:plutoApiDate(stop),
@@ -1734,33 +1780,29 @@ async function loadPlutoEpg(){
     });
 
     const endpoints = [
-      `https://api.pluto.tv/v2/channels?${query.toString()}`,
-      `https://service-channels.clusters.pluto.tv/v1/guide?${query.toString()}`
+      `https://service-channels.clusters.pluto.tv/v2/guide/channels?${query.toString()}`,
+      `https://service-channels.clusters.pluto.tv/v1/guide?${query.toString()}`,
+      `https://api.pluto.tv/v2/channels?${query.toString()}`
     ];
 
-    let payload = null;
-    let lastError = null;
-
-    for(const endpoint of endpoints){
-      try{
-        const response = await fetch(endpoint,{cache:"no-store",mode:"cors"});
-        if(!response.ok) throw new Error(`HTTP ${response.status}`);
-        payload = await response.json();
-        if(extractPlutoChannels(payload).length) break;
-      }catch(error){
-        lastError = error;
-        console.warn("EPG Pluto: endpoint no disponible",endpoint,error);
-      }
-    }
-
+    const payload = await fetchJsonWithFallback(endpoints);
     const apiChannels = extractPlutoChannels(payload);
+
     if(!apiChannels.length){
-      throw lastError || new Error("La API no entregó canales");
+      throw new Error("La guía de Pluto no entregó canales");
     }
 
     const nextMap = new Map();
+
     apiChannels.forEach(apiChannel => {
-      const id = String(apiChannel._id || apiChannel.id || apiChannel.channelId || "").toLowerCase();
+      const id = String(
+        apiChannel._id ||
+        apiChannel.id ||
+        apiChannel.channelId ||
+        apiChannel.channel?._id ||
+        ""
+      ).toLowerCase();
+
       if(!id) return;
 
       const rawTimeline =
@@ -1768,6 +1810,7 @@ async function loadPlutoEpg(){
         apiChannel.timeline ||
         apiChannel.programs ||
         apiChannel.programmes ||
+        apiChannel.guide ||
         [];
 
       const timeline = (Array.isArray(rawTimeline) ? rawTimeline : [])
@@ -1778,11 +1821,13 @@ async function loadPlutoEpg(){
       if(timeline.length) nextMap.set(id,timeline);
     });
 
-    if(nextMap.size){
-      plutoEpgByChannel = nextMap;
-      refreshPlutoEpgDisplay();
-      console.info(`EPG Pluto cargada para ${nextMap.size} canales.`);
+    if(!nextMap.size){
+      throw new Error("La guía no contenía bloques de programación");
     }
+
+    plutoEpgByChannel = nextMap;
+    refreshPlutoEpgDisplay();
+    console.info(`EPG Pluto cargada para ${nextMap.size} canales.`);
   }catch(error){
     console.warn("No se pudo cargar la programación de Pluto TV.",error);
   }finally{
@@ -1936,14 +1981,15 @@ function loadChannel(channel){
 
 function playChannelCandidate(channel,candidates,index){
   if(index >= candidates.length){
-    showToast("No se pudo abrir este canal");
+    showToast(`No se pudo abrir este canal después de ${candidates.length} intentos`);
     showPlayerUi();
     return;
   }
 
   const streamUrl = candidates[index];
+  const mimeType = guessMimeType(streamUrl);
   const plugins = [];
-  if(window.HlsjsPlayback) plugins.push(window.HlsjsPlayback);
+  if(mimeType === "application/vnd.apple.mpegurl" && window.HlsjsPlayback) plugins.push(window.HlsjsPlayback);
   let started = false;
   let fallbackTimer = null;
 
@@ -1961,7 +2007,7 @@ function playChannelCandidate(channel,candidates,index){
     height:"100%",
     hideMediaControl:false,
     hideMediaControlDelay:PLAYER_UI_HIDE_DELAY,
-    mimeType:"application/vnd.apple.mpegurl",
+    ...(mimeType ? {mimeType} : {}),
     hlsPlayback:{preload:true},
     playback:{
       playInline:true,
@@ -1989,7 +2035,7 @@ function playChannelCandidate(channel,candidates,index){
           if(!started && currentChannelKey === getChannelKey(channel)){
             playChannelCandidate(channel,candidates,index + 1);
           }
-        },9000);
+        },12000);
       },
       onPlay(){
         started = true;
@@ -2001,11 +2047,45 @@ function playChannelCandidate(channel,candidates,index){
         console.log("Clappr error:",error);
         clearTimeout(fallbackTimer);
         if(!started && currentChannelKey === getChannelKey(channel)){
-          setTimeout(() => playChannelCandidate(channel,candidates,index + 1),350);
+          setTimeout(() => {
+            if(currentChannelKey === getChannelKey(channel)){
+              playChannelCandidate(channel,candidates,index + 1);
+            }
+          },500);
         }
       }
     }
   });
+}
+
+
+function buildPlutoDirectUrl(channel){
+  const id = getPlutoChannelId(channel);
+  if(!id) return "";
+
+  const params = new URLSearchParams({
+    deviceType:"web",
+    deviceMake:"Chrome",
+    deviceModel:"web",
+    sid:`watchtvplus-${id.slice(-8)}-${Date.now()}`,
+    deviceId:`watchtvplus-${id}`,
+    advertisingId:"",
+    appName:"web",
+    appVersion:"unknown",
+    clientTime:"0",
+    serverSideAds:"false"
+  });
+
+  return `https://service-stitcher.clusters.pluto.tv/stitch/hls/channel/${id}/master.m3u8?${params.toString()}`;
+}
+
+function guessMimeType(url){
+  const clean = String(url || "").split("?")[0].toLowerCase();
+  if(clean.endsWith(".mp4")) return "video/mp4";
+  if(clean.endsWith(".mp3")) return "audio/mpeg";
+  if(clean.endsWith(".aac")) return "audio/aac";
+  if(clean.endsWith(".m3u8") || clean.includes("/hls/")) return "application/vnd.apple.mpegurl";
+  return "";
 }
 
 function isMexicoGeoRestrictedAkamai(url){
@@ -2019,7 +2099,8 @@ function isMexicoGeoRestrictedAkamai(url){
 
 function isPlutoStream(url){
   const value = String(url || "").toLowerCase();
-  return value.includes("pluto.tv") ||
+  return value.includes("jmp2.uk/plu-") ||
+         value.includes("pluto.tv") ||
          value.includes("plutotv.net") ||
          value.includes("service-stitcher.clusters.pluto.tv") ||
          value.includes("stitcher-ipv4.pluto.tv");
@@ -2059,14 +2140,27 @@ function getPlayableUrl(channel){
 function getStreamCandidates(channel){
   const candidates = [];
   const add = url => {
-    if(url && !candidates.includes(url)) candidates.push(url);
+    const value = String(url || "").trim();
+    if(value && !candidates.includes(value)) candidates.push(value);
   };
 
   const original = String(channel.url || "");
-  const proxied = buildProxyUrl(channel);
+  const proxiedOriginal = buildProxyUrl(channel,original);
+
+  if(channel.section === "pluto" || isPlutoStream(original)){
+    const directPluto = buildPlutoDirectUrl(channel);
+
+    // Primero intenta el enlace original y la URL oficial construida con el ID.
+    add(original);
+    add(directPluto);
+
+    // Después usa el Worker como respaldo para CORS, redirecciones o cabeceras.
+    add(proxiedOriginal);
+    if(directPluto) add(buildProxyUrl(channel,directPluto));
+    return candidates;
+  }
 
   if(isMexicoGeoRestrictedAkamai(original)){
-    // Akamai restringido por país: directo primero.
     add(original);
 
     try{
@@ -2077,25 +2171,16 @@ function getStreamCandidates(channel){
       }
     }catch(error){}
 
-    add(proxied);
-    return candidates;
-  }
-
-  if(isPlutoStream(original)){
-    // Pluto y otros servicios con tokens firmados no deben alterarse.
-    add(original);
-    add(proxied);
+    add(proxiedOriginal);
     return candidates;
   }
 
   if(shouldUseProxy(channel)){
-    // Contenido HTTP o streams que requieren Referer/User-Agent.
-    add(proxied);
+    add(proxiedOriginal);
     if(!original.startsWith("http://") || location.protocol !== "https:") add(original);
   }else{
-    // Para la mayoría de HTTPS, directo primero y proxy como respaldo.
     add(original);
-    add(proxied);
+    add(proxiedOriginal);
   }
 
   return candidates;
