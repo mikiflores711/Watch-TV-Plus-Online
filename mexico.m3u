@@ -192,7 +192,7 @@ https://vid26.mega00.com:5443/live/streams/qNmc7nulmq8zPYZE1582752735050.m3u8
 https://5ca3e84a76d30.streamlock.net/tmtv/videotmtv/playlist.m3u8
 #EXTINF:-1 tvg-id="TRCTV.mx@SD" tvg-name="TRC Televisión (720p)" group-title="General",TRC Televisión (720p)
 https://5fe2654d6127d.streamlock.net/trc/videotrc/playlist.m3u8
-#EXTINF:-1 tvg-id="TUDN.mx@SD" tvg-name="TUDN (1080p)" group-title="Deportes",TUDN (1080p)
+#EXTINF:-1 tvg-id="TUDN.mx@SD" tvg-name="TUDN (1080p)" group-title="Deportes" tvg-logo="https://i.imgur.com/oT5CAvd.png",TUDN (1080p)
 https://streaming.alwaysdata.net/tudn.php
 #EXTINF:-1 tvg-id="TuristikTV.mx@SD" tvg-name="Turistik TV (720p)" group-title="General",Turistik TV (720p)
 https://cdn1.cef-technology.com/stream_web/turistik/playlist.m3u8
