@@ -11,6 +11,9 @@
 <meta name="apple-mobile-web-app-title" content="Watch TV Plus">
 <title>Watch TV Plus</title>
 <link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="./icons/watch-tv-plus-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="./icons/watch-tv-plus-512.png">
+<link rel="apple-touch-icon" href="./icons/watch-tv-plus-192.png">
 
 <script src="https://cdn.jsdelivr.net/npm/clappr@latest/dist/clappr.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@clappr/hlsjs-playback@latest/dist/hlsjs-playback.min.js"></script>
@@ -891,10 +894,10 @@ body.legal-open{overflow:hidden}
 .report-state.fixed{background:rgba(45,181,111,.16);color:#99efbd;border:1px solid rgba(45,181,111,.3)}
 
 </style>
-
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2636891173590272"
-        crossorigin="anonymous"></script>
 </head>
+
+
+<meta name="monetag" content="6dcbeb32c8e97c2e5392a2c5be867ecd">
 
 <body>
 <div class="app-shell">
@@ -906,13 +909,10 @@ body.legal-open{overflow:hidden}
       <button class="icon-btn" id="shareToggle" type="button" aria-label="Compartir página" title="Compartir página">
         <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><path d="m8.7 10.7 6.6-4.1M8.7 13.3l6.6 4.1"></path></svg>
       </button>
-      <button class="icon-btn" id="aboutToggle" type="button" aria-label="Quiénes somos y sobre nosotros" title="Quiénes somos">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <circle cx="12" cy="8" r="4"></circle>
-          <path d="M4 21a8 8 0 0 1 16 0"></path>
-        </svg>
-      </button>
-      <button class="icon-btn" id="legalToggle" type="button" aria-label="Políticas y aviso legal" title="Políticas y aviso legal">
+      <a class="icon-btn donate-btn" id="donateBtn" href="https://link.mercadopago.com.mx/versoestudiodonativo" target="_blank" rel="noopener noreferrer" aria-label="Apoyar el proyecto" title="Apoyar el proyecto">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-4.4-9.2-8.2C.9 9.5 2.5 5.5 6.3 5.1c2.1-.2 3.8.9 4.7 2.3.9-1.4 2.6-2.5 4.7-2.3 3.8.4 5.4 4.4 3.5 7.7C19 16.6 12 21 12 21Z"></path><path d="M12 9v6M9.8 11.2c.5-1.2 3.9-1.4 4.4.2.5 1.7-4.3 1.3-4.1 3 .2 1.5 3.7 1.4 4.2.2"></path></svg>
+      </a>
+      <button class="icon-btn" id="legalToggle" type="button" aria-label="Aviso legal y términos" title="Aviso legal y términos">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l3 3v15H6z"></path><path d="M14 3v4h4"></path><path d="M9 11h6M9 15h6"></path></svg>
       </button>
       <div class="top-search" id="topSearchWrap" role="search">
@@ -955,7 +955,10 @@ body.legal-open{overflow:hidden}
 
   <nav class="scroll-tabs provider-tabs" id="sectionTabs" aria-label="Servicios de TV"></nav>
   <nav class="scroll-tabs category-tabs" id="categoryTabs" aria-label="Categorías"></nav>
-<div class="list-head">
+
+  <div class="adult-notice" id="adultNotice">Sección exclusiva para mayores de 18 años. La confirmación queda guardada únicamente en este navegador.</div>
+
+  <div class="list-head">
     <span id="sectionInfo">Cargando canales...</span>
     <span id="countPill">0</span>
   </div>
@@ -970,58 +973,34 @@ body.legal-open{overflow:hidden}
   <section class="legal-dialog" role="dialog" aria-modal="true" aria-labelledby="legalTitle">
     <header class="legal-header">
       <div>
-        <span class="legal-kicker">Transparencia y cumplimiento</span>
-        <h2 id="legalTitle">Políticas y Aviso Legal</h2>
+        <span class="legal-kicker">Información del servicio</span>
+        <h2 id="legalTitle">Aviso legal y términos y condiciones</h2>
       </div>
-      <button class="legal-close" id="legalClose" type="button" aria-label="Cerrar políticas">×</button>
+      <button class="legal-close" id="legalClose" type="button" aria-label="Cerrar aviso legal">×</button>
     </header>
     <div class="legal-content">
-      <h3>1. Política de Privacidad</h3>
-      <p>Watch TV Plus no solicita registros de usuario ni recopila directamente nombres, contraseñas o datos bancarios. Algunas preferencias, como los canales favoritos, se almacenan localmente en el navegador del usuario.</p>
-      <p>El sitio utiliza servicios de terceros, como Google AdSense, reproductores multimedia, proveedores de contenido y herramientas técnicas. Estos servicios pueden usar cookies, identificadores del dispositivo o tecnologías similares para ofrecer, medir y personalizar anuncios, prevenir fraude y analizar el funcionamiento del servicio, de acuerdo con sus propias políticas.</p>
-      <p>El usuario puede administrar o eliminar la información almacenada localmente mediante la configuración de su navegador. También puede controlar la personalización de anuncios desde las opciones de privacidad de Google.</p>
+      <h3>1. Naturaleza del sitio</h3>
+      <p>Watch TV Plus funciona como un reproductor y organizador de enlaces públicos de transmisión. El sitio no aloja directamente archivos de video ni controla los servidores externos desde los que se distribuyen las señales.</p>
 
-      <h3>2. Aviso Legal</h3>
-      <p>Watch TV Plus funciona como un reproductor y organizador de enlaces de transmisión disponibles en Internet. El sitio no aloja directamente archivos de video ni controla los servidores externos desde los que se distribuyen las señales.</p>
-      <p>Los canales, señales, horarios y enlaces pueden cambiar, interrumpirse o dejar de estar disponibles sin previo aviso. No se garantiza la continuidad, calidad o disponibilidad permanente de ninguna transmisión.</p>
-      <p>Las marcas, nombres, logotipos y contenidos pertenecen a sus respectivos titulares y se muestran únicamente con fines de identificación. Los titulares de derechos pueden utilizar el botón de reporte de cada canal para solicitar la revisión de un enlace.</p>
-      <p>El usuario es responsable de comprobar que el acceso y uso del contenido sea legal en su país o región.</p>
+      <h3>2. Disponibilidad del contenido</h3>
+      <p>Los canales, señales, horarios y enlaces pueden cambiar, interrumpirse o dejar de estar disponibles sin previo aviso. No se garantiza la continuidad, calidad, exactitud o disponibilidad permanente de ninguna transmisión.</p>
 
-      <h3>3. Política de Cookies</h3>
-      <p>Este sitio puede utilizar cookies propias y de terceros para conservar preferencias, mantener funciones esenciales, medir el rendimiento, limitar actividades fraudulentas y mostrar publicidad.</p>
-      <p>Google AdSense y sus socios pueden utilizar cookies para mostrar anuncios basados en visitas anteriores a este u otros sitios. El usuario puede bloquear, eliminar o limitar las cookies desde la configuración de su navegador; algunas funciones podrían dejar de operar correctamente.</p>
-      <p>Al continuar utilizando Watch TV Plus, el usuario reconoce el uso de estas tecnologías conforme a esta política y a la configuración elegida en su navegador.</p>
+      <h3>3. Responsabilidad del usuario</h3>
+      <p>El usuario es responsable de verificar que el acceso al contenido sea legal en su país o región y de utilizar este servicio únicamente para fines permitidos por la legislación aplicable.</p>
 
-      <p class="legal-update">Última actualización: 27 de julio de 2026.</p>
+      <h3>4. Derechos de terceros</h3>
+      <p>Las marcas, nombres, logotipos y contenidos pertenecen a sus respectivos propietarios. Su inclusión tiene fines de identificación. Si eres titular de derechos y deseas reportar un enlace, utiliza el botón de reporte disponible junto a cada canal.</p>
+
+      <h3>5. Privacidad y almacenamiento local</h3>
+      <p>Las preferencias como favoritos y confirmación de mayoría de edad se guardan localmente en el navegador. Algunos servicios externos, reproductores, anuncios o proveedores de transmisión pueden aplicar sus propias políticas de privacidad y cookies.</p>
+
+      <h3>6. Aceptación</h3>
+      <p>Al utilizar Watch TV Plus aceptas estos términos. Si no estás de acuerdo, debes dejar de utilizar el sitio.</p>
+
+      <p class="legal-update">Última actualización: 26 de julio de 2026.</p>
     </div>
     <footer class="legal-footer">
       <button class="legal-accept" id="legalAccept" type="button">Entendido</button>
-    </footer>
-  </section>
-</div>
-
-
-<div class="legal-modal" id="aboutModal" aria-hidden="true">
-  <div class="legal-backdrop" data-close-about></div>
-  <section class="legal-dialog" role="dialog" aria-modal="true" aria-labelledby="aboutTitle">
-    <header class="legal-header">
-      <div>
-        <span class="legal-kicker">Conoce el proyecto</span>
-        <h2 id="aboutTitle">Quiénes Somos</h2>
-      </div>
-      <button class="legal-close" id="aboutClose" type="button" aria-label="Cerrar información">×</button>
-    </header>
-    <div class="legal-content">
-      <h3>1. Quiénes Somos</h3>
-      <p>Watch TV Plus es un proyecto digital independiente creado para facilitar el acceso organizado a canales y señales de transmisión disponibles públicamente en Internet desde una interfaz sencilla y compatible con distintos dispositivos.</p>
-      <p>El proyecto busca ofrecer una experiencia clara para descubrir, reproducir, guardar como favoritos y reportar enlaces que presenten problemas.</p>
-
-      <h3>2. Sobre Nosotros</h3>
-      <p>No somos propietarios de los canales, marcas, programas o señales mostradas. Watch TV Plus no almacena archivos de video en sus servidores; funciona como reproductor y directorio de enlaces externos.</p>
-      <p>Trabajamos continuamente en la organización del catálogo, la estabilidad del reproductor y la atención de reportes enviados por los usuarios. Nuestro objetivo es mantener una plataforma funcional, transparente y respetuosa de los derechos de terceros.</p>
-    </div>
-    <footer class="legal-footer">
-      <button class="legal-accept" id="aboutAccept" type="button">Entendido</button>
     </footer>
   </section>
 </div>
@@ -1045,16 +1024,17 @@ const PLAYER_UI_HIDE_DELAY = 3500;
 const IS_IPHONE = /iPhone|iPod/i.test(navigator.userAgent);
 
 const PLAYLISTS = [
-  { id:"mexico", label:"México", file:"./listas/mexico.m3u", logo:"https://raw.githubusercontent.com/mikiflores711/Watch-TV-Plus/refs/heads/main/Icono%20Mexico.png" },
-  { id:"pluto", label:"Pluto TV", file:"./listas/pluto.m3u", logo:"https://raw.githubusercontent.com/mikiflores711/Watch-TV-Plus/refs/heads/main/Icono%20Pluto%20TV.png" },
-  { id:"lg", label:"LG Channels", file:"./listas/LG_Channels_mx.m3u", logo:"https://raw.githubusercontent.com/mikiflores711/Watch-TV-Plus/refs/heads/main/Icono%20LG%20Channels.png" },
-  { id:"vix", label:"ViX", file:"./listas/vix.m3u", logo:"https://raw.githubusercontent.com/mikiflores711/Watch-TV-Plus/refs/heads/main/Icono%20Vix.png" },
-  { id:"tubi", label:"Tubi TV", file:"./listas/tubi.m3u", logo:"https://raw.githubusercontent.com/mikiflores711/Watch-TV-Plus/refs/heads/main/Icono%20Tubi.png" },
-  { id:"runtime", label:"Run Time", file:"./listas/runtime.m3u", logo:"https://raw.githubusercontent.com/mikiflores711/Watch-TV-Plus/refs/heads/main/Icono%20RunTime.png" },
-  { id:"plex", label:"Plex TV", file:"./listas/plex_mx.m3u", logo:"https://raw.githubusercontent.com/mikiflores711/Watch-TV-Plus/refs/heads/main/Icono%20Plex%20TV.png" },
-  { id:"roku", label:"Roku Channel", file:"./listas/roku_all.m3u", logo:"https://raw.githubusercontent.com/mikiflores711/Watch-TV-Plus/refs/heads/main/Icono%20Roku%20Channel.png" },
-  { id:"rakuten", label:"Rakuten TV", file:"./listas/rakutentv.m3u", logo:"https://raw.githubusercontent.com/mikiflores711/Watch-TV-Plus/refs/heads/main/Icono%20Rakuten%20TV.png" },
-  { id:"espanol", label:"Español", file:"./listas/espanol.m3u", logo:"https://raw.githubusercontent.com/mikiflores711/Watch-TV-Plus/refs/heads/main/Icono%20Espa%C3%B1ol.png" }
+  { id:"mexico", label:"México", file:"./mexico.m3u", logo:"https://raw.githubusercontent.com/mikiflores711/Watch-TV-Plus/refs/heads/main/Icono%20Mexico.png" },
+  { id:"pluto", label:"Pluto TV", file:"./pluto.m3u", logo:"https://raw.githubusercontent.com/mikiflores711/Watch-TV-Plus/refs/heads/main/Icono%20Pluto%20TV.png" },
+  { id:"lg", label:"LG Channels", file:"./LG_Channels_mx.m3u", logo:"https://raw.githubusercontent.com/mikiflores711/Watch-TV-Plus/refs/heads/main/Icono%20LG%20Channels.png" },
+  { id:"vix", label:"ViX", file:"./vix.m3u", logo:"https://raw.githubusercontent.com/mikiflores711/Watch-TV-Plus/refs/heads/main/Icono%20Vix.png" },
+  { id:"tubi", label:"Tubi TV", file:"./tubi.m3u", logo:"https://raw.githubusercontent.com/mikiflores711/Watch-TV-Plus/refs/heads/main/Icono%20Tubi.png" },
+  { id:"runtime", label:"Run Time", file:"./runtime.m3u", logo:"https://raw.githubusercontent.com/mikiflores711/Watch-TV-Plus/refs/heads/main/Icono%20RunTime.png" },
+  { id:"plex", label:"Plex TV", file:"./plex_mx.m3u", logo:"https://raw.githubusercontent.com/mikiflores711/Watch-TV-Plus/refs/heads/main/Icono%20Plex%20TV.png" },
+  { id:"roku", label:"Roku Channel", file:"./roku_all.m3u", logo:"https://raw.githubusercontent.com/mikiflores711/Watch-TV-Plus/refs/heads/main/Icono%20Roku%20Channel.png" },
+  { id:"rakuten", label:"Rakuten TV", file:"./rakutentv.m3u", logo:"https://raw.githubusercontent.com/mikiflores711/Watch-TV-Plus/refs/heads/main/Icono%20Rakuten%20TV.png" },
+  { id:"espanol", label:"Español", file:"./espanol.m3u", logo:"https://raw.githubusercontent.com/mikiflores711/Watch-TV-Plus/refs/heads/main/Icono%20Espa%C3%B1ol.png" },
+  { id:"adult", label:"18+", file:"./adult.m3u", logo:"https://raw.githubusercontent.com/mikiflores711/Watch-TV-Plus/refs/heads/main/Icono%20Zona%2018+.png", isAdult:true }
 ];
 
 const playerStage = document.getElementById("playerStage");
@@ -1064,10 +1044,6 @@ const topSearchWrap = document.getElementById("topSearchWrap");
 const searchToggle = document.getElementById("searchToggle");
 const searchClear = document.getElementById("searchClear");
 const shareToggle = document.getElementById("shareToggle");
-const aboutToggle = document.getElementById("aboutToggle");
-const aboutModal = document.getElementById("aboutModal");
-const aboutClose = document.getElementById("aboutClose");
-const aboutAccept = document.getElementById("aboutAccept");
 const legalToggle = document.getElementById("legalToggle");
 const legalModal = document.getElementById("legalModal");
 const legalClose = document.getElementById("legalClose");
@@ -1078,7 +1054,7 @@ const channelList = document.getElementById("channelList");
 const sectionTabs = document.getElementById("sectionTabs");
 const categoryTabs = document.getElementById("categoryTabs");
 const sectionInfo = document.getElementById("sectionInfo");
-const adultNotice = document.getElementById("adultNotice") || {style:{display:"none"}};
+const adultNotice = document.getElementById("adultNotice");
 const channelsMainTab = document.getElementById("channelsMainTab");
 const favoritesMainTab = document.getElementById("favoritesMainTab");
 const playerFavoriteBtn = document.getElementById("playerFavoriteBtn");
@@ -1138,10 +1114,6 @@ function bindEvents(){
   });
 
   shareToggle.addEventListener("click", shareCurrentPage);
-  aboutToggle.addEventListener("click", openAboutModal);
-  aboutClose.addEventListener("click", closeAboutModal);
-  aboutAccept.addEventListener("click", closeAboutModal);
-  aboutModal.querySelectorAll("[data-close-about]").forEach(element => element.addEventListener("click", closeAboutModal));
   legalToggle.addEventListener("click", openLegalModal);
   legalClose.addEventListener("click", closeLegalModal);
   legalAccept.addEventListener("click", closeLegalModal);
@@ -1166,10 +1138,6 @@ function bindEvents(){
   playerStage.addEventListener("mouseleave",() => scheduleHidePlayerUi(500));
   document.addEventListener("keydown",event => {
     showPlayerUi();
-    if(event.key === "Escape" && aboutModal.classList.contains("open")){
-      closeAboutModal();
-      return;
-    }
     if(event.key === "Escape" && legalModal.classList.contains("open")){
       closeLegalModal();
       return;
@@ -2073,20 +2041,6 @@ function closeTopSearch(resetResults = true){
     buildCategories();
     renderChannels();
   }
-}
-
-function openAboutModal(){
-  aboutModal.classList.add("open");
-  aboutModal.setAttribute("aria-hidden","false");
-  document.body.classList.add("legal-open");
-  aboutClose.focus({preventScroll:true});
-}
-
-function closeAboutModal(){
-  aboutModal.classList.remove("open");
-  aboutModal.setAttribute("aria-hidden","true");
-  document.body.classList.remove("legal-open");
-  aboutToggle.focus({preventScroll:true});
 }
 
 function openLegalModal(){
