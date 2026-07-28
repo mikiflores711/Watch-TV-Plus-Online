@@ -1043,6 +1043,74 @@ const MAX_RENDER_DEFAULT = 1200;
 const MAX_RENDER_WITH_SEARCH = 2500;
 const PLAYER_UI_HIDE_DELAY = 3500;
 const IS_IPHONE = /iPhone|iPod/i.test(navigator.userAgent);
+const STREAM_DEVICE_KEY = "watch_tv_plus_stream_device_id_v1";
+
+function getStreamDeviceId(){
+  let value = localStorage.getItem(STREAM_DEVICE_KEY);
+  if(value) return value;
+
+  try{
+    value = crypto.randomUUID();
+  }catch(error){
+    value = "wtp-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2);
+  }
+
+  localStorage.setItem(STREAM_DEVICE_KEY,value);
+  return value;
+}
+
+function normalizeStreamUrl(rawUrl){
+  let value = String(rawUrl || "").trim();
+  if(!value) return "";
+
+  // Corrige enlaces mal formados encontrados en algunas listas FAST.
+  value = value.replace(/\.m3u8\?\?+/i,".m3u8?");
+
+  const deviceId = getStreamDeviceId();
+  const replacements = {
+    "[UA]":navigator.userAgent,
+    "[DEVICE_ID]":deviceId,
+    "[IFA]":deviceId,
+    "[NONCE]":Date.now().toString(),
+    "[FCK]":deviceId,
+    "[COUNTRY]":"MX",
+    "[LMT]":"0",
+    "[DNS]":"0",
+    "[GDPR]":"0",
+    "[GDPR_CONSENT]":"",
+    "[US_PRIVACY]":"1YNN",
+    "[DEVICE_TYPE]":IS_IPHONE ? "mobile" : "web",
+    "[DEVICE_MAKE]":IS_IPHONE ? "Apple" : "Browser",
+    "[DEVICE_MODEL]":IS_IPHONE ? "iPhone" : "Desktop",
+    "[APP_NAME]":"Watch TV Plus",
+    "[APP_VERSION]":"1.0",
+    "[APP_BUNDLE]":location.hostname || "watch-tv-plus",
+    "[APP_STOREURL]":location.origin,
+    "[VIEWSIZE]":"1280x720",
+    "[TARGETAD_ALLOWED]":"1",
+    "[IFA_TYPE]":"dpid",
+    "[HOTEL_TYPE]":"",
+    "[IP]":""
+  };
+
+  Object.entries(replacements).forEach(([token,replacement]) => {
+    value = value.split(token).join(encodeURIComponent(replacement));
+  });
+
+  return value;
+}
+
+function guessStreamMimeType(url){
+  const clean = String(url || "").split("?")[0].toLowerCase();
+  if(clean.endsWith(".mp4")) return "video/mp4";
+  if(clean.endsWith(".mp3")) return "audio/mpeg";
+  if(clean.endsWith(".aac")) return "audio/aac";
+  if(clean.endsWith(".m3u8") || clean.includes("/hls/") || clean.includes("playlist")) {
+    return "application/vnd.apple.mpegurl";
+  }
+  return "";
+}
+
 
 const PLAYLISTS = [
   { id:"mexico", label:"México", file:"./listas/mexico.m3u", logo:"https://raw.githubusercontent.com/mikiflores711/Watch-TV-Plus/refs/heads/main/Icono%20Mexico.png" },
@@ -1329,7 +1397,7 @@ function parseM3U(text){
 
     if(current && (line.startsWith("http://") || line.startsWith("https://"))){
       const stream = parseStreamLine(line);
-      current.url = stream.url;
+      current.url = normalizeStreamUrl(stream.url);
       current.referrer = stream.referrer || current.referrer;
       current.userAgent = stream.userAgent || current.userAgent;
       current.type = guessType(current);
@@ -1700,17 +1768,23 @@ function playChannelCandidate(channel,candidates,index,attemptToken = playerAtte
   }
 
   const streamUrl = candidates[index];
+  const mimeType = guessStreamMimeType(streamUrl);
   const plugins = [];
-  if(window.HlsjsPlayback) plugins.push(window.HlsjsPlayback);
+
+  if(mimeType === "application/vnd.apple.mpegurl" && window.HlsjsPlayback){
+    plugins.push(window.HlsjsPlayback);
+  }
 
   let started = false;
   let fallbackTimer = null;
+  let errorTimer = null;
   let fallbackStarted = false;
 
   const tryNext = delay => {
     if(fallbackStarted) return;
     fallbackStarted = true;
     clearTimeout(fallbackTimer);
+    clearTimeout(errorTimer);
 
     setTimeout(() => {
       if(
@@ -1737,7 +1811,7 @@ function playChannelCandidate(channel,candidates,index,attemptToken = playerAtte
     height:"100%",
     hideMediaControl:false,
     hideMediaControlDelay:PLAYER_UI_HIDE_DELAY,
-    mimeType:"application/vnd.apple.mpegurl",
+    ...(mimeType ? {mimeType} : {}),
     hlsPlayback:{preload:true},
     playback:{
       playInline:true,
@@ -1745,13 +1819,19 @@ function playChannelCandidate(channel,candidates,index,attemptToken = playerAtte
         enableWorker:true,
         lowLatencyMode:false,
         liveSyncDurationCount:3,
+        liveMaxLatencyDurationCount:10,
         maxBufferLength:30,
+        backBufferLength:15,
+        manifestLoadingTimeOut:15000,
         manifestLoadingMaxRetry:8,
         manifestLoadingRetryDelay:1200,
+        levelLoadingTimeOut:15000,
         levelLoadingMaxRetry:8,
         levelLoadingRetryDelay:1200,
+        fragLoadingTimeOut:20000,
         fragLoadingMaxRetry:8,
         fragLoadingRetryDelay:1200,
+        keyLoadingTimeOut:15000,
         keyLoadingMaxRetry:5,
         keyLoadingRetryDelay:1200
       }
@@ -1763,25 +1843,34 @@ function playChannelCandidate(channel,candidates,index,attemptToken = playerAtte
         prepareClapprControls();
         showPlayerUi();
 
-        // LG Channels puede tardar más en iniciar que otras listas.
-        const waitTime = channel.section === "lg" ? 16000 : 10000;
+        /*
+          No abandonar demasiado pronto un canal válido. Los proveedores FAST
+          pueden tardar por redirecciones, publicidad SSAI o manifiestos anidados.
+        */
         fallbackTimer = setTimeout(() => {
           if(!started) tryNext(0);
-        },waitTime);
+        },18000);
       },
       onPlay(){
         if(attemptToken !== playerAttemptToken) return;
         started = true;
         clearTimeout(fallbackTimer);
+        clearTimeout(errorTimer);
         showPlayerUi();
       },
       onPause(){showPlayerUi()},
       onError(error){
         console.log("Clappr error:",error);
-        if(attemptToken !== playerAttemptToken) return;
+        if(attemptToken !== playerAttemptToken || started) return;
 
-        // Se da un pequeño margen porque algunos errores HLS son recuperables.
-        tryNext(channel.section === "lg" ? 1200 : 500);
+        /*
+          Clappr/Hls.js emite errores recuperables durante cambios de nivel,
+          publicidad o recarga del manifiesto. Se espera antes de cambiar de URL.
+        */
+        clearTimeout(errorTimer);
+        errorTimer = setTimeout(() => {
+          if(!started) tryNext(0);
+        },6000);
       }
     }
   });
@@ -1824,9 +1913,17 @@ function shouldUseProxy(channel){
 }
 
 function buildProxyUrl(channel,url = channel.url){
-  let playable = PROXY_BASE + encodeURIComponent(url);
-  if(channel.referrer) playable += "&ref=" + encodeURIComponent(channel.referrer);
-  if(channel.userAgent) playable += "&ua=" + encodeURIComponent(channel.userAgent);
+  const normalizedUrl = normalizeStreamUrl(url);
+  let playable = PROXY_BASE + encodeURIComponent(normalizedUrl);
+
+  if(channel.referrer){
+    playable += "&ref=" + encodeURIComponent(channel.referrer);
+  }
+
+  if(channel.userAgent){
+    playable += "&ua=" + encodeURIComponent(channel.userAgent);
+  }
+
   return playable;
 }
 
@@ -1842,46 +1939,31 @@ function getStreamCandidates(channel){
     if(value && !candidates.includes(value)) candidates.push(value);
   };
 
-  const original = String(channel.url || "");
+  const original = normalizeStreamUrl(channel.url);
   const proxied = buildProxyUrl(channel,original);
+  const isHttpMixed = original.startsWith("http://") && location.protocol === "https:";
 
-  if(channel.section === "lg"){
-    /*
-      LG Channels:
-      - Los hosts *-onlymex.akamaized.net deben reproducirse directamente,
-        porque necesitan la IP mexicana real del espectador.
-      - Para los demás hosts, se prueba directo y después el Worker.
-      - No se modifica el dominio ni los parámetros firmados.
-    */
-    add(original);
-
-    if(!isMexicoGeoRestrictedAkamai(original)){
-      add(proxied);
-    }
-
-    return candidates;
-  }
-
+  /*
+    Estrategia global:
+    - HTTP dentro de HTTPS: Worker primero, porque Chrome bloquea contenido mixto.
+    - Enlaces con Referer/User-Agent: Worker primero para aplicar cabeceras.
+    - Hosts georrestringidos "-onlymex": directo únicamente, para conservar la IP del usuario.
+    - Resto: directo primero y Worker como respaldo de CORS, redirecciones,
+      manifiestos anidados, segmentos y llaves.
+  */
   if(isMexicoGeoRestrictedAkamai(original)){
-    // No enviar estos canales al Worker: perderían la ubicación de México.
     add(original);
     return candidates;
   }
 
-  if(isPlutoStream(original)){
-    add(original);
+  if(isHttpMixed || channel.referrer || channel.userAgent){
     add(proxied);
+    if(!isHttpMixed) add(original);
     return candidates;
   }
 
-  if(shouldUseProxy(channel)){
-    add(proxied);
-    if(!original.startsWith("http://") || location.protocol !== "https:") add(original);
-  }else{
-    add(original);
-    add(proxied);
-  }
-
+  add(original);
+  add(proxied);
   return candidates;
 }
 
