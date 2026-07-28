@@ -1105,6 +1105,7 @@ let toastTimer = null;
 let clapprControlObserver = null;
 let channelReportStates = new Map();
 let reportStateTimer = null;
+let playerAttemptToken = 0;
 
 async function init(){
   buildSectionTabs();
@@ -1675,6 +1676,7 @@ function openChannelReport(channel,displayNumber){
 }
 
 function loadChannel(channel){
+  playerAttemptToken += 1;
   currentChannel = channel;
   currentUrl = channel.url;
   currentChannelKey = getChannelKey(channel);
@@ -1688,7 +1690,9 @@ function loadChannel(channel){
   playChannelCandidate(channel,candidates,0);
 }
 
-function playChannelCandidate(channel,candidates,index){
+function playChannelCandidate(channel,candidates,index,attemptToken = playerAttemptToken){
+  if(attemptToken !== playerAttemptToken || currentChannelKey !== getChannelKey(channel)) return;
+
   if(index >= candidates.length){
     showToast("No se pudo abrir este canal");
     showPlayerUi();
@@ -1698,8 +1702,26 @@ function playChannelCandidate(channel,candidates,index){
   const streamUrl = candidates[index];
   const plugins = [];
   if(window.HlsjsPlayback) plugins.push(window.HlsjsPlayback);
+
   let started = false;
   let fallbackTimer = null;
+  let fallbackStarted = false;
+
+  const tryNext = delay => {
+    if(fallbackStarted) return;
+    fallbackStarted = true;
+    clearTimeout(fallbackTimer);
+
+    setTimeout(() => {
+      if(
+        !started &&
+        attemptToken === playerAttemptToken &&
+        currentChannelKey === getChannelKey(channel)
+      ){
+        playChannelCandidate(channel,candidates,index + 1,attemptToken);
+      }
+    },delay);
+  };
 
   destroyPlayer();
   console.log(`Intento ${index + 1}/${candidates.length}:`,streamUrl);
@@ -1723,29 +1745,32 @@ function playChannelCandidate(channel,candidates,index){
         enableWorker:true,
         lowLatencyMode:false,
         liveSyncDurationCount:3,
-        maxBufferLength:24,
-        manifestLoadingMaxRetry:5,
-        manifestLoadingRetryDelay:900,
-        levelLoadingMaxRetry:5,
-        levelLoadingRetryDelay:900,
-        fragLoadingMaxRetry:6,
-        fragLoadingRetryDelay:900,
-        keyLoadingMaxRetry:3,
-        keyLoadingRetryDelay:900
+        maxBufferLength:30,
+        manifestLoadingMaxRetry:8,
+        manifestLoadingRetryDelay:1200,
+        levelLoadingMaxRetry:8,
+        levelLoadingRetryDelay:1200,
+        fragLoadingMaxRetry:8,
+        fragLoadingRetryDelay:1200,
+        keyLoadingMaxRetry:5,
+        keyLoadingRetryDelay:1200
       }
     },
     events:{
       onReady(){
+        if(attemptToken !== playerAttemptToken) return;
         syncVideoEvents();
         prepareClapprControls();
         showPlayerUi();
+
+        // LG Channels puede tardar más en iniciar que otras listas.
+        const waitTime = channel.section === "lg" ? 16000 : 10000;
         fallbackTimer = setTimeout(() => {
-          if(!started && currentChannelKey === getChannelKey(channel)){
-            playChannelCandidate(channel,candidates,index + 1);
-          }
-        },9000);
+          if(!started) tryNext(0);
+        },waitTime);
       },
       onPlay(){
+        if(attemptToken !== playerAttemptToken) return;
         started = true;
         clearTimeout(fallbackTimer);
         showPlayerUi();
@@ -1753,10 +1778,10 @@ function playChannelCandidate(channel,candidates,index){
       onPause(){showPlayerUi()},
       onError(error){
         console.log("Clappr error:",error);
-        clearTimeout(fallbackTimer);
-        if(!started && currentChannelKey === getChannelKey(channel)){
-          setTimeout(() => playChannelCandidate(channel,candidates,index + 1),350);
-        }
+        if(attemptToken !== playerAttemptToken) return;
+
+        // Se da un pequeño margen porque algunos errores HLS son recuperables.
+        tryNext(channel.section === "lg" ? 1200 : 500);
       }
     }
   });
@@ -1813,41 +1838,46 @@ function getPlayableUrl(channel){
 function getStreamCandidates(channel){
   const candidates = [];
   const add = url => {
-    if(url && !candidates.includes(url)) candidates.push(url);
+    const value = String(url || "").trim();
+    if(value && !candidates.includes(value)) candidates.push(value);
   };
 
   const original = String(channel.url || "");
-  const proxied = buildProxyUrl(channel);
+  const proxied = buildProxyUrl(channel,original);
 
-  if(isMexicoGeoRestrictedAkamai(original)){
-    // Akamai restringido por país: directo primero.
+  if(channel.section === "lg"){
+    /*
+      LG Channels:
+      - Los hosts *-onlymex.akamaized.net deben reproducirse directamente,
+        porque necesitan la IP mexicana real del espectador.
+      - Para los demás hosts, se prueba directo y después el Worker.
+      - No se modifica el dominio ni los parámetros firmados.
+    */
     add(original);
 
-    try{
-      const parsed = new URL(original);
-      const genericHost = parsed.hostname.replace("-onlymex.akamaized.net",".akamaized.net");
-      if(genericHost !== parsed.hostname){
-        add(`${parsed.protocol}//${genericHost}${parsed.pathname}${parsed.search}`);
-      }
-    }catch(error){}
+    if(!isMexicoGeoRestrictedAkamai(original)){
+      add(proxied);
+    }
 
-    add(proxied);
+    return candidates;
+  }
+
+  if(isMexicoGeoRestrictedAkamai(original)){
+    // No enviar estos canales al Worker: perderían la ubicación de México.
+    add(original);
     return candidates;
   }
 
   if(isPlutoStream(original)){
-    // Pluto y otros servicios con tokens firmados no deben alterarse.
     add(original);
     add(proxied);
     return candidates;
   }
 
   if(shouldUseProxy(channel)){
-    // Contenido HTTP o streams que requieren Referer/User-Agent.
     add(proxied);
     if(!original.startsWith("http://") || location.protocol !== "https:") add(original);
   }else{
-    // Para la mayoría de HTTPS, directo primero y proxy como respaldo.
     add(original);
     add(proxied);
   }
