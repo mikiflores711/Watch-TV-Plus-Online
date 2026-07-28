@@ -11,9 +11,6 @@
 <meta name="apple-mobile-web-app-title" content="Watch TV Plus">
 <title>Watch TV Plus</title>
 <link rel="manifest" href="./manifest.webmanifest">
-<link rel="icon" type="image/png" sizes="192x192" href="./icons/watch-tv-plus-192.png">
-<link rel="icon" type="image/png" sizes="512x512" href="./icons/watch-tv-plus-512.png">
-<link rel="apple-touch-icon" href="./icons/watch-tv-plus-192.png">
 
 <script src="https://cdn.jsdelivr.net/npm/clappr@latest/dist/clappr.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@clappr/hlsjs-playback@latest/dist/hlsjs-playback.min.js"></script>
@@ -893,11 +890,50 @@ body.legal-open{overflow:hidden}
 .report-state.reviewing{background:rgba(63,112,255,.17);color:#a9bbff;border:1px solid rgba(63,112,255,.32)}
 .report-state.fixed{background:rgba(45,181,111,.16);color:#99efbd;border:1px solid rgba(45,181,111,.3)}
 
+
+/* =====================================================
+   GUÍA EPG DE PLUTO TV
+   ===================================================== */
+.program-text.epg-program{
+  color:#fff;
+  font-weight:700;
+}
+.program-time{
+  color:#9fb4ff;
+  font-weight:800;
+}
+.player-program-next{
+  margin-top:4px;
+  color:#d2d2da;
+  font-size:10px;
+  line-height:1.25;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.epg-live{
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  margin-right:5px;
+  color:#ff7e91;
+  font-size:9px;
+  font-weight:900;
+  text-transform:uppercase;
+}
+.epg-live::before{
+  content:"";
+  width:6px;
+  height:6px;
+  border-radius:50%;
+  background:currentColor;
+}
+
 </style>
+
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2636891173590272"
+        crossorigin="anonymous"></script>
 </head>
-
-
-<meta name="monetag" content="6dcbeb32c8e97c2e5392a2c5be867ecd">
 
 <body>
 <div class="app-shell">
@@ -909,10 +945,13 @@ body.legal-open{overflow:hidden}
       <button class="icon-btn" id="shareToggle" type="button" aria-label="Compartir página" title="Compartir página">
         <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><path d="m8.7 10.7 6.6-4.1M8.7 13.3l6.6 4.1"></path></svg>
       </button>
-      <a class="icon-btn donate-btn" id="donateBtn" href="https://link.mercadopago.com.mx/versoestudiodonativo" target="_blank" rel="noopener noreferrer" aria-label="Apoyar el proyecto" title="Apoyar el proyecto">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-4.4-9.2-8.2C.9 9.5 2.5 5.5 6.3 5.1c2.1-.2 3.8.9 4.7 2.3.9-1.4 2.6-2.5 4.7-2.3 3.8.4 5.4 4.4 3.5 7.7C19 16.6 12 21 12 21Z"></path><path d="M12 9v6M9.8 11.2c.5-1.2 3.9-1.4 4.4.2.5 1.7-4.3 1.3-4.1 3 .2 1.5 3.7 1.4 4.2.2"></path></svg>
-      </a>
-      <button class="icon-btn" id="legalToggle" type="button" aria-label="Aviso legal y términos" title="Aviso legal y términos">
+      <button class="icon-btn" id="aboutToggle" type="button" aria-label="Quiénes somos y sobre nosotros" title="Quiénes somos">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="8" r="4"></circle>
+          <path d="M4 21a8 8 0 0 1 16 0"></path>
+        </svg>
+      </button>
+      <button class="icon-btn" id="legalToggle" type="button" aria-label="Políticas y aviso legal" title="Políticas y aviso legal">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l3 3v15H6z"></path><path d="M14 3v4h4"></path><path d="M9 11h6M9 15h6"></path></svg>
       </button>
       <div class="top-search" id="topSearchWrap" role="search">
@@ -936,6 +975,7 @@ body.legal-open{overflow:hidden}
           <span class="number-badge" id="playerChannelNumber">---</span>
           <span class="meta-text" id="playerChannelMeta">Sección - Categoría</span>
         </div>
+        <div class="player-program-next" id="playerProgramNext"></div>
       </div>
     </article>
 
@@ -955,10 +995,7 @@ body.legal-open{overflow:hidden}
 
   <nav class="scroll-tabs provider-tabs" id="sectionTabs" aria-label="Servicios de TV"></nav>
   <nav class="scroll-tabs category-tabs" id="categoryTabs" aria-label="Categorías"></nav>
-
-  <div class="adult-notice" id="adultNotice">Sección exclusiva para mayores de 18 años. La confirmación queda guardada únicamente en este navegador.</div>
-
-  <div class="list-head">
+<div class="list-head">
     <span id="sectionInfo">Cargando canales...</span>
     <span id="countPill">0</span>
   </div>
@@ -973,34 +1010,58 @@ body.legal-open{overflow:hidden}
   <section class="legal-dialog" role="dialog" aria-modal="true" aria-labelledby="legalTitle">
     <header class="legal-header">
       <div>
-        <span class="legal-kicker">Información del servicio</span>
-        <h2 id="legalTitle">Aviso legal y términos y condiciones</h2>
+        <span class="legal-kicker">Transparencia y cumplimiento</span>
+        <h2 id="legalTitle">Políticas y Aviso Legal</h2>
       </div>
-      <button class="legal-close" id="legalClose" type="button" aria-label="Cerrar aviso legal">×</button>
+      <button class="legal-close" id="legalClose" type="button" aria-label="Cerrar políticas">×</button>
     </header>
     <div class="legal-content">
-      <h3>1. Naturaleza del sitio</h3>
-      <p>Watch TV Plus funciona como un reproductor y organizador de enlaces públicos de transmisión. El sitio no aloja directamente archivos de video ni controla los servidores externos desde los que se distribuyen las señales.</p>
+      <h3>1. Política de Privacidad</h3>
+      <p>Watch TV Plus no solicita registros de usuario ni recopila directamente nombres, contraseñas o datos bancarios. Algunas preferencias, como los canales favoritos, se almacenan localmente en el navegador del usuario.</p>
+      <p>El sitio utiliza servicios de terceros, como Google AdSense, reproductores multimedia, proveedores de contenido y herramientas técnicas. Estos servicios pueden usar cookies, identificadores del dispositivo o tecnologías similares para ofrecer, medir y personalizar anuncios, prevenir fraude y analizar el funcionamiento del servicio, de acuerdo con sus propias políticas.</p>
+      <p>El usuario puede administrar o eliminar la información almacenada localmente mediante la configuración de su navegador. También puede controlar la personalización de anuncios desde las opciones de privacidad de Google.</p>
 
-      <h3>2. Disponibilidad del contenido</h3>
-      <p>Los canales, señales, horarios y enlaces pueden cambiar, interrumpirse o dejar de estar disponibles sin previo aviso. No se garantiza la continuidad, calidad, exactitud o disponibilidad permanente de ninguna transmisión.</p>
+      <h3>2. Aviso Legal</h3>
+      <p>Watch TV Plus funciona como un reproductor y organizador de enlaces de transmisión disponibles en Internet. El sitio no aloja directamente archivos de video ni controla los servidores externos desde los que se distribuyen las señales.</p>
+      <p>Los canales, señales, horarios y enlaces pueden cambiar, interrumpirse o dejar de estar disponibles sin previo aviso. No se garantiza la continuidad, calidad o disponibilidad permanente de ninguna transmisión.</p>
+      <p>Las marcas, nombres, logotipos y contenidos pertenecen a sus respectivos titulares y se muestran únicamente con fines de identificación. Los titulares de derechos pueden utilizar el botón de reporte de cada canal para solicitar la revisión de un enlace.</p>
+      <p>El usuario es responsable de comprobar que el acceso y uso del contenido sea legal en su país o región.</p>
 
-      <h3>3. Responsabilidad del usuario</h3>
-      <p>El usuario es responsable de verificar que el acceso al contenido sea legal en su país o región y de utilizar este servicio únicamente para fines permitidos por la legislación aplicable.</p>
+      <h3>3. Política de Cookies</h3>
+      <p>Este sitio puede utilizar cookies propias y de terceros para conservar preferencias, mantener funciones esenciales, medir el rendimiento, limitar actividades fraudulentas y mostrar publicidad.</p>
+      <p>Google AdSense y sus socios pueden utilizar cookies para mostrar anuncios basados en visitas anteriores a este u otros sitios. El usuario puede bloquear, eliminar o limitar las cookies desde la configuración de su navegador; algunas funciones podrían dejar de operar correctamente.</p>
+      <p>Al continuar utilizando Watch TV Plus, el usuario reconoce el uso de estas tecnologías conforme a esta política y a la configuración elegida en su navegador.</p>
 
-      <h3>4. Derechos de terceros</h3>
-      <p>Las marcas, nombres, logotipos y contenidos pertenecen a sus respectivos propietarios. Su inclusión tiene fines de identificación. Si eres titular de derechos y deseas reportar un enlace, utiliza el botón de reporte disponible junto a cada canal.</p>
-
-      <h3>5. Privacidad y almacenamiento local</h3>
-      <p>Las preferencias como favoritos y confirmación de mayoría de edad se guardan localmente en el navegador. Algunos servicios externos, reproductores, anuncios o proveedores de transmisión pueden aplicar sus propias políticas de privacidad y cookies.</p>
-
-      <h3>6. Aceptación</h3>
-      <p>Al utilizar Watch TV Plus aceptas estos términos. Si no estás de acuerdo, debes dejar de utilizar el sitio.</p>
-
-      <p class="legal-update">Última actualización: 26 de julio de 2026.</p>
+      <p class="legal-update">Última actualización: 27 de julio de 2026.</p>
     </div>
     <footer class="legal-footer">
       <button class="legal-accept" id="legalAccept" type="button">Entendido</button>
+    </footer>
+  </section>
+</div>
+
+
+<div class="legal-modal" id="aboutModal" aria-hidden="true">
+  <div class="legal-backdrop" data-close-about></div>
+  <section class="legal-dialog" role="dialog" aria-modal="true" aria-labelledby="aboutTitle">
+    <header class="legal-header">
+      <div>
+        <span class="legal-kicker">Conoce el proyecto</span>
+        <h2 id="aboutTitle">Quiénes Somos</h2>
+      </div>
+      <button class="legal-close" id="aboutClose" type="button" aria-label="Cerrar información">×</button>
+    </header>
+    <div class="legal-content">
+      <h3>1. Quiénes Somos</h3>
+      <p>Watch TV Plus es un proyecto digital independiente creado para facilitar el acceso organizado a canales y señales de transmisión disponibles públicamente en Internet desde una interfaz sencilla y compatible con distintos dispositivos.</p>
+      <p>El proyecto busca ofrecer una experiencia clara para descubrir, reproducir, guardar como favoritos y reportar enlaces que presenten problemas.</p>
+
+      <h3>2. Sobre Nosotros</h3>
+      <p>No somos propietarios de los canales, marcas, programas o señales mostradas. Watch TV Plus no almacena archivos de video en sus servidores; funciona como reproductor y directorio de enlaces externos.</p>
+      <p>Trabajamos continuamente en la organización del catálogo, la estabilidad del reproductor y la atención de reportes enviados por los usuarios. Nuestro objetivo es mantener una plataforma funcional, transparente y respetuosa de los derechos de terceros.</p>
+    </div>
+    <footer class="legal-footer">
+      <button class="legal-accept" id="aboutAccept" type="button">Entendido</button>
     </footer>
   </section>
 </div>
@@ -1022,19 +1083,22 @@ const MAX_RENDER_DEFAULT = 1200;
 const MAX_RENDER_WITH_SEARCH = 2500;
 const PLAYER_UI_HIDE_DELAY = 3500;
 const IS_IPHONE = /iPhone|iPod/i.test(navigator.userAgent);
+const PLUTO_EPG_REFRESH_INTERVAL = 15 * 60 * 1000;
+const PLUTO_EPG_TICK_INTERVAL = 60 * 1000;
+const PLUTO_EPG_HOURS = 12;
+
 
 const PLAYLISTS = [
-  { id:"mexico", label:"México", file:"./mexico.m3u", logo:"https://raw.githubusercontent.com/mikiflores711/Watch-TV-Plus/refs/heads/main/Icono%20Mexico.png" },
-  { id:"pluto", label:"Pluto TV", file:"./pluto.m3u", logo:"https://raw.githubusercontent.com/mikiflores711/Watch-TV-Plus/refs/heads/main/Icono%20Pluto%20TV.png" },
-  { id:"lg", label:"LG Channels", file:"./LG_Channels_mx.m3u", logo:"https://raw.githubusercontent.com/mikiflores711/Watch-TV-Plus/refs/heads/main/Icono%20LG%20Channels.png" },
-  { id:"vix", label:"ViX", file:"./vix.m3u", logo:"https://raw.githubusercontent.com/mikiflores711/Watch-TV-Plus/refs/heads/main/Icono%20Vix.png" },
-  { id:"tubi", label:"Tubi TV", file:"./tubi.m3u", logo:"https://raw.githubusercontent.com/mikiflores711/Watch-TV-Plus/refs/heads/main/Icono%20Tubi.png" },
-  { id:"runtime", label:"Run Time", file:"./runtime.m3u", logo:"https://raw.githubusercontent.com/mikiflores711/Watch-TV-Plus/refs/heads/main/Icono%20RunTime.png" },
-  { id:"plex", label:"Plex TV", file:"./plex_mx.m3u", logo:"https://raw.githubusercontent.com/mikiflores711/Watch-TV-Plus/refs/heads/main/Icono%20Plex%20TV.png" },
-  { id:"roku", label:"Roku Channel", file:"./roku_all.m3u", logo:"https://raw.githubusercontent.com/mikiflores711/Watch-TV-Plus/refs/heads/main/Icono%20Roku%20Channel.png" },
-  { id:"rakuten", label:"Rakuten TV", file:"./rakutentv.m3u", logo:"https://raw.githubusercontent.com/mikiflores711/Watch-TV-Plus/refs/heads/main/Icono%20Rakuten%20TV.png" },
-  { id:"espanol", label:"Español", file:"./espanol.m3u", logo:"https://raw.githubusercontent.com/mikiflores711/Watch-TV-Plus/refs/heads/main/Icono%20Espa%C3%B1ol.png" },
-  { id:"adult", label:"18+", file:"./adult.m3u", logo:"https://raw.githubusercontent.com/mikiflores711/Watch-TV-Plus/refs/heads/main/Icono%20Zona%2018+.png", isAdult:true }
+  { id:"mexico", label:"México", file:"./listas/mexico.m3u", logo:"https://raw.githubusercontent.com/mikiflores711/Watch-TV-Plus/refs/heads/main/Icono%20Mexico.png" },
+  { id:"pluto", label:"Pluto TV", file:"./listas/pluto.m3u", logo:"https://raw.githubusercontent.com/mikiflores711/Watch-TV-Plus/refs/heads/main/Icono%20Pluto%20TV.png" },
+  { id:"lg", label:"LG Channels", file:"./listas/LG_Channels_mx.m3u", logo:"https://raw.githubusercontent.com/mikiflores711/Watch-TV-Plus/refs/heads/main/Icono%20LG%20Channels.png" },
+  { id:"vix", label:"ViX", file:"./listas/vix.m3u", logo:"https://raw.githubusercontent.com/mikiflores711/Watch-TV-Plus/refs/heads/main/Icono%20Vix.png" },
+  { id:"tubi", label:"Tubi TV", file:"./listas/tubi.m3u", logo:"https://raw.githubusercontent.com/mikiflores711/Watch-TV-Plus/refs/heads/main/Icono%20Tubi.png" },
+  { id:"runtime", label:"Run Time", file:"./listas/runtime.m3u", logo:"https://raw.githubusercontent.com/mikiflores711/Watch-TV-Plus/refs/heads/main/Icono%20RunTime.png" },
+  { id:"plex", label:"Plex TV", file:"./listas/plex_mx.m3u", logo:"https://raw.githubusercontent.com/mikiflores711/Watch-TV-Plus/refs/heads/main/Icono%20Plex%20TV.png" },
+  { id:"roku", label:"Roku Channel", file:"./listas/roku_all.m3u", logo:"https://raw.githubusercontent.com/mikiflores711/Watch-TV-Plus/refs/heads/main/Icono%20Roku%20Channel.png" },
+  { id:"rakuten", label:"Rakuten TV", file:"./listas/rakutentv.m3u", logo:"https://raw.githubusercontent.com/mikiflores711/Watch-TV-Plus/refs/heads/main/Icono%20Rakuten%20TV.png" },
+  { id:"espanol", label:"Español", file:"./listas/espanol.m3u", logo:"https://raw.githubusercontent.com/mikiflores711/Watch-TV-Plus/refs/heads/main/Icono%20Espa%C3%B1ol.png" }
 ];
 
 const playerStage = document.getElementById("playerStage");
@@ -1044,6 +1108,10 @@ const topSearchWrap = document.getElementById("topSearchWrap");
 const searchToggle = document.getElementById("searchToggle");
 const searchClear = document.getElementById("searchClear");
 const shareToggle = document.getElementById("shareToggle");
+const aboutToggle = document.getElementById("aboutToggle");
+const aboutModal = document.getElementById("aboutModal");
+const aboutClose = document.getElementById("aboutClose");
+const aboutAccept = document.getElementById("aboutAccept");
 const legalToggle = document.getElementById("legalToggle");
 const legalModal = document.getElementById("legalModal");
 const legalClose = document.getElementById("legalClose");
@@ -1054,7 +1122,7 @@ const channelList = document.getElementById("channelList");
 const sectionTabs = document.getElementById("sectionTabs");
 const categoryTabs = document.getElementById("categoryTabs");
 const sectionInfo = document.getElementById("sectionInfo");
-const adultNotice = document.getElementById("adultNotice");
+const adultNotice = document.getElementById("adultNotice") || {style:{display:"none"}};
 const channelsMainTab = document.getElementById("channelsMainTab");
 const favoritesMainTab = document.getElementById("favoritesMainTab");
 const playerFavoriteBtn = document.getElementById("playerFavoriteBtn");
@@ -1062,6 +1130,7 @@ const playerChannelLogo = document.getElementById("playerChannelLogo");
 const playerChannelTitle = document.getElementById("playerChannelTitle");
 const playerChannelNumber = document.getElementById("playerChannelNumber");
 const playerChannelMeta = document.getElementById("playerChannelMeta");
+const playerProgramNext = document.getElementById("playerProgramNext");
 
 let player = null;
 let currentChannel = null;
@@ -1081,6 +1150,11 @@ let toastTimer = null;
 let clapprControlObserver = null;
 let channelReportStates = new Map();
 let reportStateTimer = null;
+let plutoEpgByChannel = new Map();
+let plutoEpgFetchTimer = null;
+let plutoEpgTickTimer = null;
+let plutoEpgLoading = false;
+
 
 async function init(){
   buildSectionTabs();
@@ -1088,6 +1162,8 @@ async function init(){
   registerPwaSupport();
   showPlayerUi();
   await loadAllPlaylists();
+  await loadPlutoEpg();
+  startPlutoEpgRefresh();
   loadPublicReportStates();
   startPublicReportStateRefresh();
 }
@@ -1114,6 +1190,10 @@ function bindEvents(){
   });
 
   shareToggle.addEventListener("click", shareCurrentPage);
+  aboutToggle.addEventListener("click", openAboutModal);
+  aboutClose.addEventListener("click", closeAboutModal);
+  aboutAccept.addEventListener("click", closeAboutModal);
+  aboutModal.querySelectorAll("[data-close-about]").forEach(element => element.addEventListener("click", closeAboutModal));
   legalToggle.addEventListener("click", openLegalModal);
   legalClose.addEventListener("click", closeLegalModal);
   legalAccept.addEventListener("click", closeLegalModal);
@@ -1138,6 +1218,10 @@ function bindEvents(){
   playerStage.addEventListener("mouseleave",() => scheduleHidePlayerUi(500));
   document.addEventListener("keydown",event => {
     showPlayerUi();
+    if(event.key === "Escape" && aboutModal.classList.contains("open")){
+      closeAboutModal();
+      return;
+    }
     if(event.key === "Escape" && legalModal.classList.contains("open")){
       closeLegalModal();
       return;
@@ -1279,6 +1363,8 @@ function parseM3U(text){
       const parsed = parseChannelName(rawName);
       current = {
         id:attrs["tvg-id"] || attrs["channel-id"] || "",
+        epgId:attrs["epg-id"] || attrs["channel-id"] || attrs["tvg-id"] || "",
+        provider:String(attrs["provider"] || "").toLowerCase(),
         channelNumber:attrs["tvg-chno"] || "",
         rawName,
         name:parsed.name,
@@ -1533,7 +1619,7 @@ function createChannelItem(channel,index){
     <div class="channel-number">${escapeHtml(displayNumber)}</div>
     <div class="channel-copy">
       <div class="channel-name">${escapeHtml(channel.name)}${getChannelReportBadge(channel)}</div>
-      <div class="program-text">${escapeHtml(channel.sectionLabel)} - ${escapeHtml(channel.category)}</div>
+      <div class="program-text${channel.section === "pluto" && getPlutoProgramme(channel) ? " epg-program" : ""}">${getChannelProgramMarkup(channel)}</div>
     </div>
     <div class="row-actions">
       ${channel.type === "video" ? `<button class="report-btn" type="button" aria-label="Reportar ${escapeHtml(channel.name)}" title="Reportar canal caído"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 9v4"></path><path d="M12 17h.01"></path><path d="M10.3 3.5 2.7 17a2 2 0 0 0 1.8 3h15a2 2 0 0 0 1.8-3L13.7 3.5a2 2 0 0 0-3.4 0Z"></path></svg></button>` : ""}
@@ -1577,6 +1663,194 @@ function createChannelItem(channel,index){
   return row;
 }
 
+
+
+function plutoApiDate(date){
+  return date.toISOString().replace(".000Z","-00:00");
+}
+
+function getPlutoChannelId(channel){
+  const candidates = [
+    channel?.epgId,
+    channel?.url?.match(/plu-([a-f0-9]{24})/i)?.[1],
+    channel?.logo?.match(/channels\/([a-f0-9]{24})\//i)?.[1]
+  ];
+  return String(candidates.find(value => /^[a-f0-9]{24}$/i.test(String(value || ""))) || "").toLowerCase();
+}
+
+function normalizePlutoTimeline(item){
+  const start = new Date(item.start || item.startTime || item.begin || 0);
+  const stop = new Date(item.stop || item.end || item.endTime || 0);
+  if(!Number.isFinite(start.getTime()) || !Number.isFinite(stop.getTime())) return null;
+
+  const episode = item.episode || item;
+  const title =
+    item.title ||
+    episode.name ||
+    episode.title ||
+    episode.series?.name ||
+    "Programa sin título";
+
+  const description =
+    item.description ||
+    episode.description ||
+    episode.summary ||
+    "";
+
+  return {
+    start:start.getTime(),
+    stop:stop.getTime(),
+    title:String(title || "Programa sin título"),
+    description:String(description || "")
+  };
+}
+
+function extractPlutoChannels(payload){
+  if(Array.isArray(payload)) return payload;
+  if(Array.isArray(payload?.channels)) return payload.channels;
+  if(Array.isArray(payload?.data)) return payload.data;
+  return [];
+}
+
+async function loadPlutoEpg(){
+  if(plutoEpgLoading) return;
+  const plutoChannels = (channelsBySection.pluto || []).filter(channel => getPlutoChannelId(channel));
+  if(!plutoChannels.length) return;
+
+  plutoEpgLoading = true;
+  try{
+    const now = new Date();
+    const stop = new Date(now.getTime() + PLUTO_EPG_HOURS * 60 * 60 * 1000);
+    const query = new URLSearchParams({
+      start:plutoApiDate(now),
+      stop:plutoApiDate(stop),
+      deviceType:"web",
+      deviceMake:"Chrome",
+      deviceModel:"web",
+      appName:"web",
+      appVersion:"unknown",
+      clientModelNumber:"1.0.0",
+      serverSideAds:"false"
+    });
+
+    const endpoints = [
+      `https://api.pluto.tv/v2/channels?${query.toString()}`,
+      `https://service-channels.clusters.pluto.tv/v1/guide?${query.toString()}`
+    ];
+
+    let payload = null;
+    let lastError = null;
+
+    for(const endpoint of endpoints){
+      try{
+        const response = await fetch(endpoint,{cache:"no-store",mode:"cors"});
+        if(!response.ok) throw new Error(`HTTP ${response.status}`);
+        payload = await response.json();
+        if(extractPlutoChannels(payload).length) break;
+      }catch(error){
+        lastError = error;
+        console.warn("EPG Pluto: endpoint no disponible",endpoint,error);
+      }
+    }
+
+    const apiChannels = extractPlutoChannels(payload);
+    if(!apiChannels.length){
+      throw lastError || new Error("La API no entregó canales");
+    }
+
+    const nextMap = new Map();
+    apiChannels.forEach(apiChannel => {
+      const id = String(apiChannel._id || apiChannel.id || apiChannel.channelId || "").toLowerCase();
+      if(!id) return;
+
+      const rawTimeline =
+        apiChannel.timelines ||
+        apiChannel.timeline ||
+        apiChannel.programs ||
+        apiChannel.programmes ||
+        [];
+
+      const timeline = (Array.isArray(rawTimeline) ? rawTimeline : [])
+        .map(normalizePlutoTimeline)
+        .filter(Boolean)
+        .sort((a,b) => a.start - b.start);
+
+      if(timeline.length) nextMap.set(id,timeline);
+    });
+
+    if(nextMap.size){
+      plutoEpgByChannel = nextMap;
+      refreshPlutoEpgDisplay();
+      console.info(`EPG Pluto cargada para ${nextMap.size} canales.`);
+    }
+  }catch(error){
+    console.warn("No se pudo cargar la programación de Pluto TV.",error);
+  }finally{
+    plutoEpgLoading = false;
+  }
+}
+
+function startPlutoEpgRefresh(){
+  clearInterval(plutoEpgFetchTimer);
+  clearInterval(plutoEpgTickTimer);
+
+  plutoEpgFetchTimer = setInterval(() => {
+    if(document.visibilityState === "visible") loadPlutoEpg();
+  },PLUTO_EPG_REFRESH_INTERVAL);
+
+  plutoEpgTickTimer = setInterval(() => {
+    if(document.visibilityState === "visible") refreshPlutoEpgDisplay();
+  },PLUTO_EPG_TICK_INTERVAL);
+}
+
+function getPlutoProgramme(channel,now = Date.now()){
+  if(!channel || channel.section !== "pluto") return null;
+  const id = getPlutoChannelId(channel);
+  const timeline = plutoEpgByChannel.get(id) || [];
+  if(!timeline.length) return null;
+
+  let currentIndex = timeline.findIndex(item => item.start <= now && now < item.stop);
+  if(currentIndex < 0){
+    currentIndex = timeline.findIndex(item => item.start > now);
+    if(currentIndex < 0) return null;
+    return {current:null,next:timeline[currentIndex]};
+  }
+
+  return {
+    current:timeline[currentIndex],
+    next:timeline[currentIndex + 1] || null
+  };
+}
+
+function formatEpgTime(timestamp){
+  return new Intl.DateTimeFormat("es-MX",{
+    hour:"2-digit",
+    minute:"2-digit",
+    hour12:false
+  }).format(new Date(timestamp));
+}
+
+function getChannelProgramMarkup(channel){
+  const guide = getPlutoProgramme(channel);
+  if(guide?.current){
+    const time = `${formatEpgTime(guide.current.start)}–${formatEpgTime(guide.current.stop)}`;
+    return `<span class="epg-live">En vivo</span>${escapeHtml(guide.current.title)} <span class="program-time">· ${escapeHtml(time)}</span>`;
+  }
+  if(guide?.next){
+    const time = formatEpgTime(guide.next.start);
+    return `Próximamente: ${escapeHtml(guide.next.title)} <span class="program-time">· ${escapeHtml(time)}</span>`;
+  }
+  return `${escapeHtml(channel.sectionLabel)} - ${escapeHtml(channel.category)}`;
+}
+
+function refreshPlutoEpgDisplay(){
+  if(activeSection === "pluto" || activeSection === "favorites" || searchInput.value.trim()){
+    renderChannels();
+  }
+  if(currentChannel?.section === "pluto"){
+    updatePlayerChannelCard(currentChannel);
+  }
+}
 
 function channelReportKey(channel){
   return String(channel.url || channel.id || channel.name || "").trim();
@@ -1622,7 +1896,11 @@ function startPublicReportStateRefresh(){
 }
 
 document.addEventListener("visibilitychange",() => {
-  if(document.visibilityState === "visible") loadPublicReportStates();
+  if(document.visibilityState === "visible"){
+    loadPublicReportStates();
+    loadPlutoEpg();
+    refreshPlutoEpgDisplay();
+  }
 });
 
 function openChannelReport(channel,displayNumber){
@@ -1863,20 +2141,43 @@ function syncVideoEvents(){
 
 
 function updatePlayerChannelCard(channel){
-  const number = String(channel.channelNumber || channel.sectionIndex || "---").padStart(3,"0");
-  playerChannelTitle.textContent = channel.name || "Canal";
-  playerChannelNumber.textContent = number;
-  playerChannelMeta.textContent = `${channel.sectionLabel || "TV"} - ${channel.category || "General"}`;
-  playerChannelLogo.innerHTML = "";
+  if(!channel){
+    playerChannelLogo.textContent = "TV";
+    playerChannelTitle.textContent = "Selecciona un canal";
+    playerChannelNumber.textContent = "---";
+    playerChannelMeta.textContent = "Sección - Categoría";
+    playerProgramNext.textContent = "";
+    return;
+  }
 
+  const number = String(channel.channelNumber || channel.sectionIndex || "---").padStart(3,"0");
+  playerChannelTitle.textContent = channel.name;
+  playerChannelNumber.textContent = number;
+
+  const guide = getPlutoProgramme(channel);
+  if(guide?.current){
+    const currentTime = `${formatEpgTime(guide.current.start)}–${formatEpgTime(guide.current.stop)}`;
+    playerChannelMeta.textContent = `${guide.current.title} · ${currentTime}`;
+    playerProgramNext.textContent = guide.next
+      ? `Siguiente: ${guide.next.title} · ${formatEpgTime(guide.next.start)}`
+      : "";
+  }else if(guide?.next){
+    playerChannelMeta.textContent = `Próximamente: ${guide.next.title} · ${formatEpgTime(guide.next.start)}`;
+    playerProgramNext.textContent = "";
+  }else{
+    playerChannelMeta.textContent = `${channel.sectionLabel} - ${channel.category}`;
+    playerProgramNext.textContent = "";
+  }
+
+  playerChannelLogo.innerHTML = "";
   if(channel.logo){
     const image = document.createElement("img");
     image.src = channel.logo;
-    image.alt = channel.name || "Canal";
+    image.alt = "";
     image.referrerPolicy = "no-referrer";
     image.addEventListener("error",() => {
       playerChannelLogo.textContent = getInitials(channel.name);
-    });
+    },{once:true});
     playerChannelLogo.appendChild(image);
   }else{
     playerChannelLogo.textContent = getInitials(channel.name);
@@ -2041,6 +2342,20 @@ function closeTopSearch(resetResults = true){
     buildCategories();
     renderChannels();
   }
+}
+
+function openAboutModal(){
+  aboutModal.classList.add("open");
+  aboutModal.setAttribute("aria-hidden","false");
+  document.body.classList.add("legal-open");
+  aboutClose.focus({preventScroll:true});
+}
+
+function closeAboutModal(){
+  aboutModal.classList.remove("open");
+  aboutModal.setAttribute("aria-hidden","true");
+  document.body.classList.remove("legal-open");
+  aboutToggle.focus({preventScroll:true});
 }
 
 function openLegalModal(){
