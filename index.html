@@ -890,45 +890,6 @@ body.legal-open{overflow:hidden}
 .report-state.reviewing{background:rgba(63,112,255,.17);color:#a9bbff;border:1px solid rgba(63,112,255,.32)}
 .report-state.fixed{background:rgba(45,181,111,.16);color:#99efbd;border:1px solid rgba(45,181,111,.3)}
 
-
-/* =====================================================
-   GUÍA EPG DE PLUTO TV
-   ===================================================== */
-.program-text.epg-program{
-  color:#fff;
-  font-weight:700;
-}
-.program-time{
-  color:#9fb4ff;
-  font-weight:800;
-}
-.player-program-next{
-  margin-top:4px;
-  color:#d2d2da;
-  font-size:10px;
-  line-height:1.25;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-}
-.epg-live{
-  display:inline-flex;
-  align-items:center;
-  gap:4px;
-  margin-right:5px;
-  color:#ff7e91;
-  font-size:9px;
-  font-weight:900;
-  text-transform:uppercase;
-}
-.epg-live::before{
-  content:"";
-  width:6px;
-  height:6px;
-  border-radius:50%;
-  background:currentColor;
-}
-
 </style>
 
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2636891173590272"
@@ -975,7 +936,6 @@ body.legal-open{overflow:hidden}
           <span class="number-badge" id="playerChannelNumber">---</span>
           <span class="meta-text" id="playerChannelMeta">Sección - Categoría</span>
         </div>
-        <div class="player-program-next" id="playerProgramNext"></div>
       </div>
     </article>
 
@@ -1083,10 +1043,6 @@ const MAX_RENDER_DEFAULT = 1200;
 const MAX_RENDER_WITH_SEARCH = 2500;
 const PLAYER_UI_HIDE_DELAY = 3500;
 const IS_IPHONE = /iPhone|iPod/i.test(navigator.userAgent);
-const PLUTO_EPG_REFRESH_INTERVAL = 15 * 60 * 1000;
-const PLUTO_EPG_TICK_INTERVAL = 60 * 1000;
-const PLUTO_EPG_HOURS = 12;
-
 
 const PLAYLISTS = [
   { id:"mexico", label:"México", file:"./listas/mexico.m3u", logo:"https://raw.githubusercontent.com/mikiflores711/Watch-TV-Plus/refs/heads/main/Icono%20Mexico.png" },
@@ -1130,7 +1086,6 @@ const playerChannelLogo = document.getElementById("playerChannelLogo");
 const playerChannelTitle = document.getElementById("playerChannelTitle");
 const playerChannelNumber = document.getElementById("playerChannelNumber");
 const playerChannelMeta = document.getElementById("playerChannelMeta");
-const playerProgramNext = document.getElementById("playerProgramNext");
 
 let player = null;
 let currentChannel = null;
@@ -1150,11 +1105,6 @@ let toastTimer = null;
 let clapprControlObserver = null;
 let channelReportStates = new Map();
 let reportStateTimer = null;
-let plutoEpgByChannel = new Map();
-let plutoEpgFetchTimer = null;
-let plutoEpgTickTimer = null;
-let plutoEpgLoading = false;
-
 
 async function init(){
   buildSectionTabs();
@@ -1162,8 +1112,6 @@ async function init(){
   registerPwaSupport();
   showPlayerUi();
   await loadAllPlaylists();
-  await loadPlutoEpg();
-  startPlutoEpgRefresh();
   loadPublicReportStates();
   startPublicReportStateRefresh();
 }
@@ -1363,8 +1311,6 @@ function parseM3U(text){
       const parsed = parseChannelName(rawName);
       current = {
         id:attrs["tvg-id"] || attrs["channel-id"] || "",
-        epgId:attrs["epg-id"] || attrs["channel-id"] || attrs["tvg-id"] || "",
-        provider:String(attrs["provider"] || "").toLowerCase(),
         channelNumber:attrs["tvg-chno"] || "",
         rawName,
         name:parsed.name,
@@ -1619,7 +1565,7 @@ function createChannelItem(channel,index){
     <div class="channel-number">${escapeHtml(displayNumber)}</div>
     <div class="channel-copy">
       <div class="channel-name">${escapeHtml(channel.name)}${getChannelReportBadge(channel)}</div>
-      <div class="program-text${channel.section === "pluto" && getPlutoProgramme(channel) ? " epg-program" : ""}">${getChannelProgramMarkup(channel)}</div>
+      <div class="program-text">${escapeHtml(channel.sectionLabel)} - ${escapeHtml(channel.category)}</div>
     </div>
     <div class="row-actions">
       ${channel.type === "video" ? `<button class="report-btn" type="button" aria-label="Reportar ${escapeHtml(channel.name)}" title="Reportar canal caído"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 9v4"></path><path d="M12 17h.01"></path><path d="M10.3 3.5 2.7 17a2 2 0 0 0 1.8 3h15a2 2 0 0 0 1.8-3L13.7 3.5a2 2 0 0 0-3.4 0Z"></path></svg></button>` : ""}
@@ -1663,239 +1609,6 @@ function createChannelItem(channel,index){
   return row;
 }
 
-
-
-function plutoApiDate(date){
-  return date.toISOString().replace(".000Z","-00:00");
-}
-
-function getPlutoChannelId(channel){
-  const candidates = [
-    channel?.epgId,
-    channel?.url?.match(/plu-([a-f0-9]{24})/i)?.[1],
-    channel?.logo?.match(/channels\/([a-f0-9]{24})\//i)?.[1]
-  ];
-  return String(candidates.find(value => /^[a-f0-9]{24}$/i.test(String(value || ""))) || "").toLowerCase();
-}
-
-function normalizePlutoTimeline(item){
-  const episode = item?.episode || item?.program || item || {};
-  const startValue =
-    item?.start ||
-    item?.startTime ||
-    item?.begin ||
-    item?.startsAt ||
-    episode?.start ||
-    0;
-
-  const stopValue =
-    item?.stop ||
-    item?.end ||
-    item?.endTime ||
-    item?.endsAt ||
-    episode?.stop ||
-    0;
-
-  const start = new Date(startValue);
-  const stop = new Date(stopValue);
-  if(!Number.isFinite(start.getTime()) || !Number.isFinite(stop.getTime())) return null;
-
-  const title =
-    item?.title ||
-    item?.name ||
-    episode?.name ||
-    episode?.title ||
-    episode?.series?.name ||
-    episode?.seriesName ||
-    "Programa sin título";
-
-  const description =
-    item?.description ||
-    episode?.description ||
-    episode?.summary ||
-    "";
-
-  return {
-    start:start.getTime(),
-    stop:stop.getTime(),
-    title:String(title || "Programa sin título"),
-    description:String(description || "")
-  };
-}
-
-function extractPlutoChannels(payload){
-  if(Array.isArray(payload)) return payload;
-  if(Array.isArray(payload?.channels)) return payload.channels;
-  if(Array.isArray(payload?.data)) return payload.data;
-  if(Array.isArray(payload?.data?.channels)) return payload.data.channels;
-  if(Array.isArray(payload?.result?.channels)) return payload.result.channels;
-  return [];
-}
-
-async function fetchJsonWithFallback(urls){
-  let lastError = null;
-
-  for(const originalUrl of urls){
-    const candidates = [
-      originalUrl,
-      PROXY_BASE + encodeURIComponent(originalUrl)
-    ];
-
-    for(const url of candidates){
-      try{
-        const response = await fetch(url,{cache:"no-store"});
-        if(!response.ok) throw new Error(`HTTP ${response.status}`);
-        const text = await response.text();
-        const payload = JSON.parse(text);
-        if(payload) return payload;
-      }catch(error){
-        lastError = error;
-        console.warn("Solicitud JSON fallida",url,error);
-      }
-    }
-  }
-
-  throw lastError || new Error("No se pudo obtener JSON");
-}
-
-async function loadPlutoEpg(){
-  if(plutoEpgLoading) return;
-  const plutoChannels = (channelsBySection.pluto || []).filter(channel => getPlutoChannelId(channel));
-  if(!plutoChannels.length) return;
-
-  plutoEpgLoading = true;
-  try{
-    const now = new Date(Date.now() - 30 * 60 * 1000);
-    const stop = new Date(Date.now() + PLUTO_EPG_HOURS * 60 * 60 * 1000);
-    const query = new URLSearchParams({
-      start:plutoApiDate(now),
-      stop:plutoApiDate(stop),
-      deviceType:"web",
-      deviceMake:"Chrome",
-      deviceModel:"web",
-      appName:"web",
-      appVersion:"unknown",
-      clientModelNumber:"1.0.0",
-      serverSideAds:"false"
-    });
-
-    const endpoints = [
-      `https://service-channels.clusters.pluto.tv/v2/guide/channels?${query.toString()}`,
-      `https://service-channels.clusters.pluto.tv/v1/guide?${query.toString()}`,
-      `https://api.pluto.tv/v2/channels?${query.toString()}`
-    ];
-
-    const payload = await fetchJsonWithFallback(endpoints);
-    const apiChannels = extractPlutoChannels(payload);
-
-    if(!apiChannels.length){
-      throw new Error("La guía de Pluto no entregó canales");
-    }
-
-    const nextMap = new Map();
-
-    apiChannels.forEach(apiChannel => {
-      const id = String(
-        apiChannel._id ||
-        apiChannel.id ||
-        apiChannel.channelId ||
-        apiChannel.channel?._id ||
-        ""
-      ).toLowerCase();
-
-      if(!id) return;
-
-      const rawTimeline =
-        apiChannel.timelines ||
-        apiChannel.timeline ||
-        apiChannel.programs ||
-        apiChannel.programmes ||
-        apiChannel.guide ||
-        [];
-
-      const timeline = (Array.isArray(rawTimeline) ? rawTimeline : [])
-        .map(normalizePlutoTimeline)
-        .filter(Boolean)
-        .sort((a,b) => a.start - b.start);
-
-      if(timeline.length) nextMap.set(id,timeline);
-    });
-
-    if(!nextMap.size){
-      throw new Error("La guía no contenía bloques de programación");
-    }
-
-    plutoEpgByChannel = nextMap;
-    refreshPlutoEpgDisplay();
-    console.info(`EPG Pluto cargada para ${nextMap.size} canales.`);
-  }catch(error){
-    console.warn("No se pudo cargar la programación de Pluto TV.",error);
-  }finally{
-    plutoEpgLoading = false;
-  }
-}
-
-function startPlutoEpgRefresh(){
-  clearInterval(plutoEpgFetchTimer);
-  clearInterval(plutoEpgTickTimer);
-
-  plutoEpgFetchTimer = setInterval(() => {
-    if(document.visibilityState === "visible") loadPlutoEpg();
-  },PLUTO_EPG_REFRESH_INTERVAL);
-
-  plutoEpgTickTimer = setInterval(() => {
-    if(document.visibilityState === "visible") refreshPlutoEpgDisplay();
-  },PLUTO_EPG_TICK_INTERVAL);
-}
-
-function getPlutoProgramme(channel,now = Date.now()){
-  if(!channel || channel.section !== "pluto") return null;
-  const id = getPlutoChannelId(channel);
-  const timeline = plutoEpgByChannel.get(id) || [];
-  if(!timeline.length) return null;
-
-  let currentIndex = timeline.findIndex(item => item.start <= now && now < item.stop);
-  if(currentIndex < 0){
-    currentIndex = timeline.findIndex(item => item.start > now);
-    if(currentIndex < 0) return null;
-    return {current:null,next:timeline[currentIndex]};
-  }
-
-  return {
-    current:timeline[currentIndex],
-    next:timeline[currentIndex + 1] || null
-  };
-}
-
-function formatEpgTime(timestamp){
-  return new Intl.DateTimeFormat("es-MX",{
-    hour:"2-digit",
-    minute:"2-digit",
-    hour12:false
-  }).format(new Date(timestamp));
-}
-
-function getChannelProgramMarkup(channel){
-  const guide = getPlutoProgramme(channel);
-  if(guide?.current){
-    const time = `${formatEpgTime(guide.current.start)}–${formatEpgTime(guide.current.stop)}`;
-    return `<span class="epg-live">En vivo</span>${escapeHtml(guide.current.title)} <span class="program-time">· ${escapeHtml(time)}</span>`;
-  }
-  if(guide?.next){
-    const time = formatEpgTime(guide.next.start);
-    return `Próximamente: ${escapeHtml(guide.next.title)} <span class="program-time">· ${escapeHtml(time)}</span>`;
-  }
-  return `${escapeHtml(channel.sectionLabel)} - ${escapeHtml(channel.category)}`;
-}
-
-function refreshPlutoEpgDisplay(){
-  if(activeSection === "pluto" || activeSection === "favorites" || searchInput.value.trim()){
-    renderChannels();
-  }
-  if(currentChannel?.section === "pluto"){
-    updatePlayerChannelCard(currentChannel);
-  }
-}
 
 function channelReportKey(channel){
   return String(channel.url || channel.id || channel.name || "").trim();
@@ -1941,11 +1654,7 @@ function startPublicReportStateRefresh(){
 }
 
 document.addEventListener("visibilitychange",() => {
-  if(document.visibilityState === "visible"){
-    loadPublicReportStates();
-    loadPlutoEpg();
-    refreshPlutoEpgDisplay();
-  }
+  if(document.visibilityState === "visible") loadPublicReportStates();
 });
 
 function openChannelReport(channel,displayNumber){
@@ -1981,15 +1690,14 @@ function loadChannel(channel){
 
 function playChannelCandidate(channel,candidates,index){
   if(index >= candidates.length){
-    showToast(`No se pudo abrir este canal después de ${candidates.length} intentos`);
+    showToast("No se pudo abrir este canal");
     showPlayerUi();
     return;
   }
 
   const streamUrl = candidates[index];
-  const mimeType = guessMimeType(streamUrl);
   const plugins = [];
-  if(mimeType === "application/vnd.apple.mpegurl" && window.HlsjsPlayback) plugins.push(window.HlsjsPlayback);
+  if(window.HlsjsPlayback) plugins.push(window.HlsjsPlayback);
   let started = false;
   let fallbackTimer = null;
 
@@ -2007,7 +1715,7 @@ function playChannelCandidate(channel,candidates,index){
     height:"100%",
     hideMediaControl:false,
     hideMediaControlDelay:PLAYER_UI_HIDE_DELAY,
-    ...(mimeType ? {mimeType} : {}),
+    mimeType:"application/vnd.apple.mpegurl",
     hlsPlayback:{preload:true},
     playback:{
       playInline:true,
@@ -2035,7 +1743,7 @@ function playChannelCandidate(channel,candidates,index){
           if(!started && currentChannelKey === getChannelKey(channel)){
             playChannelCandidate(channel,candidates,index + 1);
           }
-        },12000);
+        },9000);
       },
       onPlay(){
         started = true;
@@ -2047,45 +1755,11 @@ function playChannelCandidate(channel,candidates,index){
         console.log("Clappr error:",error);
         clearTimeout(fallbackTimer);
         if(!started && currentChannelKey === getChannelKey(channel)){
-          setTimeout(() => {
-            if(currentChannelKey === getChannelKey(channel)){
-              playChannelCandidate(channel,candidates,index + 1);
-            }
-          },500);
+          setTimeout(() => playChannelCandidate(channel,candidates,index + 1),350);
         }
       }
     }
   });
-}
-
-
-function buildPlutoDirectUrl(channel){
-  const id = getPlutoChannelId(channel);
-  if(!id) return "";
-
-  const params = new URLSearchParams({
-    deviceType:"web",
-    deviceMake:"Chrome",
-    deviceModel:"web",
-    sid:`watchtvplus-${id.slice(-8)}-${Date.now()}`,
-    deviceId:`watchtvplus-${id}`,
-    advertisingId:"",
-    appName:"web",
-    appVersion:"unknown",
-    clientTime:"0",
-    serverSideAds:"false"
-  });
-
-  return `https://service-stitcher.clusters.pluto.tv/stitch/hls/channel/${id}/master.m3u8?${params.toString()}`;
-}
-
-function guessMimeType(url){
-  const clean = String(url || "").split("?")[0].toLowerCase();
-  if(clean.endsWith(".mp4")) return "video/mp4";
-  if(clean.endsWith(".mp3")) return "audio/mpeg";
-  if(clean.endsWith(".aac")) return "audio/aac";
-  if(clean.endsWith(".m3u8") || clean.includes("/hls/")) return "application/vnd.apple.mpegurl";
-  return "";
 }
 
 function isMexicoGeoRestrictedAkamai(url){
@@ -2099,8 +1773,7 @@ function isMexicoGeoRestrictedAkamai(url){
 
 function isPlutoStream(url){
   const value = String(url || "").toLowerCase();
-  return value.includes("jmp2.uk/plu-") ||
-         value.includes("pluto.tv") ||
+  return value.includes("pluto.tv") ||
          value.includes("plutotv.net") ||
          value.includes("service-stitcher.clusters.pluto.tv") ||
          value.includes("stitcher-ipv4.pluto.tv");
@@ -2140,27 +1813,14 @@ function getPlayableUrl(channel){
 function getStreamCandidates(channel){
   const candidates = [];
   const add = url => {
-    const value = String(url || "").trim();
-    if(value && !candidates.includes(value)) candidates.push(value);
+    if(url && !candidates.includes(url)) candidates.push(url);
   };
 
   const original = String(channel.url || "");
-  const proxiedOriginal = buildProxyUrl(channel,original);
-
-  if(channel.section === "pluto" || isPlutoStream(original)){
-    const directPluto = buildPlutoDirectUrl(channel);
-
-    // Primero intenta el enlace original y la URL oficial construida con el ID.
-    add(original);
-    add(directPluto);
-
-    // Después usa el Worker como respaldo para CORS, redirecciones o cabeceras.
-    add(proxiedOriginal);
-    if(directPluto) add(buildProxyUrl(channel,directPluto));
-    return candidates;
-  }
+  const proxied = buildProxyUrl(channel);
 
   if(isMexicoGeoRestrictedAkamai(original)){
+    // Akamai restringido por país: directo primero.
     add(original);
 
     try{
@@ -2171,16 +1831,25 @@ function getStreamCandidates(channel){
       }
     }catch(error){}
 
-    add(proxiedOriginal);
+    add(proxied);
+    return candidates;
+  }
+
+  if(isPlutoStream(original)){
+    // Pluto y otros servicios con tokens firmados no deben alterarse.
+    add(original);
+    add(proxied);
     return candidates;
   }
 
   if(shouldUseProxy(channel)){
-    add(proxiedOriginal);
+    // Contenido HTTP o streams que requieren Referer/User-Agent.
+    add(proxied);
     if(!original.startsWith("http://") || location.protocol !== "https:") add(original);
   }else{
+    // Para la mayoría de HTTPS, directo primero y proxy como respaldo.
     add(original);
-    add(proxiedOriginal);
+    add(proxied);
   }
 
   return candidates;
@@ -2226,43 +1895,20 @@ function syncVideoEvents(){
 
 
 function updatePlayerChannelCard(channel){
-  if(!channel){
-    playerChannelLogo.textContent = "TV";
-    playerChannelTitle.textContent = "Selecciona un canal";
-    playerChannelNumber.textContent = "---";
-    playerChannelMeta.textContent = "Sección - Categoría";
-    playerProgramNext.textContent = "";
-    return;
-  }
-
   const number = String(channel.channelNumber || channel.sectionIndex || "---").padStart(3,"0");
-  playerChannelTitle.textContent = channel.name;
+  playerChannelTitle.textContent = channel.name || "Canal";
   playerChannelNumber.textContent = number;
-
-  const guide = getPlutoProgramme(channel);
-  if(guide?.current){
-    const currentTime = `${formatEpgTime(guide.current.start)}–${formatEpgTime(guide.current.stop)}`;
-    playerChannelMeta.textContent = `${guide.current.title} · ${currentTime}`;
-    playerProgramNext.textContent = guide.next
-      ? `Siguiente: ${guide.next.title} · ${formatEpgTime(guide.next.start)}`
-      : "";
-  }else if(guide?.next){
-    playerChannelMeta.textContent = `Próximamente: ${guide.next.title} · ${formatEpgTime(guide.next.start)}`;
-    playerProgramNext.textContent = "";
-  }else{
-    playerChannelMeta.textContent = `${channel.sectionLabel} - ${channel.category}`;
-    playerProgramNext.textContent = "";
-  }
-
+  playerChannelMeta.textContent = `${channel.sectionLabel || "TV"} - ${channel.category || "General"}`;
   playerChannelLogo.innerHTML = "";
+
   if(channel.logo){
     const image = document.createElement("img");
     image.src = channel.logo;
-    image.alt = "";
+    image.alt = channel.name || "Canal";
     image.referrerPolicy = "no-referrer";
     image.addEventListener("error",() => {
       playerChannelLogo.textContent = getInitials(channel.name);
-    },{once:true});
+    });
     playerChannelLogo.appendChild(image);
   }else{
     playerChannelLogo.textContent = getInitials(channel.name);
