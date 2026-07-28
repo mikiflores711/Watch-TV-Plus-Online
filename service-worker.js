@@ -1,9 +1,9 @@
-const CACHE_NAME = "watch-tv-plus-shell-v1";
+const CACHE_NAME = "watch-tv-plus-shell-v2";
 const SHELL_FILES = [
   "./",
-  "./manifest.webmanifest",
-  "./icons/watch-tv-plus-192.png",
-  "./icons/watch-tv-plus-512.png"
+  "./index.html",
+  "./config.js",
+  "./manifest.webmanifest"
 ];
 
 self.addEventListener("install", event => {

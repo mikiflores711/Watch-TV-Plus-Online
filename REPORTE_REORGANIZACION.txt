@@ -1,0 +1,37 @@
+Archivos M3U movidos:
+LG_Channels_mx.m3u
+espanol.m3u
+runtime.m3u
+ingles.m3u
+mexico.m3u
+plex_mx.m3u
+channels.m3u
+adult.m3u
+vix.m3u
+mundial.m3u
+pluto.m3u
+rakutentv.m3u
+roku_all.m3u
+tubi.m3u
+
+Archivos eliminados:
+Donar icono.png
+Icono Español.png
+Icono LG Channels.png
+Icono Mexico.png
+Icono Plex TV.png
+Icono Pluto TV.png
+Icono Rakuten TV.png
+Icono Roku Channel.png
+Icono RunTime.png
+Icono Tubi.png
+Icono Vix.png
+Icono Zona 18+.png
+Watch TV Plus1.png
+prueba_canal5.html
+appcreator24.html
+CORRECCIÓN DE SEGURIDAD
+- Se corrigieron rutas duplicadas ./listas/listas/ a ./listas/.
+- Se retiraron referencias a iconos locales inexistentes.
+- Se actualizó el caché del service worker a v2.
+- No se modificó la lógica del reproductor, proxy, HLS ni URLs internas de los streams.
