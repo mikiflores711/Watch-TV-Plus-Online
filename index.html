@@ -1043,6 +1043,7 @@ const MAX_RENDER_DEFAULT = 1200;
 const MAX_RENDER_WITH_SEARCH = 2500;
 const PLAYER_UI_HIDE_DELAY = 3500;
 const IS_IPHONE = /iPhone|iPod/i.test(navigator.userAgent);
+const PLAYER_FIX_VERSION = "2026-07-28-hls-proxy-v2";
 const STREAM_DEVICE_KEY = "watch_tv_plus_stream_device_id_v1";
 
 function getStreamDeviceId(){
@@ -1101,14 +1102,36 @@ function normalizeStreamUrl(rawUrl){
 }
 
 function guessStreamMimeType(url){
-  const clean = String(url || "").split("?")[0].toLowerCase();
+  let value = String(url || "").trim();
+
+  try{
+    const parsed = new URL(value,location.href);
+    const nested = parsed.searchParams.get("url");
+    if(nested) value = decodeURIComponent(nested);
+  }catch(error){}
+
+  const clean = value.split("?")[0].toLowerCase();
+
   if(clean.endsWith(".mp4")) return "video/mp4";
   if(clean.endsWith(".mp3")) return "audio/mpeg";
   if(clean.endsWith(".aac")) return "audio/aac";
-  if(clean.endsWith(".m3u8") || clean.includes("/hls/") || clean.includes("playlist")) {
+
+  if(
+    clean.endsWith(".m3u8") ||
+    clean.endsWith(".m3u") ||
+    clean.includes("/hls/") ||
+    clean.includes("playlist") ||
+    clean.includes("/stitch/")
+  ){
     return "application/vnd.apple.mpegurl";
   }
-  return "";
+
+  /*
+    La mayoría de canales del catálogo son HLS aunque su URL termine en
+    /proxy, .php o no tenga extensión. Solo se excluyen formatos directos
+    reconocidos arriba.
+  */
+  return "application/vnd.apple.mpegurl";
 }
 
 
@@ -1771,7 +1794,7 @@ function playChannelCandidate(channel,candidates,index,attemptToken = playerAtte
   const mimeType = guessStreamMimeType(streamUrl);
   const plugins = [];
 
-  if(mimeType === "application/vnd.apple.mpegurl" && window.HlsjsPlayback){
+  if(window.HlsjsPlayback && mimeType === "application/vnd.apple.mpegurl"){
     plugins.push(window.HlsjsPlayback);
   }
 
@@ -1849,7 +1872,7 @@ function playChannelCandidate(channel,candidates,index,attemptToken = playerAtte
         */
         fallbackTimer = setTimeout(() => {
           if(!started) tryNext(0);
-        },18000);
+        },12000);
       },
       onPlay(){
         if(attemptToken !== playerAttemptToken) return;
@@ -1870,7 +1893,7 @@ function playChannelCandidate(channel,candidates,index,attemptToken = playerAtte
         clearTimeout(errorTimer);
         errorTimer = setTimeout(() => {
           if(!started) tryNext(0);
-        },6000);
+        },3500);
       }
     }
   });
@@ -1942,17 +1965,27 @@ function getStreamCandidates(channel){
   const original = normalizeStreamUrl(channel.url);
   const proxied = buildProxyUrl(channel,original);
   const isHttpMixed = original.startsWith("http://") && location.protocol === "https:";
+  const proxyFirstSections = new Set([
+    "pluto","tubi","runtime","plex","roku","rakuten"
+  ]);
 
   /*
-    Estrategia global:
-    - HTTP dentro de HTTPS: Worker primero, porque Chrome bloquea contenido mixto.
-    - Enlaces con Referer/User-Agent: Worker primero para aplicar cabeceras.
-    - Hosts georrestringidos "-onlymex": directo únicamente, para conservar la IP del usuario.
-    - Resto: directo primero y Worker como respaldo de CORS, redirecciones,
-      manifiestos anidados, segmentos y llaves.
+    Los hosts terminados en -onlymex necesitan la IP mexicana real del
+    visitante y no deben salir por Cloudflare.
   */
   if(isMexicoGeoRestrictedAkamai(original)){
     add(original);
+    return candidates;
+  }
+
+  /*
+    Pluto y otros servicios FAST suelen bloquear CORS o redirigir a
+    manifiestos/segmentos que también necesitan CORS. En ellos se usa primero
+    el Worker, y el enlace directo queda como respaldo.
+  */
+  if(proxyFirstSections.has(channel.section)){
+    add(proxied);
+    if(!isHttpMixed) add(original);
     return candidates;
   }
 
